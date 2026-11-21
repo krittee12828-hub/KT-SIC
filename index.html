@@ -346,6 +346,33 @@ body.dsp-body{background:#000;overflow:hidden}
 .rsz{min-width:38px;height:38px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:800;color:var(--navy);cursor:pointer}.rsz.on{background:var(--navy);color:#fff}
 .rmt .dwait{background:linear-gradient(160deg,#0b1b33,#142B4A)}
 
+/* ---------- Floating windows ---------- */
+.winlayer{position:absolute;inset:0;pointer-events:none;z-index:7;overflow:hidden}
+.win{position:absolute;pointer-events:auto;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:16px;box-shadow:0 14px 38px rgba(20,43,74,.32);display:flex;flex-direction:column;overflow:hidden;min-width:170px}
+.win.min{height:auto!important}.win.min .win-body,.win.min .win-rs{display:none}
+.win-h{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 12px;background:linear-gradient(120deg,var(--navy),#24457a);color:#fff;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;flex:none}
+.win-h:active{cursor:grabbing}.win-t{font-weight:800;font-size:.88rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.win-b{width:30px;height:30px;border:0;border-radius:9px;background:rgba(255,255,255,.14);color:#fff;font-size:1.05rem;font-weight:800;cursor:pointer;line-height:1;padding:0}.win-b:hover{background:rgba(255,255,255,.28)}
+.win-body{flex:1;min-height:0;overflow:auto;padding:12px;-webkit-overflow-scrolling:touch}
+.win-rs{position:absolute;right:0;bottom:0;width:26px;height:26px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 55%,#9db0cc 55% 62%,transparent 62% 72%,#9db0cc 72% 79%,transparent 79%)}
+.wt{text-align:center}.wt-n{font-size:3rem;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.1}.wt-n.low{color:#c0213f}.wt-n.done{color:#c0213f;animation:dpulse .8s infinite}.wt-n.pause{opacity:.55}
+.wt-bar{height:8px;background:#e8eef7;border-radius:6px;overflow:hidden;margin:6px 0 10px}.wt-bar i{display:block;height:100%;background:linear-gradient(90deg,#e58fa5,#142B4A);transition:width .4s linear}
+.wt-c{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.wt-c button,.wpg .wt-c button{min-height:40px;padding:6px 12px;border:1.5px solid var(--line);background:#fff;border-radius:11px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit}.wt-c button:active{background:#eef3fa}.wt-c button.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+.wp-n{font-size:2rem;font-weight:800;color:var(--navy);text-align:center;min-height:2.6rem;word-break:break-word;line-height:1.2}
+.wtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:8px}
+.wtile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1.5px solid var(--line);background:#fff;border-radius:14px;cursor:pointer;color:var(--navy);font-family:inherit}.wtile span{font-size:1.4rem;line-height:1}.wtile b{font-size:.72rem}.wtile.on{background:var(--navy);color:#fff;border-color:var(--navy)}.wtile.dis{opacity:.35;pointer-events:none}
+.wpg-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin-top:10px}
+.wpg-i{position:relative;border:2px solid var(--line);border-radius:9px;overflow:hidden;cursor:pointer;background:#fff}.wpg-i canvas{display:block;width:100%;height:auto}.wpg-i.on{border-color:var(--navy);box-shadow:0 0 0 2px var(--pink)}.wpg-i span{position:absolute;left:3px;bottom:3px;background:rgba(20,43,74,.85);color:#fff;font-size:.66rem;padding:0 5px;border-radius:5px}
+.wst-t{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.wst-t button,.wst-s button{height:44px;border:1.5px solid var(--line);background:#fff;border-radius:11px;color:var(--navy);cursor:pointer;display:grid;place-items:center;padding:0}.wst-t button.on,.wst-s button.on{background:var(--navy);color:#fff}.wst-s{display:flex;gap:6px}.wst-s button{flex:1}.wst-s i{display:block;border-radius:50%;background:currentColor}
+.wst .sws .sw.on{box-shadow:0 0 0 3px var(--navy)}
+.wm{display:flex;flex-direction:column;gap:8px;height:100%}.stage .wm video,.wm video{position:static;inset:auto;height:auto;flex:1;min-height:0;width:100%;background:#000;border-radius:10px;object-fit:contain}
+.wm-bar{display:flex;gap:6px;flex-wrap:wrap}.wm-bar button{flex:1;min-height:38px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit;padding:4px 8px}.wm-bar button.on{background:var(--navy);color:#fff}
+.win:has(.wm) .win-body{padding:8px}
+.mir{min-height:100%;display:grid;place-items:center;padding:16px;background:linear-gradient(160deg,#0b1b33,#142B4A);color:#fff}
+.mir-card{width:min(520px,100%);text-align:center}.mir-card video{width:100%;max-height:44vh;background:#000;border-radius:16px;object-fit:contain;margin-bottom:10px}
+.mir-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+
 </style>
 </head>
 <body>
@@ -3332,6 +3359,7 @@ const Live = {
         if (!this.peer) throw new Error('ไม่สามารถสร้างห้องได้');
         this.active = true; if (typeof logEvent === 'function') logEvent('live', 'open ' + this.code);
         this.peer.on('connection', c => this._onConn(c));
+        this.peer.on('call', c => { try { c.answer(); } catch (e) { } c.on('stream', st => { if (typeof Mirror !== 'undefined') Mirror.add(c.peer, st, c); }); c.on('close', () => { if (typeof Mirror !== 'undefined') Mirror.remove(c.peer); }); c.on('error', () => { }); });
         this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch (e) { } });
         this.peer.on('error', e => { console.warn('peer error', e); });
         this.emit();
@@ -3344,19 +3372,19 @@ const Live = {
   },
   stop() {
     this.broadcast({ t: 'closed' });
-    this.stopStream();
+    this.stopStream(); if (typeof Mirror !== 'undefined') Mirror.clear();
     try { this.peer && this.peer.destroy(); } catch (e) { }
     this.peer = null; this.active = false; this.students.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.emit();
   },
   _onConn(conn) {
     conn.on('data', msg => { try { this._handle(conn, msg); } catch (e) { console.error(e); } });
-    conn.on('close', () => { const s = this.students.get(conn.peer); if (s) { this.students.delete(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
+    conn.on('close', () => { const s = this.students.get(conn.peer); if (s) { this.students.delete(conn.peer); if (s.role === 'mirror' && typeof Mirror !== 'undefined') Mirror.remove(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
     conn.on('error', () => { });
   },
   _handle(conn, m) {
     if (!m || typeof m !== 'object') return;
     if (m.t === 'hello') {
-      let name = String(m.name || '').trim().slice(0, 40) || 'Guest', role = m.role === 'display' ? 'display' : m.role === 'remote' ? 'remote' : 'student'; const dev = String(m.dev || '').slice(0, 30);
+      let name = String(m.name || '').trim().slice(0, 40) || 'Guest', role = ['display', 'remote', 'mirror'].includes(m.role) ? m.role : 'student'; const dev = String(m.dev || '').slice(0, 30);
       if (role === 'student') { const names = new Set([...this.students.values()].filter(s => s.role === 'student').map(s => s.name)); let n = name, i = 2; while (names.has(n)) n = name + ' (' + (i++) + ')'; name = n; }
       const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, conn, joined: Date.now(), hand: false, handAt: 0 };
       if (role !== 'student') { const same = [...this.students.values()].filter(x => x.role !== 'student' && x.dev === dev).length; s.label = (dev || (role === 'display' ? 'Display' : 'Remote')) + (same ? ' ' + (same + 1) : ''); s.name = s.label; }
@@ -3379,7 +3407,7 @@ const Live = {
   setState(patch) { this.state = Object.assign({}, this.state, patch); this.broadcast({ t: 'state', s: this.state }); this.emit(); },
   sendBoard(img) { this.lastBoard = img; this.students.forEach(s => { if (s.role === 'student' && s.conn.open) { try { s.conn.send({ t: 'board', img }); } catch (e) { } } }); },
   _call(s) {
-    if (!this.stream || !this.peer) return;
+    if (!this.stream || !this.peer || s.role === 'mirror' || s.role === 'remote') return;
     try { const c = this.peer.call(s.id, this.stream); this.calls.set(s.id, c); c.on('close', () => this.calls.delete(s.id)); } catch (e) { console.warn(e); }
   },
   shareStream(stream) { this.stopStream(true); this.stream = stream; this.students.forEach(s => this._call(s)); this.setState({ view: 'screen' }); },
@@ -3863,9 +3891,9 @@ const Hub = {
     const A = this.api, B = () => A.board, tool = t => ({ id: 't_' + t, ico: t, label: { pen: 'ปากกา', pencil: 'ดินสอ', hl: 'ไฮไลต์', eraser: 'ยางลบ', lasso: 'เลือก', text: 'ข้อความ', shape: 'รูปทรง', line: 'เส้น', arrow: 'ลูกศร', laser: 'เลเซอร์', pan: 'เลื่อน' }[t], act: () => { A.setTool(t); this.close(); }, active: () => B().tool === t });
     const mins = m => ({ id: 'tm' + m, e: String(m), label: m + ' นาที', act: () => { this.timer(m * 60); this.close(); }, active: () => !!(this.w.timer && this.w.timer.total === m * 60) });
     return [
-      { id: 'write', ico: 'pen', label: 'เขียน', sub: [tool('pen'), tool('pencil'), tool('hl'), tool('eraser'), tool('lasso'), tool('text'),
+      { id: 'write', ico: 'pen', label: 'เขียน', win: 'style', sub: [tool('pen'), tool('pencil'), tool('hl'), tool('eraser'), tool('lasso'), tool('text'),
         { id: 'shapes', ico: 'shape', label: 'รูปทรง', sub: [tool('shape'), tool('line'), tool('arrow')] }] },
-      { id: 'screen', e: '📽', label: 'จอฉาย', sub: [
+      { id: 'screen', e: '📽', label: 'จอฉาย', win: 'screen', sub: [
         { id: 'lay_full', e: '🖥', label: 'เต็มสไลด์', act: () => { this.layout = 'full'; this.push(); this.hint(); this.close(); }, active: () => this.layout === 'full' },
         { id: 'lay_split', e: '◧', label: 'สไลด์+แถบ', act: () => { this.layout = 'split'; this.push(); this.hint(); this.close(); }, active: () => this.layout === 'split' },
         { id: 'blank', e: '⬛', label: 'จอดำ', act: () => { this.w = Object.assign({}, this.w, { blank: this.w.blank ? false : true }); this.push(); this.hint(); this.close(); }, active: () => !!this.w.blank },
@@ -3873,31 +3901,39 @@ const Hub = {
         { id: 'qr', e: '▦', label: 'QR เข้าห้อง', act: async () => { if (!this.w.qr) { if (!await this.room()) return; this.w = Object.assign({}, this.w, { qr: Live.joinUrl('join') }); } else this.w = Object.assign({}, this.w, { qr: null }); this.push(); this.close(); }, active: () => !!this.w.qr },
         { id: 'msg', e: '💬', label: 'ข้อความ', act: async () => { this.close(); if (this.w.msg) { this.w = Object.assign({}, this.w, { msg: null }); this.push(); return; } const t = await askText(T('ข้อความขึ้นจอฉาย', 'Message on screen'), '', { placeholder: T('เช่น เงียบสักครู่ / เก็บของ / พักเบรก 5 นาที', 'e.g. Quiet please') }); if (t) { this.w = Object.assign({}, this.w, { msg: t.slice(0, 80) }); this.push(); this.hint(); } }, active: () => !!this.w.msg },
         { id: 'link', e: '🔗', label: 'อุปกรณ์', act: () => { this.close(); Devices.open(); } }] },
-      { id: 'timer', e: '⏱', label: 'จับเวลา', sub: [mins(1), mins(3), mins(5), mins(10),
+      { id: 'timer', e: '⏱', label: 'จับเวลา', win: 'timer', sub: [mins(1), mins(3), mins(5), mins(10),
         { id: 'tmx', e: '✎', label: 'กำหนดเอง', act: async () => { this.close(); const v = await askText(T('จับเวลา (นาที)', 'Minutes'), '2'); const n = parseFloat(v); if (n > 0 && n <= 180) this.timer(Math.round(n * 60)); } },
         { id: 'tmp', e: '⏯', label: 'หยุด/เล่นต่อ', act: () => { this.timerPause(); this.close(); }, dis: () => !this.w.timer },
         { id: 'tms', e: '✕', label: 'ยกเลิก', act: () => { this.w = Object.assign({}, this.w, { timer: null }); this.push(); this.close(); }, dis: () => !this.w.timer }] },
-      { id: 'pick', e: '🎯', label: 'สุ่ม', sub: [
+      { id: 'pick', e: '🎯', label: 'สุ่ม', win: 'pick', sub: [
         { id: 'pk1', e: '🎲', label: 'สุ่มนักเรียน', act: () => { this.close(); this.pick(); } },
         { id: 'pkg', e: '👥', label: 'แสดงกลุ่ม', act: () => { this.close(); this.showGroups(); }, active: () => !!(this.w.groups && this.w.groups.length) },
         { id: 'pkc', e: '🧹', label: 'ล้างจอ', act: () => { this.w = Object.assign({}, this.w, { pick: null, groups: null, msg: null }); this.push(); this.close(); } },
         { id: 'pkr', e: '↺', label: 'เริ่มสุ่มใหม่', act: () => { this.picked.clear(); toast(T('รีเซ็ตรายชื่อที่สุ่มแล้ว', 'Reset'), 'ok', 1500); this.close(); } }] },
-      { id: 'ask', e: '❓', label: 'ถามด่วน', sub: [
+      { id: 'ask', e: '❓', label: 'ถามด่วน', win: 'poll', sub: [
         { id: 'qa4', e: 'A–D', label: 'เลือกตอบ', act: () => { this.close(); this.quick('mc'); } },
         { id: 'qtf', e: '✓✗', label: 'ถูก/ผิด', act: () => { this.close(); this.quick('tf'); } },
         { id: 'qx', e: '■', label: 'จบคำถาม', act: () => { this.endQuick(); this.close(); }, dis: () => !this.poll }] },
-      { id: 'page', ico: 'book', label: 'หน้า', sub: [
+      { id: 'page', ico: 'book', label: 'หน้า', win: 'pages', sub: [
         { id: 'pp', e: '◀', label: 'ก่อนหน้า', act: () => A.gotoPage(A.doc().cur - 1), keep: 1 },
         { id: 'pn', e: '▶', label: 'ถัดไป', act: () => A.gotoPage(A.doc().cur + 1), keep: 1 },
         { id: 'pa', ico: 'plus', label: 'เพิ่มหน้า', act: () => { A.addPage(); this.close(); } },
         { id: 'pi', ico: 'down', label: 'นำเข้า PDF', act: () => { this.close(); A.click('bImport'); } },
         { id: 'pg', e: '#', label: 'ไปหน้า…', act: async () => { this.close(); const v = await askText(T('ไปหน้าที่', 'Go to page'), String(A.doc().cur + 1)); const n = parseInt(v); if (n >= 1) A.gotoPage(n - 1); } },
         { id: 'pl', ico: 'file', label: 'จัดการหน้า', act: () => { this.close(); A.click('bPages'); } }] },
-      { id: 'view', ico: 'zin', label: 'มุมมอง', sub: [tool('laser'), tool('pan'),
+      { id: 'view', ico: 'zin', label: 'มุมมอง', win: 'view', sub: [tool('laser'), tool('pan'),
         { id: 'zi', ico: 'zin', label: 'ซูมเข้า', act: () => B().zoomCenter(1.3), keep: 1 },
         { id: 'zo', ico: 'zout', label: 'ซูมออก', act: () => B().zoomCenter(1 / 1.3), keep: 1 },
         { id: 'zf', ico: 'full', label: 'พอดีหน้า', act: () => { A.click('bFit'); this.close(); } },
         { id: 'fs', e: '⛶', label: 'เต็มจอ', act: () => { this.close(); A.click('bFull'); } }] },
+      { id: 'wins', e: '🗔', label: 'หน้าต่าง', sub: [
+        { id: 'w_timer', e: '⏱', label: 'จับเวลา', act: () => { Win.timer(); this.close(); }, active: () => Win.has('timer') },
+        { id: 'w_pick', e: '🎯', label: 'สุ่มชื่อ', act: () => { Win.pick(); this.close(); }, active: () => Win.has('pick') },
+        { id: 'w_poll', e: '❓', label: 'ถามด่วน', act: () => { Win.poll(); this.close(); }, active: () => Win.has('poll') },
+        { id: 'w_screen', e: '📽', label: 'คุมจอฉาย', act: () => { this.openWin('screen'); this.close(); }, active: () => Win.has('t_screen') },
+        { id: 'w_pages', e: '📄', label: 'หน้า', act: () => { Win.pages(); this.close(); }, active: () => Win.has('pages') },
+        { id: 'w_style', e: '🎨', label: 'เครื่องมือเขียน', act: () => { Win.style(); this.close(); }, active: () => Win.has('style') },
+        { id: 'w_dev', e: '📲', label: 'อุปกรณ์/มิเรอร์', act: () => { this.close(); Devices.open(); } }] },
       { id: 'cfg', ico: 'settings', label: 'ปรับแต่ง', fixed: true, act: () => { this.close(); this.config(); } }
     ];
   },
@@ -3964,7 +4000,7 @@ const Hub = {
     const t = this.w.timer, badge = t ? fmtMS(t.paused ? t.left : (t.end - Date.now()) / 1000) : '';
     const flags = [this.frozen ? '❄' : '', this.w.blank ? '⬛' : '', this.poll ? '❓' : ''].filter(Boolean).join('');
     h += `<button class="hub-c ${this.open ? 'open' : ''} ${this.frozen ? 'fz' : ''}" id="hubC" style="left:${cx}px;top:${cy}px;width:${it}px;height:${it}px" aria-label="menu">${this.open ? (this.path.length ? ic('chevL', 24) : ic('x', 24)) : `<span class="hc-dot">${ic('sparkle', Math.round(it * .42))}</span>`}${!this.open && (badge || flags) ? `<span class="hc-b ${t && !t.paused && (t.end - Date.now()) / 1000 <= 10 ? 'low' : ''}">${badge || flags}</span>` : ''}</button>`;
-    if (this.poll) h += this.pollCard(cx, cy, W, H);
+    if (this.poll && !Win.has('poll')) h += this.pollCard(cx, cy, W, H);
     el.innerHTML = h; this.wire(cx, cy, W, H, list);
   },
   wire(cx, cy, W, H, list) {
@@ -3981,7 +4017,7 @@ const Hub = {
     const bg = el.querySelector('.hub-bg'); if (bg) bg.onpointerdown = e => { e.preventDefault(); e.stopPropagation(); this.close(); };
     el.querySelectorAll('.hbtn').forEach(b => b.onclick = e => {
       e.stopPropagation(); const x = list[+b.dataset.i]; if (!x || (x.dis && x.dis())) return;
-      if (x.sub) { this.path.push(x.id); this.draw(); return; }
+      if (x.sub) { if (this.cfg().asWin && x.win && this.openWin(x.win)) { this.close(); return; } this.path.push(x.id); this.draw(); return; }
       try { const r = x.act(); if (x.keep) this.draw(); return r; } catch (err) { console.error(err); }
     });
     el.querySelectorAll('.hpoll [data-pa]').forEach(b => b.onclick = e => { e.stopPropagation(); this.pollAct(b.dataset.pa); });
@@ -3992,6 +4028,11 @@ const Hub = {
     if (t || this.el && this.el.querySelector('.hc-b')) { const b = this.el && this.el.querySelector('.hc-b'); if (t && b) { b.textContent = fmtMS(t.paused ? t.left : (t.end - Date.now()) / 1000); } else if (t && !b && !this.open) this.draw(); else if (!t && b && !this.frozen && !this.w.blank && !this.poll) this.draw(); }
   },
 
+  openWin(k) {
+    if (!Win.layer) return false;
+    ({ timer: () => Win.timer(), pick: () => Win.pick(), poll: () => Win.poll(), pages: () => Win.pages(), style: () => Win.style(), screen: () => Win.tiles('screen', '📽 ' + T('คุมจอฉาย', 'Display control')), view: () => Win.tiles('view', '🔍 ' + T('มุมมอง', 'View'), 280, 220) })[k]();
+    return true;
+  },
   /* ---------- ฟีเจอร์ ---------- */
   async room() { if (Live.active) return true; const ok = await Live.start(); if (ok) { this.push(); } return ok; },
   setFrozen(on) { this.frozen = !!on; Cast.setFrozen(this.frozen); toast(this.frozen ? '❄ ' + T('หยุดภาพบนจอฉาย — ครูเตรียมหน้าถัดไปได้เงียบๆ', 'Display frozen') : T('ปล่อยภาพ — จอฉายตามทันแล้ว', 'Display live again'), 'ok', 2600); this.draw(); },
@@ -4046,17 +4087,136 @@ const Hub = {
     const row = (x, lvl) => `<label class="hcfg-r" style="padding-left:${lvl * 22}px"><input type="checkbox" data-id="${x.id}" ${c.hidden.includes(x.id) ? '' : 'checked'}> <span class="hcfg-i">${x.ico ? ic(x.ico, 18) : esc(x.e || '')}</span> ${esc(x.label)}</label>` + (x.sub ? x.sub.map(s => row(s, lvl + 1)).join('') : '');
     modal({ title: T('ปรับแต่งวงกลมเมนู', 'Customize the hub'), wide: false, body: `<p class="small muted" style="margin-top:0">${T('ติ๊กเฉพาะปุ่มที่ต้องการให้ขึ้นในวงกลม (ลากวงกลมไปวางตำแหน่งที่ถนัดได้เลย)', 'Tick the items you want')}</p>
       <div class="row" style="margin-bottom:10px"><b class="small">${T('ขนาดปุ่ม', 'Size')}</b>${[['s', 'เล็ก'], ['m', 'กลาง'], ['l', 'ใหญ่ (iPad)']].map(x => `<label class="chip ${c.size === x[0] ? 'ok' : ''}" style="cursor:pointer"><input type="radio" name="hsz" value="${x[0]}" ${c.size === x[0] ? 'checked' : ''} style="display:none">${x[1]}</label>`).join('')}</div>
+      <label class="hcfg-r"><input type="checkbox" id="hWin" ${c.asWin ? 'checked' : ''}> <b>${T('เปิดฟีเจอร์เป็น “หน้าต่างเล็กลอย” แทนวงล้อย่อย', 'Open features as floating windows')}</b> <span class="tiny muted">(${T('จับเวลา สุ่ม ถามด่วน คุมจอฉาย หน้า เครื่องมือเขียน', 'timer, picker, poll…')})</span></label>
       <label class="hcfg-r"><input type="checkbox" id="hShow" ${c.show ? 'checked' : ''}> <b>${T('แสดงวงกลมบนหน้ากระดาน', 'Show the hub')}</b> <span class="tiny muted">(${T('กดปุ่ม Q หรือ / เพื่อเรียกที่ตำแหน่งปากกา/เมาส์เสมอ', 'press Q or / anytime')})</span></label>
       <div class="hcfg">${defs.map(x => row(x, 0)).join('')}</div>`,
       actions: [{ label: T('คืนค่าเริ่มต้น', 'Reset'), onClick: () => { DB.settings.hub = null; save(); this.cfg(); this.draw(); } }, { label: T('เสร็จ', 'Done'), cls: 'pri' }],
       onMount: m => {
         $$('.hcfg input[data-id]', m).forEach(i => i.onchange = () => { const h = this.cfg().hidden, id = i.dataset.id; const k = h.indexOf(id); if (i.checked && k >= 0) h.splice(k, 1); else if (!i.checked && k < 0) h.push(id); save(); this.draw(); });
         $$('input[name=hsz]', m).forEach(i => i.onchange = () => { this.cfg().size = i.value; save(); this.draw(); $$('input[name=hsz]', m).forEach(j => j.parentElement.classList.toggle('ok', j.checked)); });
-        $('#hShow', m).onchange = e => this.setShown(e.target.checked);
+        $('#hShow', m).onchange = e => this.setShown(e.target.checked); $('#hWin', m).onchange = e => { this.cfg().asWin = e.target.checked; save(); };
       } });
   }
 };
 const fmtMS = s => { s = Math.max(0, Math.ceil(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+
+/* =====================================================================
+   Win — หน้าต่างลอยใน Teaching Studio (ลากย้าย / ย่อ / ปรับขนาด / จำตำแหน่ง)
+   ใช้เปิดฟีเจอร์จากวงกลมเมนูเป็นหน้าต่างเล็กค้างไว้ระหว่างสอน + หน้าต่างมิเรอร์อุปกรณ์
+   ===================================================================== */
+const Win = {
+  stage: null, layer: null, map: new Map(), z: 10, iv: 0, ro: null,
+  store() { const s = DB.settings; return s.wins || (s.wins = {}); },
+  has(id) { return this.map.has(id); },
+  mount(stage) {
+    this.unmount(); this.stage = stage; const l = this.layer = document.createElement('div'); l.className = 'winlayer'; stage.appendChild(l);
+    this.iv = setInterval(() => this.tick(), 500); this.ro = new ResizeObserver(() => this.clampAll()); this.ro.observe(stage);
+    if (typeof Mirror !== 'undefined') Mirror.restore();
+  },
+  unmount() { clearInterval(this.iv); this.ro && this.ro.disconnect(); this.map.forEach(w => { try { w.spec.onClose && w.spec.onClose(true); } catch (e) { } }); this.map.clear(); this.layer && this.layer.remove(); this.layer = null; },
+  tick() { this.map.forEach(w => { if (!w.min && w.spec.update) { try { w.spec.update(w.body, w); } catch (e) { console.warn(e); } } }); },
+  clamp(w) { const W = this.stage.clientWidth, H = this.stage.clientHeight; w.W = Math.max(170, Math.min(w.W, W - 8)); w.H = Math.max(90, Math.min(w.H, H - 8)); w.x = Math.max(4 - w.W + 90, Math.min(w.x, W - 90)); w.y = Math.max(4, Math.min(w.y, H - 40)); },
+  place(w) { this.clamp(w); const s = w.el.style; s.left = w.x + 'px'; s.top = w.y + 'px'; s.width = w.W + 'px'; s.height = w.min ? 'auto' : w.H + 'px'; },
+  clampAll() { this.map.forEach(w => this.place(w)); },
+  persist(w) { this.store()[w.id] = { x: Math.round(w.x), y: Math.round(w.y), w: Math.round(w.W), h: Math.round(w.H), min: !!w.min }; save(); },
+  focus(id) { const w = this.map.get(id); if (w) w.el.style.zIndex = ++this.z; },
+  open(id, spec) {
+    if (!this.layer) return null; let w = this.map.get(id); if (w) { this.focus(id); if (w.min) this.setMin(w, false); return w; }
+    const sv = this.store()[id] || {}, n = this.map.size;
+    w = { id, spec, x: sv.x != null ? sv.x : 16 + n * 30, y: sv.y != null ? sv.y : 70 + n * 30, W: sv.w || spec.w || 260, H: sv.h || spec.h || 220, min: false };
+    const el = w.el = document.createElement('div'); el.className = 'win'; el.dataset.win = id;
+    el.innerHTML = `<div class="win-h"><span class="win-t">${spec.title}</span><span class="win-x"></span><button class="win-b" data-w="min" aria-label="minimize">–</button><button class="win-b" data-w="x" aria-label="close">×</button></div><div class="win-body"></div><i class="win-rs"></i>`;
+    w.body = el.querySelector('.win-body'); this.layer.appendChild(el); this.map.set(id, w); el.style.zIndex = ++this.z; this.place(w);
+    spec.build && spec.build(w.body, w); spec.update && spec.update(w.body, w);
+    const h = el.querySelector('.win-h');
+    h.onpointerdown = e => { if (e.target.closest('.win-b')) return; e.preventDefault(); this.focus(id); h.setPointerCapture(e.pointerId); const sx = e.clientX, sy = e.clientY, ox = w.x, oy = w.y;
+      h.onpointermove = ev => { w.x = ox + ev.clientX - sx; w.y = oy + ev.clientY - sy; this.place(w); }; h.onpointerup = h.onpointercancel = () => { h.onpointermove = h.onpointerup = h.onpointercancel = null; this.persist(w); }; };
+    h.ondblclick = e => { if (!e.target.closest('.win-b')) this.setMin(w, !w.min); };
+    el.querySelector('.win-rs').onpointerdown = e => { e.preventDefault(); e.stopPropagation(); const r = e.currentTarget; r.setPointerCapture(e.pointerId); const sx = e.clientX, sy = e.clientY, ow = w.W, oh = w.H;
+      r.onpointermove = ev => { w.W = ow + ev.clientX - sx; w.H = oh + ev.clientY - sy; this.place(w); spec.onResize && spec.onResize(w.body, w); }; r.onpointerup = r.onpointercancel = () => { r.onpointermove = r.onpointerup = r.onpointercancel = null; this.persist(w); }; };
+    el.onpointerdown = () => { if (+el.style.zIndex < this.z) el.style.zIndex = ++this.z; };
+    el.querySelector('[data-w=x]').onclick = () => this.close(id); el.querySelector('[data-w=min]').onclick = () => this.setMin(w, !w.min);
+    if (sv.min) this.setMin(w, true);
+    return w;
+  },
+  setMin(w, on) { w.min = on; w.el.classList.toggle('min', on); this.place(w); this.persist(w); },
+  close(id) { const w = this.map.get(id); if (!w) return; try { w.spec.onClose && w.spec.onClose(false); } catch (e) { } w.el.remove(); this.map.delete(id); if (typeof Hub !== 'undefined' && Hub.el) Hub.draw(); },
+  toggle(id, spec) { if (this.has(id)) this.close(id); else this.open(id, spec); },
+
+  /* ---------- หน้าต่างสำเร็จรูป ---------- */
+  timer() {
+    return this.toggle('timer', {
+      title: '⏱ ' + T('จับเวลา', 'Timer'), w: 270, h: 250,
+      build(b) {
+        b.innerHTML = `<div class="wt"><div class="wt-n" data-n>--:--</div><div class="wt-bar"><i data-b></i></div><div class="wt-c">${[1, 3, 5, 10].map(m => `<button data-m="${m}">${m}${T(' นาที', ' min')}</button>`).join('')}<button data-m="x">✎</button></div><div class="wt-c"><button data-a="pp">⏯ ${T('หยุด/ต่อ', 'Pause')}</button><button data-a="st">✕ ${T('ยกเลิก', 'Cancel')}</button></div></div>`;
+        b.onclick = async e => { const m = e.target.closest('[data-m]'), a = e.target.closest('[data-a]');
+          if (m) { if (m.dataset.m === 'x') { const v = parseFloat(await askText(T('จับเวลา (นาที)', 'Minutes'), '2')); if (v > 0 && v <= 180) Hub.timer(Math.round(v * 60)); } else Hub.timer(+m.dataset.m * 60); }
+          else if (a) { if (a.dataset.a === 'pp') Hub.timerPause(); else { Hub.w = Object.assign({}, Hub.w, { timer: null }); Hub.push(); Hub.draw(); } } };
+      },
+      update(b) { const t = Hub.w.timer, n = $('[data-n]', b), bar = $('[data-b]', b); if (!t) { n.textContent = '--:--'; n.className = 'wt-n'; bar.style.width = '0'; return; } const l = t.paused ? t.left : (t.end - Date.now()) / 1000; n.textContent = fmtMS(l); n.className = 'wt-n' + (l <= 10 && l > 0 ? ' low' : '') + (l <= 0 ? ' done' : '') + (t.paused ? ' pause' : ''); bar.style.width = Math.max(0, Math.min(100, l / (t.total || 1) * 100)) + '%'; }
+    });
+  },
+  pick() {
+    return this.toggle('pick', {
+      title: '🎯 ' + T('สุ่มนักเรียน', 'Random student'), w: 270, h: 250,
+      build(b) {
+        b.innerHTML = `<div class="wp"><div class="wp-n" data-n>—</div><div class="tiny muted" data-i style="text-align:center"></div><div class="wt-c"><button class="pri" data-a="go">🎲 ${T('สุ่มนักเรียน', 'Pick')}</button></div><div class="wt-c"><button data-a="grp">👥 ${T('กลุ่ม', 'Groups')}</button><button data-a="clr">🧹 ${T('ล้างจอ', 'Clear')}</button><button data-a="rst">↺ ${T('รีเซ็ต', 'Reset')}</button></div></div>`;
+        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a; if (k === 'go') Hub.pick(); else if (k === 'grp') Hub.showGroups(); else if (k === 'clr') { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null, msg: null }); Hub.push(); } else { Hub.picked.clear(); toast(T('รีเซ็ตรายชื่อที่สุ่มแล้ว', 'Reset'), 'ok', 1400); } };
+      },
+      update(b) { const n = $('[data-n]', b), p = Hub.w.pick; n.textContent = p ? p.name : '—'; const all = rosterFor(curClass(), { skipAbsent: true }); $('[data-i]', b).textContent = all.length ? T(`เหลือ ${all.filter(s => !Hub.picked.has(s.id)).length} จาก ${all.length} คน`, `${all.length} students`) : T('ยังไม่มีรายชื่อในห้องเรียน', 'No students'); }
+    });
+  },
+  poll() {
+    return this.toggle('poll', {
+      title: '❓ ' + T('ถามด่วน', 'Quick question'), w: 290, h: 270,
+      build(b) {
+        b.onclick = e => { const q = e.target.closest('[data-q]'), a = e.target.closest('[data-pa]'); if (q) Hub.quick(q.dataset.q); else if (a) Hub.pollAct(a.dataset.pa); };
+      },
+      update(b) {
+        const mode = Hub.poll ? 'run' : 'idle'; const p = Hub.poll, sig = mode + (p ? p.counts.join() + p.n + p.show + p.open : '');
+        if (b._sig === sig) return; b._sig = sig;
+        if (!p) { b.innerHTML = `<div class="wt"><p class="small muted" style="margin:0 0 8px;text-align:center">${T('ถามด่วนแล้วให้นักเรียนตอบจากมือถือ เห็นผลสด', 'Ask quickly; students answer on their phones')}</p><div class="wt-c"><button class="pri" data-q="mc">A–D ${T('เลือกตอบ', 'Choice')}</button><button class="pri" data-q="tf">✓✗ ${T('ถูก/ผิด', 'T/F')}</button></div></div>`; return; }
+        const mx = Math.max(1, ...p.counts); b.innerHTML = `<div class="wpoll"><div class="hp-h"><b>${T('ตอบแล้ว', 'Answered')} ${p.n}/${Live.list().length}</b><span>${p.open ? T('กำลังรับคำตอบ', 'open') : T('ปิดรับแล้ว', 'closed')}</span></div>${p.labels.map((l, i) => `<div class="hp-r"><span class="hp-l">${esc(l)}</span><div class="hp-b"><i style="width:${p.counts[i] / mx * 100}%"></i></div><b>${p.counts[i]}</b></div>`).join('')}<div class="hp-a"><button class="btn sm" data-pa="close" ${p.open ? '' : 'disabled'}>${T('ปิดรับ', 'Close')}</button><button class="btn sm ${p.show ? 'pri' : ''}" data-pa="show">${p.show ? T('ซ่อนผลบนจอ', 'Hide') : T('โชว์บนจอฉาย', 'Show on screen')}</button><button class="btn sm danger" data-pa="end">${T('จบ', 'End')}</button></div></div>`;
+      }
+    });
+  },
+  /* หน้าต่างแบบแผงปุ่มสร้างจากหมวดในวงกลมเมนู (จอฉาย / มุมมอง ฯลฯ) */
+  tiles(catId, title, w = 300, h = 250) {
+    const flat = list => list.flatMap(x => x.sub ? flat(x.sub) : [x]);
+    return this.toggle('t_' + catId, {
+      title, w, h,
+      build(b) { b.innerHTML = '<div class="wtiles"></div>'; b.onclick = e => { const t = e.target.closest('[data-id]'); if (!t) return; const it = flat(Hub.visible(Hub.defs()).find(c => c.id === catId).sub).find(x => x.id === t.dataset.id); if (it && !(it.dis && it.dis())) { const keepOpen = Hub.open; it.act(); if (!keepOpen && Hub.open) Hub.close(); } }; },
+      update(b) { const cat = Hub.visible(Hub.defs()).find(c => c.id === catId); if (!cat) return; const items = flat(cat.sub); const sig = items.map(x => x.id + (x.active && x.active() ? 1 : 0) + (x.dis && x.dis() ? 1 : 0)).join(); if (b._sig === sig) return; b._sig = sig; $('.wtiles', b).innerHTML = items.map(x => `<button class="wtile ${x.active && x.active() ? 'on' : ''} ${x.dis && x.dis() ? 'dis' : ''}" data-id="${x.id}"><span>${x.ico ? ic(x.ico, 22) : esc(x.e)}</span><b>${esc(x.label)}</b></button>`).join(''); }
+    });
+  },
+  pages() {
+    return this.toggle('pages', {
+      title: '📄 ' + T('หน้า', 'Pages'), w: 300, h: 320,
+      build(b) {
+        b.innerHTML = `<div class="wpg"><div class="wt-c"><button data-a="prev">◀</button><b data-n style="min-width:70px;text-align:center"></b><button data-a="next">▶</button><button data-a="add">＋</button></div><div class="wpg-g" data-g></div></div>`;
+        b.onclick = e => { const A = Hub.api; if (!A) return; const t = e.target.closest('[data-i]'), a = e.target.closest('[data-a]'); if (t) A.gotoPage(+t.dataset.i); else if (a) { const k = a.dataset.a; if (k === 'prev') A.gotoPage(A.doc().cur - 1); else if (k === 'next') A.gotoPage(A.doc().cur + 1); else A.addPage(); } };
+      },
+      update(b) {
+        const A = Hub.api; if (!A) return; const d = A.doc(); $('[data-n]', b).textContent = (d.cur + 1) + ' / ' + d.pages.length;
+        const sig = d.cur + '|' + d.pages.map(p => p.id + ':' + p.objs.length).join(','); if (b._sig === sig || b._busy) return; b._sig = sig; b._busy = true;
+        (async () => { const g = $('[data-g]', b); const lo = Math.max(0, d.cur - 12), hi = Math.min(d.pages.length, d.cur + 13); const frag = document.createDocumentFragment();
+          for (let i = lo; i < hi; i++) { const p = d.pages[i]; try { await IMGS.ensurePage(p); } catch (e) { } const c = renderPage(p, 150); const it = document.createElement('div'); it.className = 'wpg-i' + (i === d.cur ? ' on' : ''); it.dataset.i = i; it.appendChild(c); const s = document.createElement('span'); s.textContent = i + 1; it.appendChild(s); frag.appendChild(it); }
+          g.innerHTML = ''; g.appendChild(frag); const on = $('.on', g); on && on.scrollIntoView({ block: 'nearest' }); b._busy = false; })();
+      }
+    });
+  },
+  style() {
+    return this.toggle('style', {
+      title: '🎨 ' + T('เครื่องมือเขียน', 'Pen tools'), w: 300, h: 290,
+      build(b) {
+        const tools = [['pen', 'ปากกา'], ['pencil', 'ดินสอ'], ['hl', 'ไฮไลต์'], ['eraser', 'ยางลบ'], ['lasso', 'เลือก'], ['text', 'ข้อความ'], ['laser', 'เลเซอร์'], ['pan', 'เลื่อน']];
+        b.innerHTML = `<div class="wst"><div class="wst-t">${tools.map(t => `<button data-t="${t[0]}" title="${t[1]}">${ic(t[0], 22)}</button>`).join('')}</div><div class="sws" style="margin:10px 0">${PALETTE.map(c => `<button class="sw" data-c="${c}" style="background:${c}"></button>`).join('')}</div><div class="wst-s">${[2, 4, 8, 14, 24].map(s => `<button data-s="${s}"><i style="width:${Math.min(22, s + 4)}px;height:${Math.min(22, s + 4)}px"></i></button>`).join('')}</div></div>`;
+        b.onclick = e => { const A = Hub.api; if (!A) return; const t = e.target.closest('[data-t]'), c = e.target.closest('[data-c]'), s = e.target.closest('[data-s]'); if (t) A.setTool(t.dataset.t); else if (c) A.setStyle(c.dataset.c, 0); else if (s) A.setStyle(null, +s.dataset.s); };
+      },
+      update(b) { const bd = Hub.api && Hub.api.board; if (!bd) return; $$('[data-t]', b).forEach(x => x.classList.toggle('on', x.dataset.t === bd.tool)); $$('[data-c]', b).forEach(x => x.classList.toggle('on', x.dataset.c.toLowerCase() === (bd.color || '').toLowerCase())); $$('[data-s]', b).forEach(x => x.classList.toggle('on', +x.dataset.s === Math.round(bd.size))); }
+    });
+  }
+};
 
 /* =====================================================================
    Devices — ศูนย์เชื่อมอุปกรณ์ (ฝั่งครู)
@@ -4111,19 +4271,19 @@ const Devices = {
   ident(s) { Live.send(s.id, { t: 'ident', text: s.label || s.name }); },
   async rename(s) { const v = await askText(T('ชื่อเครื่อง', 'Device name'), s.label || s.name); if (v && v.trim()) { s.label = v.trim().slice(0, 30); Live.send(s.id, { t: 'label', text: s.label }); Live.emit(); } },
   kick(s) { Live.send(s.id, { t: 'kick' }); setTimeout(() => { try { s.conn.close(); } catch (e) { } Live.students.delete(s.id); Live.emit(); }, 250); },
-  list() { return [...Live.students.values()].filter(x => x.role === 'display' || x.role === 'remote'); },
+  list() { return [...Live.students.values()].filter(x => x.role === 'display' || x.role === 'remote' || x.role === 'mirror'); },
   /* ---------- หน้าต่างจัดการ ---------- */
   async open() {
-    if (!await Hub.room()) return; const uD = Live.joinUrl('display'), uR = Live.joinUrl('remote');
+    if (!await Hub.room()) return; const uD = Live.joinUrl('display'), uR = Live.joinUrl('remote'), uM = Live.joinUrl('mirror');
     const card = (k, ico, title, desc, url) => `<div class="dev-card"><div class="dev-h"><span class="dev-ico">${ico}</span><div><b>${title}</b><div class="tiny muted">${desc}</div></div></div><div class="dev-qr" data-qr="${k}"></div><input class="inp" readonly value="${esc(url)}" onclick="this.select()" style="font-size:.78rem;text-align:center"><div class="row" style="margin-top:8px;justify-content:center"><button class="btn sm" data-cp="${k}">${ic('copy', 14)} ${T('คัดลอก', 'Copy')}</button><button class="btn sm" data-sh="${k}">${ic('up', 14)} ${T('ส่งลิงก์', 'Share')}</button></div></div>`;
     modal({
       title: T('เชื่อมอุปกรณ์', 'Connect devices'), wide: true,
       body: `<p class="small muted" style="margin-top:0">${T('เปิดลิงก์ หรือสแกน QR บนอุปกรณ์ที่จะเชื่อม (รหัสห้อง', 'Open the link or scan the QR on the device (room code')} <b style="letter-spacing:.12em">${esc(Live.code)}</b>)</p>
-        <div class="dev-grid">${card('display', '🖥', T('จอฉาย', 'Display'), T('Mac / Windows / ทีวี ที่ต่อโปรเจกเตอร์', 'Computer or TV on the projector'), uD)}${card('remote', '✏️', T('รีโมทปากกา', 'Pen remote'), T('iPad / แท็บเล็ต เขียนลงสไลด์ของเครื่องนี้', 'iPad / tablet to write on these slides'), uR)}</div>
+        <div class="dev-grid">${card('display', '🖥', T('จอฉาย', 'Display'), T('Mac / Windows / ทีวี ที่ต่อโปรเจกเตอร์', 'Computer or TV on the projector'), uD)}${card('remote', '✏️', T('รีโมทปากกา', 'Pen remote'), T('iPad / แท็บเล็ต เขียนลงสไลด์ของเครื่องนี้', 'iPad / tablet to write on these slides'), uR)}${card('mirror', '📲', T('มิเรอร์อุปกรณ์', 'Mirror device'), T('ส่งหน้าจอ (คอม/Android) หรือกล้อง (iPad) มาเป็นหน้าต่างสดใน Studio', 'Screen or camera as a live window'), uM)}</div><p class="tiny muted" style="margin:8px 0 0">${T('💡 iPad/iPhone: เว็บจับ “หน้าจอ” ไม่ได้ (ข้อจำกัดของ iOS) — ใช้ “กล้อง” เป็นกล้องเอกสาร หรือ AirPlay ไป Mac แล้วกดแชร์จอ/หน้าต่างนั้นในปุ่ม “แชร์จอ”', 'iOS cannot capture the screen from the web — use the camera, or AirPlay to a Mac and share that window.')}</p>
         <h4 style="margin:16px 0 8px">${T('อุปกรณ์ที่เชื่อมอยู่', 'Connected devices')} <span class="chip" id="devN"></span></h4><div id="devList"></div>`,
       actions: [{ label: T('ปิด', 'Close'), cls: 'pri' }],
       onMount: m => {
-        const urls = { display: uD, remote: uR };
+        const urls = { display: uD, remote: uR, mirror: uM };
         $$('[data-qr]', m).forEach(d => { try { const c = qrCanvas(urls[d.dataset.qr], 300, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; d.appendChild(c); } catch (e) { } });
         $$('[data-cp]', m).forEach(b => b.onclick = async () => { const ok = await copyText(urls[b.dataset.cp]); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); });
         $$('[data-sh]', m).forEach(b => b.onclick = async () => { const u = urls[b.dataset.sh]; if (navigator.share) { try { await navigator.share({ title: CONFIG.appName, url: u }); } catch (e) { } } else { await copyText(u); toast(T('คัดลอกแล้ว', 'Copied'), 'ok', 1400); } });
@@ -4131,9 +4291,9 @@ const Devices = {
         const MODES = [['auto', 'ตามครู'], ['slide', 'สไลด์'], ['screen', 'หน้าจอแชร์'], ['blank', 'จอดำ']];
         const draw = () => {
           const ds = this.list(); N.textContent = ds.length;
-          L.innerHTML = ds.length ? ds.map(s => `<div class="dev-row" data-id="${esc(s.id)}"><span class="dev-ico">${ICON[s.dev] || '🖥'}</span><div style="flex:1;min-width:0"><b>${esc(s.label || s.name)}</b> <span class="chip ${s.role === 'display' ? '' : 'pk'}">${s.role === 'display' ? T('จอฉาย', 'Display') : T('รีโมทปากกา', 'Pen remote')}</span><div class="tiny muted">${esc(s.dev || '')} · ${T('เชื่อมเมื่อ', 'since')} ${new Date(s.joined).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>${s.role === 'display' ? `<div class="seg" style="margin-top:6px">${MODES.map(x => `<button data-m="${x[0]}" class="${(s.mode || 'auto') === x[0] ? 'on' : ''}">${T(x[1], x[0])}</button>`).join('')}</div>` : ''}</div><div class="dev-act"><button class="btn sm" data-a="ident">${T('ระบุเครื่อง', 'Identify')}</button><button class="btn sm" data-a="rename">${ic('edit', 14)}</button><button class="btn sm danger" data-a="kick">${ic('x', 14)}</button></div></div>`).join('') : `<div class="empty" style="padding:18px">${T('ยังไม่มีอุปกรณ์ — สแกน QR ด้านบนเพื่อเชื่อม', 'No device yet')}</div>`;
+          L.innerHTML = ds.length ? ds.map(s => `<div class="dev-row" data-id="${esc(s.id)}"><span class="dev-ico">${ICON[s.dev] || '🖥'}</span><div style="flex:1;min-width:0"><b>${esc(s.label || s.name)}</b> <span class="chip ${s.role === 'display' ? '' : 'pk'}">${s.role === 'display' ? T('จอฉาย', 'Display') : s.role === 'mirror' ? T('มิเรอร์', 'Mirror') : T('รีโมทปากกา', 'Pen remote')}</span><div class="tiny muted">${esc(s.dev || '')} · ${T('เชื่อมเมื่อ', 'since')} ${new Date(s.joined).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>${s.role === 'display' ? `<div class="seg" style="margin-top:6px">${MODES.map(x => `<button data-m="${x[0]}" class="${(s.mode || 'auto') === x[0] ? 'on' : ''}">${T(x[1], x[0])}</button>`).join('')}</div>` : ''}</div><div class="dev-act">${s.role === 'mirror' ? `<button class="btn sm" data-a="mwin">${T('เปิดหน้าต่าง', 'Window')}</button><button class="btn sm ${Mirror.sending(s.id) ? 'pri' : ''}" data-a="msend">${Mirror.sending(s.id) ? T('หยุดส่งจอฉาย', 'Stop') : T('ส่งขึ้นจอฉาย', 'To display')}</button>` : `<button class="btn sm" data-a="ident">${T('ระบุเครื่อง', 'Identify')}</button>`}<button class="btn sm" data-a="rename">${ic('edit', 14)}</button><button class="btn sm danger" data-a="kick">${ic('x', 14)}</button></div></div>`).join('') : `<div class="empty" style="padding:18px">${T('ยังไม่มีอุปกรณ์ — สแกน QR ด้านบนเพื่อเชื่อม', 'No device yet')}</div>`;
         };
-        L.onclick = e => { const row = e.target.closest('.dev-row'); if (!row) return; const s = Live.students.get(row.dataset.id); if (!s) return; const mb = e.target.closest('[data-m]'), ab = e.target.closest('[data-a]'); if (mb) this.setMode(s, mb.dataset.m); else if (ab) { const a = ab.dataset.a; if (a === 'ident') this.ident(s); else if (a === 'rename') this.rename(s); else if (a === 'kick') this.kick(s); } };
+        L.onclick = e => { const row = e.target.closest('.dev-row'); if (!row) return; const s = Live.students.get(row.dataset.id); if (!s) return; const mb = e.target.closest('[data-m]'), ab = e.target.closest('[data-a]'); if (mb) this.setMode(s, mb.dataset.m); else if (ab) { const a = ab.dataset.a; if (a === 'ident') this.ident(s); else if (a === 'mwin') Mirror.win(s.id); else if (a === 'msend') Mirror.toDisplay(s.id); else if (a === 'rename') this.rename(s); else if (a === 'kick') this.kick(s); } };
         draw(); const un = Live.sub(() => { if (!document.body.contains(m)) { un(); return; } draw(); });
       }
     });
@@ -4194,6 +4354,64 @@ function bootRemote(code) {
     status: (s, info) => { const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('เชื่อมต่อแล้ว', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }; $('#rSt').textContent = map[s] || s; $('#rSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn'); const w = $('#rWaitTx'); if (w) w.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for slides…') : (map[s] || s); if (s === 'closed') $('#rWait').classList.remove('hide'); },
     state: () => { }, stream: () => { },
     msg: m => { if (m.t === 'ident') { const e = $('#rIdent'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); setTimeout(() => e.classList.add('hide'), 3000); } else if (m.t === 'label') { $('#rSt').textContent = m.text; } else view.onMsg(m); }
+  });
+}
+
+/* =====================================================================
+   Mirror (ฝั่งครู) — รับภาพสดจากอุปกรณ์ แล้วแสดงเป็นหน้าต่างลอยใน Studio
+   ===================================================================== */
+const Mirror = {
+  map: new Map(),
+  label(pid) { const s = Live.students.get(pid); return s ? (s.label || s.name) : 'Mirror'; },
+  sending(pid) { const m = this.map.get(pid); return !!(m && Live.stream && Live.stream === m.stream); },
+  add(pid, stream, call) {
+    const old = this.map.get(pid); if (old && old.stream !== stream && Live.stream === old.stream) Live.stopStream(true);
+    this.map.set(pid, { stream, call }); this.win(pid); Live.emit(); toast('📲 ' + this.label(pid) + ' ' + T('ส่งภาพมิเรอร์แล้ว', 'is mirroring'), 'ok', 2200);
+  },
+  remove(pid) { const m = this.map.get(pid); if (!m) return; this.map.delete(pid); if (Live.stream === m.stream) Live.stopStream(); try { Win.close('m_' + pid); } catch (e) { } Live.emit(); },
+  clear() { [...this.map.keys()].forEach(k => this.remove(k)); },
+  restore() { this.map.forEach((_, pid) => this.win(pid)); },
+  toDisplay(pid) { const m = this.map.get(pid); if (!m) return toast(T('อุปกรณ์นี้ยังไม่ได้ส่งภาพ', 'No video yet'), 'err', 2200); if (this.sending(pid)) Live.stopStream(); else Live.shareStream(m.stream); Live.emit(); },
+  async snap(pid) {
+    const v = document.querySelector(`[data-win="m_${pid}"] video`), A = Hub.api; if (!v || !v.videoWidth || !A) return toast(T('ยังไม่มีภาพ', 'No frame'), 'err', 1800);
+    const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+    const id = await IMGS.add(c.toDataURL('image/jpeg', .88)); await A.board.addImage(id, c.width, c.height); toast(T('วางภาพลงสไลด์แล้ว (ย้าย/ย่อขยายได้)', 'Placed on the slide'), 'ok', 2200);
+  },
+  win(pid) {
+    const m = this.map.get(pid); if (!m || !Win.layer) return; const M = this;
+    return Win.open('m_' + pid, {
+      title: '📲 ' + this.label(pid), w: 380, h: 300,
+      build(b, w) {
+        b.innerHTML = `<div class="wm"><video autoplay playsinline muted></video><div class="wm-bar"><button data-a="send"></button><button data-a="snap">📸 ${T('วางบนสไลด์', 'To slide')}</button><button data-a="fit">⛶</button></div></div>`;
+        const v = $('video', b); v.srcObject = m.stream; v.play().catch(() => { });
+        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; if (a.dataset.a === 'send') M.toDisplay(pid); else if (a.dataset.a === 'snap') M.snap(pid); else { const W = Win.stage.clientWidth, H = Win.stage.clientHeight; w.W = Math.min(W - 16, 900); w.H = Math.min(H - 16, w.W * .62 + 70); w.x = (W - w.W) / 2; w.y = 8; Win.place(w); Win.persist(w); } };
+      },
+      update(b) { const s = $('[data-a=send]', b); if (s) s.textContent = M.sending(pid) ? '⏹ ' + T('หยุดส่งจอฉาย', 'Stop') : '📤 ' + T('ส่งขึ้นจอฉาย', 'To display'); s.classList.toggle('on', M.sending(pid)); }
+    });
+  }
+};
+
+/* =====================================================================
+   bootMirror — หน้าส่งภาพ (อุปกรณ์ต้นทาง) เปิดด้วย ?mirror=รหัส
+   ===================================================================== */
+function bootMirror(code) {
+  const app = $('#app'); app.className = ''; app.style.cssText = 'display:block;height:100%;overflow:auto'; document.title = 'Mirror · ' + CONFIG.appName; document.body.classList.add('dsp-body');
+  const canScr = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia), canCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  app.innerHTML = `<div class="mir"><div class="mir-card"><div class="dlogo" style="font-size:1.6rem">MIRROR</div><span class="chip warn" id="mSt">…</span>
+    <p class="small" style="color:#b9cbe6;margin:10px 0">${T('เลือกสิ่งที่จะส่งไปเป็นหน้าต่างสดใน Teaching Studio ของครู', 'Pick what to send to the teacher’s Studio')}</p>
+    <video id="mV" autoplay playsinline muted></video>
+    <div class="mir-btns"><button class="btn pri" id="mScr" ${canScr ? '' : 'disabled'}>🖥 ${T('แชร์หน้าจอ', 'Share screen')}</button><button class="btn pri" id="mCamB" ${canCam ? '' : 'disabled'}>📷 ${T('กล้องหลัง', 'Rear camera')}</button><button class="btn" id="mCamF" ${canCam ? '' : 'disabled'}>🤳 ${T('กล้องหน้า', 'Front camera')}</button><button class="btn danger" id="mStop" disabled>⏹ ${T('หยุดส่ง', 'Stop')}</button></div>
+    <p class="tiny" style="color:#b9cbe6" id="mNote">${canScr ? '' : T('อุปกรณ์/เบราว์เซอร์นี้ (เช่น iPad, iPhone) จับ “หน้าจอ” จากเว็บไม่ได้ — ใช้กล้องเป็นกล้องเอกสารได้ หรือใช้ AirPlay ไปยัง Mac แล้วให้ครูแชร์หน้าต่างนั้น', 'This browser cannot capture the screen — use the camera.')}</p></div></div>`;
+  let stream = null, call = null; const st = s => { const e = $('#mSt'); if (e) { e.textContent = s; } };
+  const stop = () => { try { call && call.close(); } catch (e) { } call = null; if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; $('#mV').srcObject = null; $('#mStop').disabled = true; if (LiveClient.status === 'online') st(T('เชื่อมต่อแล้ว — ยังไม่ได้ส่งภาพ', 'connected')); };
+  const place = () => { if (!stream || !LiveClient.peer || LiveClient.status !== 'online') return; try { call && call.close(); } catch (e) { } call = LiveClient.peer.call('sicl-' + code, stream); st(T('กำลังส่งภาพสดไปยังครู', 'Streaming to the teacher')); };
+  const start = async getter => { try { stop(); stream = await getter(); $('#mV').srcObject = stream; $('#mStop').disabled = false; stream.getVideoTracks()[0].addEventListener('ended', stop); place(); } catch (e) { toast(T('เริ่มส่งภาพไม่สำเร็จ: ', 'Failed: ') + (e.name === 'NotAllowedError' ? T('ไม่ได้รับอนุญาต', 'permission denied') : e.message), 'err', 4000); } };
+  const gm = m => navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: m }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+  $('#mScr').onclick = () => start(() => navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: false }));
+  $('#mCamB').onclick = () => start(() => gm('environment')); $('#mCamF').onclick = () => start(() => gm('user')); $('#mStop').onclick = stop;
+  LiveClient.join(code, 'Mirror', 'mirror', {
+    status: (s, info) => { if (s === 'online') { stream ? place() : st(T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); } else st({ connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }[s] || s); if (s === 'closed') stop(); },
+    state: () => { }, stream: () => { }, msg: m => { if (m.t === 'label') st(m.text); }
   });
 }
 
@@ -4279,7 +4497,8 @@ PAGES.studio = {
         tool: t => setTool(t), imgLoaded: () => { scheduleThumb(); scheduleBc(); }
       });
       board.setDoc(doc); Cast.attach(board);
-      Hub.mount(stage, { get board() { return board; }, doc: () => doc, setTool: t => setTool(t), gotoPage: i => gotoPage(i), addPage: () => addPage(), click: id => $s('#' + id).click() });
+      Hub.mount(stage, { get board() { return board; }, doc: () => doc, setTool: t => setTool(t), gotoPage: i => gotoPage(i), addPage: () => addPage(), click: id => $s('#' + id).click(), setStyle: (c, s) => { if (c) board.color = c; if (s) board.size = s; curDot(); } });
+      Win.mount(stage);
       stage.insertAdjacentHTML('beforeend', `
         <div class="pgnav"><button id="pPrev" aria-label="prev">${ic('chevL', 18)}</button><span id="pNo" class="small" style="min-width:48px;text-align:center;font-weight:700"></span><button id="pNext" aria-label="next">${ic('chevR', 18)}</button></div>
         <div class="live-chip hide" id="lvChip"></div>
@@ -4581,7 +4800,7 @@ PAGES.studio = {
       shareMode = 'off'; if (Live.active) Live.stopStream(); updLive();
     }
     return () => {
-      alive = false; Hub.unmount(); Cast.detach(); clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
+      alive = false; Win.unmount(); Hub.unmount(); Cast.detach(); clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
       if (keyH) document.removeEventListener('keydown', keyH); if (fsH) document.removeEventListener('fullscreenchange', fsH);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
       if (doc) { doc.updated = Date.now(); IDB.put('lessons', doc).catch(() => { }); const i = DB.lessons.findIndex(x => x.id === doc.id); if (i >= 0) { DB.lessons[i] = lessonMeta(doc); save(); } }
@@ -5889,6 +6108,7 @@ const DEFAULT_TERMS = 'ใช้งานเพื่อการเรียน
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
   if (j && /^\d{6}$/.test(j)) return bootStudent(j, 'student', qp.get('name') || '');
   if (d && /^\d{6}$/.test(d)) return bootDisplay(d);
+  const mr = qp.get('mirror'); if (mr && /^\d{6}$/.test(mr)) return bootMirror(mr);
   const rm = qp.get('remote'); if (rm && /^\d{6}$/.test(rm)) return bootRemote(rm);
   buildShell(); window.addEventListener('hashchange', route); route();
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
