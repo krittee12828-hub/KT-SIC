@@ -308,7 +308,7 @@ body.dsp-body{background:#000;overflow:hidden}
 .dsp.hud .dhud{opacity:1}
 
 /* ---------- Hub (วงกลมเมนู) ---------- */
-.hub{position:absolute;inset:0;pointer-events:none;z-index:9}.hub>*{pointer-events:auto}
+.hub{position:absolute;inset:0;pointer-events:none;z-index:11}.hub>*{pointer-events:auto}
 .hub-bg{position:absolute;inset:0;background:rgba(20,43,74,.14);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px)}
 .hub-disc{position:absolute;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95) 0,rgba(255,255,255,.78) 55%,rgba(255,255,255,.35) 80%,rgba(255,255,255,0) 100%);pointer-events:none}
 .hub-c{position:absolute;transform:translate(-50%,-50%);border-radius:50%;border:0;background:linear-gradient(145deg,#F2B8C6,#e58fa5);color:#142B4A;display:grid;place-items:center;box-shadow:0 8px 24px rgba(20,43,74,.35),inset 0 1px 0 rgba(255,255,255,.5);cursor:grab;touch-action:none;z-index:3;padding:0;-webkit-tap-highlight-color:transparent}
@@ -548,6 +548,27 @@ body.dsp-body{background:#000;overflow:hidden}
 .dk-nm{font-size:1.6rem;font-weight:800;text-align:center;margin:4px 0;word-break:break-word}.dk.big .dk-nm{font-size:2.4rem}
 .dk-l{margin-top:8px;display:flex;flex-direction:column;gap:4px;max-height:240px;overflow:auto}.dk-r{display:flex;align-items:center;gap:6px;font-size:.88rem}.dk-r span{flex:2;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dk-r button{height:32px;flex:none;min-width:44px}
 @media (max-width:760px){.dk{width:200px}.dk-n{font-size:2rem}}
+
+/* ======== Pop-up ผลลัพธ์ (จับเวลา / สุ่ม / ถามด่วน / กลุ่ม) ======== */
+.pop-layer{position:absolute;inset:0;pointer-events:none;z-index:10;display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:62px;overflow:hidden}
+.pop-layer.pop-remote{position:fixed;z-index:35;top:0;bottom:auto;left:0;right:0;padding-top:72px;max-height:100%}
+.pop-layer.empty{display:none}
+.pp{pointer-events:auto;min-width:min(440px,92vw);max-width:94vw;background:rgba(20,43,74,.97);color:#fff;border-radius:24px;box-shadow:0 18px 54px rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.16);padding:10px 20px 16px;text-align:center;animation:ppIn .2s ease-out}
+@keyframes ppIn{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:none}}
+.pp-h{display:flex;align-items:center;gap:8px;margin-bottom:2px}.pp-h b{flex:1;text-align:left;font-size:1rem;color:#F2B8C6}
+.pp-h button{width:34px;height:34px;border:0;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;font-size:1.2rem;cursor:pointer;font-family:inherit}.pp-h button:hover{background:rgba(255,255,255,.28)}
+.pp-n{font-size:clamp(4rem,13vmin,8.5rem);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.03em;line-height:1.05;margin:2px 0 8px}
+.pp-bar{height:10px;border-radius:6px;background:rgba(255,255,255,.16);overflow:hidden}.pp-bar i{display:block;height:100%;background:#F2B8C6;transition:width .25s linear}
+.pp-c{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.pp-c button{min-width:64px;height:44px;padding:0 14px;border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit}.pp-c button:hover{background:rgba(255,255,255,.28)}.pp-c button.bad{background:rgba(217,69,95,.55)}.pp-c button.on{background:#F2B8C6;color:#142B4A}.pp-c button[disabled]{opacity:.4}
+.pp-timer.pause .pp-n{color:#ffcf6e}.pp-timer.low{background:#7a1f33;animation:dpulse .8s infinite}.pp-timer.low .pp-n{color:#fff}.pp-timer.done{background:#a3213d;box-shadow:0 0 0 4px #fff,0 18px 54px rgba(163,33,61,.6)}.pp-timer.done .pp-n{font-size:clamp(2.6rem,8vmin,5rem);animation:dkBl .8s infinite}
+.pp-nm{font-size:clamp(2.4rem,8vmin,5.4rem);font-weight:800;color:#fff;word-break:break-word;margin:6px 0}.pp-pick.roll .pp-nm{opacity:.75}.pp-pick.done{box-shadow:0 0 0 4px #F2B8C6,0 18px 54px rgba(0,0,0,.45)}.pp-pick.done .pp-nm{color:#F2B8C6}
+.pp-poll{text-align:left;min-width:min(380px,92vw)}.pp-poll .hp-r{margin:7px 0}.pp-poll .hp-l{color:#F2B8C6;font-weight:800;width:2em;text-align:center}.pp-poll .hp-b{background:rgba(255,255,255,.14)}.pp-poll .hp-b i{background:#F2B8C6}.pp-poll b{color:#fff}
+.pp-gg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;text-align:left;margin-top:6px;max-height:50vh;overflow:auto}.pp-gi{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 12px}.pp-gi b{display:block;color:#F2B8C6}.pp-gi span{font-size:.9rem;color:#dcebfa}
+/* จอฉาย: จับเวลาแบบป๊อปอัปใหญ่กลางบน */
+.wd.timer.big{position:fixed;left:50%;top:5vh;transform:translateX(-50%);z-index:12;min-width:min(520px,60vw);padding:18px 56px 22px;pointer-events:none}
+.wd.timer.big .num{font-size:clamp(5rem,17vw,14rem);line-height:1}.wd.timer.big .lab{font-size:clamp(1rem,2vw,1.6rem)}.wd.timer.big .bar{height:14px}
+.wd.timer.done.big .num{font-size:clamp(3rem,10vw,8rem);animation:dkBl .8s infinite}
 
 </style>
 </head>
@@ -4402,14 +4423,15 @@ const Hub = {
   /* ---------- ฟีเจอร์ ---------- */
   async room() { if (Live.active) return true; const ok = await Live.start(); if (ok) { this.push(); } return ok; },
   setFrozen(on) { this.frozen = !!on; Cast.setFrozen(this.frozen); try { Live.setState({ fz: this.frozen }); } catch (e) { } toast(this.frozen ? '❄ ' + T('หยุดภาพบนจอฉาย — ครูเตรียมหน้าถัดไปได้เงียบๆ', 'Display frozen') : T('ปล่อยภาพ — จอฉายตามทันแล้ว', 'Display live again'), 'ok', 2600); this.draw(); },
-  timer(sec) { this.w = Object.assign({}, this.w, { timer: { end: Date.now() + sec * 1000, total: sec, label: '', paused: false } }); this.push(); this.hint(); this.draw(); },
+  timer(sec) { this.w = Object.assign({}, this.w, { timer: { id: 'tm' + Date.now(), end: Date.now() + sec * 1000, total: sec, label: '', paused: false, big: true } }); try { Pop.host && Pop.host.reopen('timer'); } catch (e) { } this.push(); this.hint(); this.draw(); },
   timerAdd(sec) { const t = this.w.timer; if (!t) return this.timer(Math.max(60, sec)); const n = Object.assign({}, t); if (t.paused) n.left = Math.max(1, (t.left || 0) + sec); else n.end = Math.max(Date.now() + 1000, t.end + sec * 1000); n.total = Math.max(1, (t.total || 0) + sec); n._done = false; this.w = Object.assign({}, this.w, { timer: n }); this.push(); this.draw(); },
+  timerBig(on) { const t = this.w.timer; if (!t) return; this.w = Object.assign({}, this.w, { timer: Object.assign({}, t, { big: !!on }) }); if (on) { try { Pop.host && Pop.host.reopen('timer'); } catch (e) { } } this.push(); this.draw(); },
   timerPause() { const t = this.w.timer; if (!t) return; const n = Object.assign({}, t); if (t.paused) { n.paused = false; n.end = Date.now() + t.left * 1000; } else { n.paused = true; n.left = Math.max(0, (t.end - Date.now()) / 1000); } this.w = Object.assign({}, this.w, { timer: n }); this.push(); this.draw(); },
   async pick() {
     const cc = curClass(); const all = wheelPool(cc, true); if (!all.length) return toast(T('ยังไม่มีรายชื่อนักเรียน — ไปที่เมนู “ห้องเรียน” เพื่อเพิ่ม หรือสร้างรายการในหน้า “สุ่มนักเรียน”', 'No students in this class'), 'err', 3600);
     let pool = all.filter(s => !this.picked.has(s.id)); if (!pool.length) { this.picked.clear(); pool = all.slice(); }
     const final = pool[Math.floor(Math.random() * pool.length)]; this.hint(); const gid = this._pk = Date.now();
-    for (let i = 0; i < 16; i++) { const nm = i === 15 ? final.name : all[Math.floor(Math.random() * all.length)].name; this.w = Object.assign({}, this.w, { pick: { name: nm }, groups: null }); this.push(); try { Snd.tick(); } catch (e) { } await sleep(70 + i * 16); if (this._pk !== gid) return; }
+    for (let i = 0; i < 16; i++) { const nm = i === 15 ? final.name : all[Math.floor(Math.random() * all.length)].name; this.w = Object.assign({}, this.w, { pick: { name: nm, done: i === 15 }, groups: null }); this.push(); try { Snd.tick(); } catch (e) { } await sleep(70 + i * 16); if (this._pk !== gid) return; }
     this.picked.add(final.id); try { if (!final.pseudo) Teach.evId('pick', final.id); Teach.tool('pick'); } catch (e) { } try { Snd.win(); } catch (e) { } toast('🎯 ' + final.name, 'ok', 3500);
     setTimeout(() => { if (this._pk === gid && this.w.pick && this.w.pick.name === final.name) { this.w = Object.assign({}, this.w, { pick: null }); this.push(); } }, 20000);
   },
@@ -4902,7 +4924,7 @@ const Dock = {
   },
   unmount() { clearInterval(this.iv); this.iv = 0; if (this.el) this.el.remove(); this.el = null; this.stage = null; },
   list() {
-    const w = Hub.w || {}, out = []; if (w.timer) out.push('timer'); if (Teach.on()) out.push('att'); if (Hub.poll) out.push('poll'); if (w.pick) out.push('pick'); return out;
+    const w = Hub.w || {}, out = []; if (w.timer && !Pop.shown('timer')) out.push('timer'); if (Teach.on()) out.push('att'); if (Hub.poll && !Pop.shown('poll')) out.push('poll'); if (w.pick && !Pop.shown('pick')) out.push('pick'); return out;
   },
   cnt() {
     const t = Teach.cur, cc = Teach.cls(), c = { p: 0, t: 0, l: 0, a: 0, n: 0, tot: 0 }; if (!t || !cc) return c; c.tot = cc.students.length; cc.students.forEach(s => { const k = t.att[s.id]; if (k && c[k] != null) c[k]++; else c.n++; }); return c;
@@ -4952,7 +4974,7 @@ const Dock = {
   },
   click(e) {
     const b = e.target.closest('[data-d]'); if (!b) return; const card = b.closest('.dk'), id = card && card.dataset.id, d = b.dataset.d, S = this.st(); if (b.disabled) return;
-    if (d === 'min') { S.min[id] = !S.min[id]; save(); } else if (d === 'big') { S.big[id] = !S.big[id]; if (S.big[id]) S.min[id] = false; save(); }
+    if (d === 'big' && id === 'timer') Hub.timerBig(true); else if (d === 'min') { S.min[id] = !S.min[id]; save(); } else if (d === 'big') { S.big[id] = !S.big[id]; if (S.big[id]) S.min[id] = false; save(); }
     else if (d === 'tx') { Hub.w = Object.assign({}, Hub.w, { timer: null }); Hub.push(); Hub.draw(); }
     else if (d === 't-1') Hub.timerAdd(-60); else if (d === 't+1') Hub.timerAdd(60); else if (d === 't+5') Hub.timerAdd(300); else if (d === 'tp') Hub.timerPause();
     else if (d === 'aopen') Teach.setOpen(!(Teach.cur && Teach.cur.open)); else if (d === 'aall') Teach.markAll('p', true); else if (d === 'awin') Win.attend();
@@ -4962,6 +4984,68 @@ const Dock = {
     this.tick(true);
   }
 };
+
+/* =====================================================================
+   Pop — ป๊อปอัปแสดงผลฟีเจอร์ที่มีผลลัพธ์ (จับเวลา · สุ่มชื่อ · ถามด่วน · กลุ่ม) ใช้ร่วมกันใน Studio และ iPad/รีโมท
+   เริ่มจากอุปกรณ์ไหนก็ตาม (วงกลมเมนู · หน้าต่าง · iPad · ปุ่มลัด) → ป๊อปอัปขึ้นที่ทุกเครื่องที่ครูใช้ควบคุม
+   จับเวลา = ตัวเลขใหญ่ชัด + แถบเวลา + ปุ่ม −1/+1/+5, หยุด/ต่อ, ยกเลิก · “–” ย่อลงเหลือการ์ดเล็ก (ย่อ/ขยายมีผลทุกจอ: จอฉายก็เปลี่ยนเป็นการ์ดเล็ก)
+   ช่วง 10 วินาทีสุดท้ายและตอนหมดเวลา ป๊อปอัปจะเด้งกลับมาอัตโนมัติ
+   ===================================================================== */
+class Pop {
+  constructor(root, o) {
+    this.o = o; this.hid = {}; this.vis = new Set(); this.sig = '';
+    const el = this.el = document.createElement('div'); el.className = 'pop-layer ' + (o.cls || ''); root.appendChild(el);
+    el.onclick = e => this.click(e); this.iv = setInterval(() => this.tick(), 250); this.tick(true);
+  }
+  destroy() { clearInterval(this.iv); this.el.remove(); if (Pop.host === this) Pop.host = null; }
+  static shown(k) { return !!(Pop.host && Pop.host.vis.has(k)); }
+  w() { try { return this.o.getW() || {}; } catch (e) { return {}; } }
+  left(t) { return t.paused ? t.left : (t.end - Date.now()) / 1000; }
+  mmss(s) { s = Math.max(0, Math.ceil(s)); const h = Math.floor(s / 3600); return (h ? h + ':' : '') + String(Math.floor(s / 60) % 60).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+  want() {
+    const w = this.w(), out = [], t = w.timer; ['timer', 'pick', 'poll', 'groups'].forEach(k => { if (!w[k] || (k === 'groups' && !w.groups.length)) delete this.hid[k]; });
+    if (t) { const l = this.left(t), h = this.hid.timer; if (h !== t.id + 'L' && (l <= 10 || (h !== t.id && t.big !== false))) out.push('timer'); } else delete this.hid.timer;
+    if (w.pick && !this.hid.pick) out.push('pick'); if (w.poll && !this.hid.poll) out.push('poll'); if (w.groups && w.groups.length && !this.hid.groups) out.push('groups');
+    return out;
+  }
+  reopen(k) { delete this.hid[k]; this.tick(true); }
+  html(k, w) {
+    const A = !!this.o.act, btn = (a, l, c, x) => `<button class="${c || ''}" data-p="${a}" ${x || ''}>${l}</button>`;
+    const head = (t, min) => `<div class="pp-h"><b>${t}</b>${min ? `<button data-p="${min}" title="${T('ย่อเป็นการ์ดเล็ก', 'Minimize')}">–</button>` : ''}</div>`;
+    if (k === 'timer') {
+      const t = w.timer; return `<div class="pp pp-timer" data-k="timer">${head('⏱ ' + esc(t.label || T('จับเวลา', 'Timer')), 'tmin')}<div class="pp-n" data-n>--:--</div><div class="pp-bar"><i data-b></i></div>
+        ${A ? `<div class="pp-c">${btn('tadd:-60', '−1')}${btn('tadd:60', '+1')}${btn('tadd:300', '+5')}${btn('tpause', t.paused ? '▶ ' + T('เล่นต่อ', 'Resume') : '⏸ ' + T('หยุด', 'Pause'))}${btn('tx', '✕ ' + T('ยกเลิก', 'Cancel'), 'bad')}</div>` : ''}</div>`;
+    }
+    if (k === 'pick') {
+      const p = w.pick; return `<div class="pp pp-pick ${p.done === false ? 'roll' : 'done'}" data-k="pick">${head('🎯 ' + (p.done === false ? T('กำลังสุ่ม…', 'Picking…') : T('ผู้ได้รับเลือก', 'Selected')), '')}<div class="pp-nm">${esc(p.name)}</div>${A ? `<div class="pp-c">${btn('pick', '🎲 ' + T('สุ่มใหม่', 'Again'))}${btn('pclr', '✕ ' + T('ปิด', 'Close'))}</div>` : `<div class="pp-c">${btn('hide:pick', '✕ ' + T('ปิด', 'Close'))}</div>`}</div>`;
+    }
+    if (k === 'poll') {
+      const p = w.poll, mx = Math.max(1, ...p.counts); return `<div class="pp pp-poll" data-k="poll">${head('❓ ' + T('ถามด่วน', 'Quick poll') + ' · ' + T('ตอบแล้ว', 'answered') + ' ' + p.n, 'hide:poll')}${p.labels.map((l, i) => `<div class="hp-r"><span class="hp-l">${esc(l)}</span><div class="hp-b"><i style="width:${p.counts[i] / mx * 100}%"></i></div><b>${p.counts[i]}</b></div>`).join('')}${A ? `<div class="pp-c">${btn('pc', T('ปิดรับ', 'Close'), '', p.open ? '' : 'disabled')}${btn('ps', p.show ? T('ซ่อนผลบนจอ', 'Hide on screen') : T('โชว์บนจอฉาย', 'Show on screen'), p.show ? 'on' : '')}${btn('px', T('จบ', 'End'), 'bad')}</div>` : ''}</div>`;
+    }
+    if (k === 'groups') {
+      const g = w.groups; return `<div class="pp pp-groups" data-k="groups">${head('👥 ' + T('กลุ่ม', 'Groups'), '')}<div class="pp-gg">${g.map(x => `<div class="pp-gi"><b>${esc(x.name)}</b><span>${x.members.map(esc).join(', ')}</span></div>`).join('')}</div><div class="pp-c">${A ? btn('pclr', '✕ ' + T('ล้างจอ', 'Clear')) : btn('hide:groups', '✕ ' + T('ปิด', 'Close'))}</div></div>`;
+    }
+    return '';
+  }
+  tick(force) {
+    const w = this.w(), ks = this.want(), t = w.timer, p = w.poll;
+    const sig = ks.join() + '|' + (t ? t.id + (t.paused ? 'P' : 'R') + t.total + (t.big === false ? 'm' : '') : '') + '|' + (w.pick ? w.pick.name + w.pick.done : '') + '|' + (p ? p.counts.join() + p.n + p.show + p.open : '') + '|' + (w.groups ? w.groups.length : '');
+    if (force || sig !== this.sig) { this.sig = sig; this.vis = new Set(ks); this.el.innerHTML = ks.map(k => { try { return this.html(k, w); } catch (e) { return ''; } }).join(''); this.el.classList.toggle('empty', !ks.length); try { this.o.onChange && this.o.onChange(this.vis); } catch (e) { } }
+    const card = this.el.querySelector('.pp-timer');
+    if (t) {
+      const l = this.left(t), txt = this.mmss(l);
+      if (card) { const n = card.querySelector('[data-n]'), b = card.querySelector('[data-b]'); n.textContent = l <= 0 ? T('หมดเวลา!', "Time's up!") : txt; b.style.width = Math.max(0, Math.min(100, l / (t.total || 1) * 100)) + '%'; card.classList.toggle('low', l <= 10 && l > 0); card.classList.toggle('done', l <= 0); card.classList.toggle('pause', !!t.paused); }
+      if (this.o.onTimer) this.o.onTimer(t, l, txt, this.vis.has('timer'));
+      if (l <= 0 && !t._buzzed && this.o.buzz) { t._buzzed = true; try { this.o.buzz(); } catch (e) { } }
+    } else if (this.o.onTimer) this.o.onTimer(null);
+  }
+  click(e) {
+    const b = e.target.closest('[data-p]'); if (!b || b.disabled) return; const [a, arg] = b.dataset.p.split(':'); const w = this.w();
+    if (a === 'hide') { this.hid[arg] = true; this.tick(true); return; }
+    if (a === 'tmin') { if (w.timer) this.hid.timer = w.timer.id + (this.left(w.timer) <= 10 ? 'L' : ''); if (this.o.act) this.o.act('tmin', false); this.tick(true); return; }
+    if (this.o.act) this.o.act(a, arg === undefined ? undefined : +arg || arg);
+  }
+}
 
 /* =====================================================================
    Devices — ศูนย์เชื่อมอุปกรณ์ (ฝั่งครู)
@@ -5021,6 +5105,8 @@ const Devices = {
         else if (c === 'zoom' && A) A.click(m.d > 0 ? 'bZi' : m.d < 0 ? 'bZo' : 'bFit');
         else if (c === 'timer') { const mi = +m.m; if (mi >= 0.25 && mi <= 180) Hub.timer(Math.round(mi * 60)); else { Hub.w = Object.assign({}, Hub.w, { timer: null }); Hub.push(); Hub.draw(); } }
         else if (c === 'tpause') Hub.timerPause();
+        else if (c === 'tadd') Hub.timerAdd(this.num(m.s, -600, 600, 0));
+        else if (c === 'tmin') Hub.timerBig(!!m.on);
         else if (c === 'pick') Hub.pick();
         else if (c === 'pgrp') Hub.showGroups();
         else if (c === 'pclr') { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null, msg: null }); Hub.push(); Hub.draw(); }
@@ -5193,7 +5279,7 @@ function bootRemote(code) {
   const COLS = ['#142B4A', '#e03131', '#1c7ed6', '#2f9e44', '#111111', '#d6336c'];
   app.innerHTML = `<div class="dsp rmt hud" id="rmt"><div class="dmain"><div class="dstage" id="rStage"></div>
       <div class="dwait" id="rWait"><div class="dlogo">PEN REMOTE</div><div id="rWaitTx">${T('กำลังเชื่อมต่อ…', 'Connecting…')}</div></div></div>
-    <div class="rtop"><span class="chip" id="rSt">…</span><span class="chip" id="rPg"></span><span class="chip warn hide" id="rZm" style="cursor:pointer"></span><span class="chip hide" id="rMd1"></span><span class="chip hide" id="rMd2"></span><span class="chip hide" id="rMd3"></span></div>
+    <div class="rtop"><span class="chip" id="rSt">…</span><span class="chip" id="rPg"></span><span class="chip warn hide" id="rZm" style="cursor:pointer"></span><span class="chip warn hide" id="rTm" style="cursor:pointer"></span><span class="chip hide" id="rMd1"></span><span class="chip hide" id="rMd2"></span><span class="chip hide" id="rMd3"></span></div>
     <div class="rtop2" id="rt2">${[['sheet', '📑', T('สไลด์', 'Slides'), T('สไลด์ทั้งหมด', 'Slides')], ['zout', '−', T('ย่อ', 'Out'), ''], ['fit', '⤢', T('พอดี', 'Fit'), ''], ['zin', '＋', T('ขยาย', 'In'), ''], ['finger', '👆', T('นิ้ว', 'Finger'), T('นิ้ว: เขียน / ปัดเปลี่ยนหน้า', 'Finger: draw / swipe pages')], ['more', '🧰', T('เครื่องมือ', 'Tools'), T('จับเวลา สุ่ม ถามด่วน เช็คชื่อ คุมจอฉาย', 'Timer, pick, poll, attendance, screen')], ['file', '📂', T('ไฟล์', 'File'), T('เปิดไฟล์ PDF/รูปจาก iPad ขึ้นจอฉาย', 'Send a PDF/image to the presentation')], ['fs', '⛶', T('เต็มจอ', 'Full'), '']].map(x => `<button class="rb2" data-k="${x[0]}"${x[0] === 'finger' ? ' id="rFg"' : ''} title="${x[3] || x[2]}"><span class="ri">${x[1]}</span><small>${x[2]}</small></button>`).join('')}</div>
     <div class="rsheet hide" id="rSheet"><div class="rsh-h"><b>📑 ${T('สไลด์ทั้งหมด — แตะเพื่อไปหน้านั้น', 'All slides — tap to jump')}</b><span style="flex:1"></span><button class="rb2" data-k="addpage">＋ ${T('เพิ่มหน้า', 'Add page')}</button><button class="rb2" data-k="closesheet">✕</button></div><div class="rsh-g" id="rShG"></div></div>
     <div class="rsheet rtools hide" id="rMore"><div class="rsh-h"><b>🧰 ${T('เครื่องมือ', 'Tools')}</b><div class="rtabs" id="rTabs">${[['tm', '⏱', T('เวลา', 'Timer')], ['pk', '🎯', T('สุ่ม', 'Pick')], ['pl', '❓', T('ถามด่วน', 'Poll')], ['at', '📋', T('เช็คชื่อ', 'Attend')], ['sc', '📽', T('จอฉาย', 'Screen')]].map(x => `<button class="rb2" data-tab="${x[0]}"><span class="ri">${x[1]}</span><small>${x[2]}</small></button>`).join('')}</div><span style="flex:1"></span><button class="rb2" data-k="closemore">✕</button></div><div class="rt-body" id="rTb"></div></div>
@@ -5229,6 +5315,10 @@ function bootRemote(code) {
   };
   $$('#rt2 [data-k], #rSheet [data-k], #rMore [data-k]').forEach(b => { if (fnk[b.dataset.k]) b.onclick = () => fnk[b.dataset.k](); });
   const tools = remoteTools(R, () => $('#rMore'), $('#rTb'));
+  const rsend = o => LiveClient.send(Object.assign({ t: 'cmd' }, o));
+  const pop = new Pop($('#rmt'), { cls: 'pop-remote', getW: () => (R.st && R.st.w) || {}, buzz: () => { try { navigator.vibrate && navigator.vibrate([300, 150, 300, 150, 500]); } catch (e) { } },
+    act: (a, v) => ({ tmin: () => rsend({ c: 'tmin', on: false }), tadd: () => rsend({ c: 'tadd', s: +v }), tpause: () => rsend({ c: 'tpause' }), tx: () => rsend({ c: 'timer', m: 0 }), pick: () => rsend({ c: 'pick' }), pclr: () => rsend({ c: 'pclr' }), pc: () => rsend({ c: 'poll', k: 'close' }), ps: () => rsend({ c: 'poll', k: 'show' }), px: () => rsend({ c: 'poll', k: 'end' }) })[a]?.(),
+    onTimer: (t, l, txt, vis) => { const c = $('#rTm'); if (!c) return; if (t && !vis) { c.textContent = '⏱ ' + (l <= 0 ? T('หมดเวลา!', "Time's up!") : txt); c.classList.remove('hide'); c.onclick = () => { pop.reopen('timer'); rsend({ c: 'tmin', on: true }); }; } else c.classList.add('hide'); } });
   $$('#rTabs [data-tab]').forEach(b => b.onclick = () => { R.tab = b.dataset.tab; tools.render(true); });
   let lastSig = ''; setInterval(() => { const sh = $('#rSheet'); if (!sh || sh.classList.contains('hide')) { lastSig = ''; return; } const sig = view.pid + '|' + view.pages.size; if (sig !== lastSig) { lastSig = sig; drawSheet(); reqTh(0); } }, 900);
   let wl = null; const wake = async () => { try { if (navigator.wakeLock) wl = await navigator.wakeLock.request('screen'); } catch (e) { } }; wake(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake(); });
@@ -5753,7 +5843,7 @@ PAGES.studio = {
       });
       board.setDoc(doc); Cast.attach(board);
       Hub.mount(stage, { get board() { return board; }, doc: () => doc, setTool: t => setTool(t), gotoPage: i => gotoPage(i), addPage: () => addPage(), click: id => $s('#' + id).click(), importFiles: fl => { fl = [...fl]; const pdf = fl.find(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf'); if (pdf) return importPdf(pdf); const im = fl.filter(f => /^image\//.test(f.type)); if (im.length) return importImagePages(im); }, setStyle: (c, s) => { if (c) board.color = c; if (s) board.size = s; curDot(); } });
-      Win.mount(stage); Dock.mount(stage);
+      Win.mount(stage); Dock.mount(stage); Pop.host = new Pop(stage, { cls: 'pop-host', getW: () => { const w = Object.assign({}, Hub.w); return w; }, buzz: () => { }, act: (a, v) => { const t = Hub.w.timer; ({ tmin: () => Hub.timerBig(false), tadd: () => Hub.timerAdd(+v), tpause: () => Hub.timerPause(), tx: () => { Hub.w = Object.assign({}, Hub.w, { timer: null }); Hub.push(); Hub.draw(); }, pick: () => Hub.pick(), pclr: () => { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null }); Hub.push(); }, pc: () => Hub.pollAct('close'), ps: () => Hub.pollAct('show'), px: () => Hub.pollAct('end') })[a]?.(); } });
       stage.insertAdjacentHTML('beforeend', `
         <div class="pgnav"><button id="pPrev" aria-label="prev">${ic('chevL', 18)}</button><span id="pNo" class="small" style="min-width:48px;text-align:center;font-weight:700"></span><button id="pNext" aria-label="next">${ic('chevR', 18)}</button></div>
         <div class="live-chip hide" id="lvChip"></div>
@@ -6092,7 +6182,7 @@ PAGES.studio = {
       shareMode = 'off'; if (mine && Live.stream === mine) Live.stopStream(); updLive();
     }
     return () => {
-      alive = false; cancelAnimationFrame(vidRaf); clearInterval(fxIv); Win.onChange = null; Win.unmount(); Dock.unmount(); Hub.unmount(); Cast.detach(); try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
+      alive = false; cancelAnimationFrame(vidRaf); clearInterval(fxIv); Win.onChange = null; Win.unmount(); Dock.unmount(); try { Pop.host && Pop.host.destroy(); } catch (e) { } Hub.unmount(); Cast.detach(); try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
       if (keyH) document.removeEventListener('keydown', keyH); if (fsH) document.removeEventListener('fullscreenchange', fsH);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
       if (doc) { doc.updated = Date.now(); IDB.put('lessons', doc).catch(() => { }); const i = DB.lessons.findIndex(x => x.id === doc.id); if (i >= 0) { DB.lessons[i] = lessonMeta(doc); save(); } }
@@ -6750,7 +6840,7 @@ function bootDisplay(code) {
     dsp.style.setProperty('--ftop', (w.msg && !split) ? '104px' : '16px'); box.innerHTML = h;
     if (w.qr) { try { const c = qrCanvas(w.qr, 360, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; $('#wdQr', box).appendChild(c); } catch (e) { } }
     const bl = w.blank || S.mode === 'blank'; $('#dBlank').classList.toggle('hide', !bl); $('#dBlank').innerHTML = bl ? `<div>${typeof w.blank === 'string' ? esc(w.blank) : ''}</div>` : '';
-    clearInterval(tmr); if (w.timer) { const tick = () => { const t = (S.state.w || {}).timer; if (!t) return; const l = timerLeft(t), n = $('#wdTn'); if (!n) return; n.textContent = fmt(l); const wt = $('#wdT'); wt.classList.toggle('low', l <= 10 && l > 0); wt.classList.toggle('done', l <= 0); const b = $('#wdTb'); if (b) b.style.width = Math.max(0, Math.min(100, l / (t.total || 1) * 100)) + '%'; }; tick(); tmr = setInterval(tick, 250); }
+    clearInterval(tmr); if (w.timer) { const tick = () => { const t = (S.state.w || {}).timer; if (!t) return; const l = timerLeft(t), n = $('#wdTn'); if (!n) return; n.textContent = fmt(l); const wt = $('#wdT'); wt.classList.toggle('low', l <= 10 && l > 0); wt.classList.toggle('done', l <= 0); wt.classList.toggle('big', t.big !== false || l <= 10); n.textContent = l <= 0 ? '⏰ ' + T('หมดเวลา!', "Time's up!") : fmt(l); const b = $('#wdTb'); if (b) b.style.width = Math.max(0, Math.min(100, l / (t.total || 1) * 100)) + '%'; }; tick(); tmr = setInterval(tick, 250); }
   }
 
   /* ---------- โจทย์ควิซบนจอฉาย ---------- */
