@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#142B4A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -242,6 +243,11 @@ table.t td{padding:9px 10px;border-bottom:1px solid #eef2f8;vertical-align:middl
 .sup-amt button{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 16px;font-weight:700;color:var(--navy);cursor:pointer}
 .sup-amt button.on{background:var(--pink);border-color:var(--pink)}
 
+/* ---------- DevGate: คำขอเชื่อมอุปกรณ์ที่รอครูอนุญาต ---------- */
+#devGate{position:fixed;left:14px;bottom:86px;z-index:650;display:flex;flex-direction:column;gap:10px;width:min(360px,calc(100vw - 28px))}#devGate.hide{display:none}
+#devGate .dg{background:#fff;border:2px solid var(--pink2);border-radius:16px;padding:12px 14px;box-shadow:0 12px 36px rgba(20,43,74,.35);animation:up .25s}
+#devGate .dg .row{margin-top:8px;gap:6px}
+@media (min-width:861px){#devGate{left:calc(var(--side) + 16px);bottom:24px}}
 /* ---------- responsive ---------- */
 @media (max-width:1180px){.tb{flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100% - 20px);overflow:visible}.tb .vsep{display:none}}
 @media (max-width:1024px){
@@ -2921,6 +2927,17 @@ const CONFIG = {
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+/* ---------- ความปลอดภัย: ตัวกรองข้อมูลจากภายนอก (นักเรียน / ไฟล์นำเข้า / ลิงก์) ---------- */
+const BAD_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const safeParse = txt => JSON.parse(txt, (k, v) => BAD_KEYS.has(k) ? undefined : v);                       // ตัดคีย์อันตราย (prototype pollution) ตอนอ่าน JSON จากไฟล์/ที่เก็บ
+const safeUrl = u => { u = String(u || '').trim(); if (!/^https?:\/\//i.test(u)) return ''; try { return new URL(u).href; } catch (e) { return ''; } };   // รับเฉพาะ http/https (กัน javascript: / data:)
+const cleanName = (v, max = 40) => {                                                                          // ชื่อที่นักเรียนพิมพ์: ตัดอักขระควบคุม/ซ่อน/สลับทิศ, ย่อช่องว่าง, กันชื่อที่ชนคีย์ระบบ
+  let t = String(v ?? '').normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  if (BAD_KEYS.has(t.toLowerCase()) || /^(hasownproperty|tostring|valueof|tolocalestring|isprototypeof|__\w+__)$/i.test(t)) t = '_' + t; return t;
+};
+const PENDING_TX = () => T('รอครูอนุญาตอุปกรณ์นี้…', 'Waiting for the teacher to allow this device…');
+const DENY_TX = why => ({ locked: T('ห้องนี้ปิดรับนักเรียนเพิ่มแล้ว — แจ้งครูให้เปิดรับ', 'This room is locked — ask your teacher'), kicked: T('ครูเชิญคุณออกจากห้องนี้', 'The teacher removed you from this room'), full: T('ห้องเต็มหรือมีผู้ขอเชื่อมต่อมากเกินไป ลองใหม่ภายหลัง', 'Room is full or busy — try again later'), no: T('ครูไม่อนุญาตอุปกรณ์นี้', 'The teacher declined this device'), busy: T('มีคำขอรออยู่มากเกินไป ลองใหม่ภายหลัง', 'Too many pending requests') }[why] || T('เข้าห้องไม่ได้', 'Cannot join'));
+function keepAwake() { let wl = null; const get = async () => { try { if (navigator.wakeLock && !document.hidden && !wl) { wl = await navigator.wakeLock.request('screen'); wl.addEventListener('release', () => { wl = null; }); } } catch (e) { } }; get(); document.addEventListener('visibilitychange', get); }
 const uid = (p = '') => p + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -2941,7 +2958,7 @@ function downloadBlob(name, data, type = 'text/plain') {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
 }
 function toCSV(rows) {
-  return '﻿' + rows.map(r => r.map(c => { c = String(c ?? ''); return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(',')).join('\r\n');
+  return '﻿' + rows.map(r => r.map(c => { c = String(c ?? ''); if (/^[=+\-@\t\r]/.test(c) && !/^[-+]?\d+([.,]\d+)?$/.test(c)) c = "'" + c; return /[",\n\r]/.test(c) ? '"' + c.replace(/"/g, '""') + '"' : c; }).join(',')).join('\r\n');
 }
 function parseCSV(text) {
   const rows = []; let row = [], cur = '', q = false;
@@ -3085,8 +3102,8 @@ function loadDB() {
   const d = defaultDB();
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) { const o = JSON.parse(raw); for (const k in o) { d[k] = (k === 'support' || k === 'settings' || k === 'wheel' || k === 'game') ? Object.assign(d[k], o[k]) : o[k]; } }
-  } catch (e) { console.warn('โหลดข้อมูลไม่สำเร็จ', e); }
+    if (raw) { const o = safeParse(raw); for (const k in o) { d[k] = (k === 'support' || k === 'settings' || k === 'wheel' || k === 'game') ? Object.assign(d[k], o[k]) : o[k]; } }
+  } catch (e) { console.warn('โหลดข้อมูลไม่สำเร็จ', e); try { const raw = localStorage.getItem(LS_KEY); if (raw) localStorage.setItem(LS_KEY + '.corrupt', raw); } catch (e2) { } }   // เก็บสำเนาข้อมูลที่อ่านไม่ได้ไว้ ก่อนที่ค่าเริ่มต้นจะเขียนทับ
   return d;
 }
 let DB = loadDB();
@@ -3713,9 +3730,9 @@ function supportAdmin(el) {
    ===================================================================== */
 const peerOpts = () => Object.assign({ debug: 0 }, CONFIG.peer || {});
 const Live = {
-  active: false, code: null, peer: null, students: new Map(), state: { view: 'none', status: 'idle' },
+  active: false, code: null, peer: null, students: new Map(), locked: false, banned: new Map(), known: new Map(), state: { view: 'none', status: 'idle' },
   stream: null, calls: new Map(), lastBoard: null, submissions: [], listeners: new Set(), onAnswer: null, starting: null,
-  emit() { this.listeners.forEach(f => { try { f(); } catch (e) { console.error(e); } }); if (typeof refreshLiveChip === 'function') refreshLiveChip(); },
+  emit() { this.listeners.forEach(f => { try { f(); } catch (e) { console.error(e); } }); if (typeof refreshLiveChip === 'function') refreshLiveChip(); if (typeof DevGate !== 'undefined') DevGate.draw(); },
   sub(f) { this.listeners.add(f); return () => this.listeners.delete(f); },
   joinUrl(kind = 'join') {
     const base = (DB.settings.publicUrl || (location.origin + location.pathname)).split('#')[0].split('?')[0];
@@ -3742,10 +3759,10 @@ const Live = {
         if (!this.peer) throw new Error('ไม่สามารถสร้างห้องได้');
         this.active = true; if (typeof logEvent === 'function') logEvent('live', 'open ' + this.code);
         this.peer.on('connection', c => this._onConn(c));
-        this.peer.on('call', c => { try { c.answer(); } catch (e) { } c.on('stream', st => { if (typeof Mirror !== 'undefined') Mirror.add(c.peer, st, c); }); c.on('close', () => { if (typeof Mirror !== 'undefined') Mirror.remove(c.peer); }); c.on('error', () => { }); });
+        this.peer.on('call', c => { const ms = this.students.get(c.peer); if (!ms || ms.role !== 'mirror' || ms.gated) { try { c.close(); } catch (e) { } return; } try { c.answer(); } catch (e) { } c.on('stream', st => { if (typeof Mirror !== 'undefined') Mirror.add(c.peer, st, c); }); c.on('close', () => { if (typeof Mirror !== 'undefined') Mirror.remove(c.peer); }); c.on('error', () => { }); });
         this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch (e) { } });
         this.peer.on('error', e => { console.warn('peer error', e); });
-        this.emit();
+        this.emit(); keepAwake();
         return true;
       } catch (e) {
         console.error(e); toast(T('เปิดห้องสดไม่สำเร็จ: ', 'Cannot open live room: ') + (e.message || e.type || ''), 'err', 4500);
@@ -3757,47 +3774,92 @@ const Live = {
     this.broadcast({ t: 'closed' });
     this.stopStream(); if (typeof Mirror !== 'undefined') Mirror.clear(); if (typeof CoHost !== 'undefined') CoHost.clear();
     try { this.peer && this.peer.destroy(); } catch (e) { }
-    this.peer = null; this.active = false; this.students.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.emit();
+    this.peer = null; this.active = false; this.students.clear(); this.locked = false; this.banned.clear(); this.known.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.emit();
   },
   _onConn(conn) {
-    conn.on('data', msg => { try { this._handle(conn, msg); } catch (e) { console.error(e); } });
-    conn.on('close', () => { const s = this.students.get(conn.peer); if (s) { this.students.delete(conn.peer); if (s.role === 'mirror' && typeof Mirror !== 'undefined') Mirror.remove(conn.peer); if (s.role === 'co' && typeof CoHost !== 'undefined') CoHost.remove(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
+    /* ด่านแรก: ห้องเต็ม / ถูกบล็อกชั่วคราว → ปฏิเสธทันที */
+    if (this.students.size >= (CONFIG.maxConn || 400) || (this.banned.get(conn.peer) || 0) > Date.now()) { conn.on('open', () => { try { conn.send({ t: 'denied', why: 'full' }); } catch (e) { } setTimeout(() => { try { conn.close(); } catch (e) { } }, 250); }); return; }
+    const meta = { t0: Date.now(), n: 0, bad: 0 };
+    const hto = setTimeout(() => { if (!this.students.has(conn.peer)) { try { conn.close(); } catch (e) { } } }, 20000);   // เชื่อมแล้วไม่ทักทายใน 20 วิ → ตัดทิ้ง (กันกินช่องเชื่อมต่อ)
+    conn.on('data', msg => { if (!this._rate(conn, meta)) return; try { this._handle(conn, msg); } catch (e) { console.error(e); } });
+    conn.on('close', () => { clearTimeout(hto); const s = this.students.get(conn.peer); if (s && s.conn === conn) { this.students.delete(conn.peer); if (s.role === 'mirror' && typeof Mirror !== 'undefined') Mirror.remove(conn.peer); if (s.role === 'co' && typeof CoHost !== 'undefined') CoHost.remove(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
     conn.on('error', () => { });
+  },
+  /* จำกัดอัตราข้อความ: นักเรียน/อุปกรณ์ที่ยังไม่อนุญาต ≤ 60 ข้อความ/5 วินาที (อุปกรณ์ที่ครูอนุญาตแล้ว เช่น รีโมทเขียนถี่ ไม่ถูกจำกัด) */
+  _rate(conn, meta) {
+    const now = Date.now(); if (now - meta.t0 > 5000) { meta.t0 = now; meta.n = 0; }
+    const s = this.students.get(conn.peer); if (s && s.conn === conn && s.role !== 'student' && !s.gated) return true;
+    if (++meta.n <= 60) return true;
+    if (++meta.bad > 40) { this.banned.set(conn.peer, now + 60000); try { conn.close(); } catch (e) { } }
+    return false;
+  },
+  kick(s, ban = true) {
+    this.send(s.id, { t: 'kick' }); const cid = s.cid;
+    if (ban) { this.banned.set(s.id, Date.now() + 600000); if (cid) this.banned.set('c:' + cid, Date.now() + 600000); }
+    setTimeout(() => { try { s.conn.close(); } catch (e) { } if (this.students.get(s.id) === s) this.students.delete(s.id); this.emit(); }, 250);
+  },
+  _submit(s, m) {
+    const f = m.file; if (typeof f !== 'string' || f.length > 3e6 || !/^data:image\/(png|jpeg|webp|gif);base64,[A-Za-z0-9+\/=]+$/.test(f)) return;   // รับเฉพาะภาพ base64 (กันสคริปต์/ไฟล์แปลกปลอมที่ถูกใส่ใน HTML ของครู)
+    if (this.submissions.length >= 80 || this.submissions.filter(x => x.by === s.id).length >= 5) { toast(`${s.name}: ${T('ส่งงานเกินจำนวนที่กำหนด', 'too many submissions')}`, 'err', 2200); return; }
+    this.submissions.unshift({ id: uid('sb_'), by: s.id, name: s.name, file: f, fname: cleanName(m.fname, 80), ts: Date.now() }); this.emit(); toast(`${s.name} ${T('ส่งงานแล้ว', 'submitted work')}`, 'ok');
+  },
+  /* รับเข้าห้องอย่างเป็นทางการ (หลังผ่านด่านอนุญาตอุปกรณ์แล้ว) */
+  _admit(s, m, prev) {
+    s.gated = false; try { s.conn.send({ t: 'welcome', name: s.name, state: Object.assign({}, this.state, { ts: Date.now() }), board: this.lastBoard }); } catch (e) { }
+    if (this.stream) this._call(s);
+    if (s.role === 'display' || s.role === 'remote') { s.imgs = new Set(); if (typeof Cast !== 'undefined') Cast.onJoin(s); if (s.role === 'display' && typeof CoHost !== 'undefined') CoHost.onDisplayJoin(s); }
+    if (s.role === 'co') CoHost.onJoin(s);
+    if (s.role === 'student') { if (!prev) toast(`${s.name} ${T('เข้าห้องแล้ว', 'joined')}`, 'ok', 1800); if (typeof Teach !== 'undefined') Teach.onHello(s, m); }
+    this.emit();
   },
   _handle(conn, m) {
     if (!m || typeof m !== 'object') return;
     if (m.t === 'hello') {
-      let name = String(m.name || '').trim().slice(0, 40) || 'Guest', role = ['display', 'remote', 'mirror', 'co'].includes(m.role) ? m.role : 'student'; const dev = String(m.dev || '').slice(0, 30);
-      if (role === 'student') { const names = new Set([...this.students.values()].filter(s => s.role === 'student').map(s => s.name)); let n = name, i = 2; while (names.has(n)) n = name + ' (' + (i++) + ')'; name = n; }
-      const custom = role === 'mirror' ? String(m.name || '').trim().slice(0, 30) : '', base = (custom && custom !== 'Mirror') ? custom : (dev || (role === 'display' ? 'Display' : role === 'co' ? 'Device 2' : 'Remote'));
-      const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, base, conn, joined: Date.now(), hand: false, handAt: 0 };
+      const role = ['display', 'remote', 'mirror', 'co'].includes(m.role) ? m.role : 'student';
+      const idOf = v => /^[\w-]{8,64}$/.test(String(v || '')) ? String(v) : '';
+      const cid = idOf(m.cid), did = idOf(m.did);
+      let name = cleanName(m.name) || 'Guest'; const dev = cleanName(m.dev, 30);
+      const deny = why => { try { conn.send({ t: 'denied', why }); } catch (e) { } setTimeout(() => { try { conn.close(); } catch (e) { } }, 250); };
+      let prev = null;
+      if (role === 'student') {
+        if (cid && (this.banned.get('c:' + cid) || 0) > Date.now()) return deny('kicked');
+        prev = cid ? [...this.students.values()].find(x => x.role === 'student' && x.cid === cid) || null : null;      // กลับเข้าห้องซ้ำ (เน็ตหลุด/รีเฟรช) → คงชื่อ แต้ม ยกมือ เดิม
+        if (!prev && this.locked && !(cid && this.known.has(cid))) return deny('locked');   // ล็อกห้อง: คนที่เคยเข้าแล้วหลุด ยังกลับเข้าได้
+        if (prev) { name = prev.name; if (prev.conn !== conn) { this.students.delete(prev.id); try { prev.conn.close(); } catch (e) { } } }
+        else { const names = new Set([...this.students.values()].filter(s => s.role === 'student').map(s => s.name)); let n = name, i = 2; while (names.has(n)) n = name + ' (' + (i++) + ')'; name = n; }
+      } else if (did && (this.banned.get('d:' + did) || 0) > Date.now()) return deny('no');
+      const custom = role === 'mirror' ? cleanName(m.name, 30) : '', base = (custom && custom !== 'Mirror') ? custom : (dev || (role === 'display' ? 'Display' : role === 'co' ? 'Device 2' : 'Remote'));
+      const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, base, conn, joined: Date.now(), hand: false, handAt: 0, cid, did };
+      if (prev) { s.hand = prev.hand; s.handAt = prev.handAt; s.sid = prev.sid; s.joined = prev.joined; }
       if (role !== 'student') { const same = [...this.students.values()].filter(x => x.role !== 'student' && x.base === base).length; s.label = base + (same ? ' ' + (same + 1) : ''); s.name = s.label; }
-      this.students.set(conn.peer, s);
-      conn.send({ t: 'welcome', name: s.name, state: Object.assign({}, this.state, { ts: Date.now() }), board: this.lastBoard });
-      if (this.stream) this._call(s);
-      if (role === 'display' || role === 'remote') { s.imgs = new Set(); if (typeof Cast !== 'undefined') Cast.onJoin(s); if (role === 'display' && typeof CoHost !== 'undefined') CoHost.onDisplayJoin(s); }
-      if (role === 'co') CoHost.onJoin(s);
-      if (role === 'student') { toast(`${s.name} ${T('เข้าห้องแล้ว', 'joined')}`, 'ok', 1800); if (typeof Teach !== 'undefined') Teach.onHello(s, m); }
-      this.emit(); return;
+      /* ด่านอนุญาตอุปกรณ์: จอฉาย/รีโมท/มิเรอร์ ต้องให้ครูกดอนุญาตก่อน (ยกเว้นอุปกรณ์ที่เชื่อถือแล้ว) — บทบาทนี้ผู้เชื่อมเป็นฝ่ายระบุเอง จึงห้ามเข้าได้เองโดยไม่ถามครู */
+      const trusted = !!(did && DB.settings.trustDev && DB.settings.trustDev[did]);
+      const gate = role !== 'student' && role !== 'co' && DB.settings.devApprove !== false && !trusted;
+      if (gate) {
+        if ([...this.students.values()].filter(x => x.gated).length >= 4) return deny('busy');
+        s.gated = true; this.students.set(conn.peer, s); try { conn.send({ t: 'pending' }); } catch (e) { } this.emit(); return;
+      }
+      if (role === 'student' && cid) this.known.set(cid, Date.now());
+      this.students.set(conn.peer, s); this._admit(s, m, prev); return;
     }
-    const s = this.students.get(conn.peer); if (!s) return;
-    if (s.role !== 'student') { if (typeof Devices !== 'undefined') Devices.onMsg(s, m); return; }
+    const s = this.students.get(conn.peer); if (!s || s.conn !== conn) return;
+    if (s.role !== 'student') { if (s.gated) return; if (typeof Devices !== 'undefined') Devices.onMsg(s, m); return; }
     if (m.t === 'answer' && this.onAnswer) { if (typeof Teach !== 'undefined') Teach.ev('ans', s); this.onAnswer(s, m); }
     else if (m.t === 'ck') { if (typeof Teach !== 'undefined') Teach.onCk(s, m); }
     else if (m.t === 'hand') { if (m.on && !s.hand && typeof Teach !== 'undefined') Teach.ev('hand', s); s.hand = !!m.on; s.handAt = Date.now(); this.emit(); }
-    else if (m.t === 'submit' && typeof m.file === 'string' && m.file.length < 3e6) { this.submissions.unshift({ id: uid('sb_'), name: s.name, file: m.file, fname: String(m.fname || ''), ts: Date.now() }); this.emit(); toast(`${s.name} ${T('ส่งงานแล้ว', 'submitted work')}`, 'ok'); }
+    else if (m.t === 'submit') this._submit(s, m);
     else if (m.t === 'cast') {   /* นักเรียนขอรับสไลด์สดแบบเวกเตอร์ (ลายเส้นสด/เลเซอร์/ซูมตามครู) — ok = วาดหน้าแรกได้แล้ว จึงหยุดส่งภาพนิ่งให้คนนี้ */
       if (m.on === false) { s.cast = false; s.castOk = false; } else if (m.on) { if (!s.cast) { s.cast = true; s.imgs = new Set(); s.castOk = false; if (typeof Cast !== 'undefined') Cast.onJoin(s); } }
       if (m.ok && s.cast) s.castOk = true;
     }
     else if (m.t === 'note') { /* reserved */ }
   },
-  send(id, msg) { const s = this.students.get(id); if (s && s.conn.open) { try { s.conn.send(msg); } catch (e) { } } },
-  broadcast(msg) { this.students.forEach(s => { if (s.conn.open) { try { s.conn.send(msg); } catch (e) { } } }); },
+  send(id, msg) { const s = this.students.get(id); if (s && !s.gated && s.conn.open) { try { s.conn.send(msg); } catch (e) { } } },
+  broadcast(msg) { this.students.forEach(s => { if (!s.gated && s.conn.open) { try { s.conn.send(msg); } catch (e) { } } }); },
   setState(patch) { this.state = Object.assign({}, this.state, patch, { ts: Date.now() }); this.broadcast({ t: 'state', s: this.state }); this.emit(); },
   sendBoard(img) { this.lastBoard = img; this.students.forEach(s => { if (s.role === 'student' && !s.castOk && s.conn.open) { try { s.conn.send({ t: 'board', img }); } catch (e) { } } }); },
   _call(s) {
-    if (!this.stream || !this.peer || s.role === 'mirror' || s.role === 'co') return; if (s.role === 'remote' && !this.state.ovl) return;
+    if (!this.stream || !this.peer || s.gated || s.role === 'mirror' || s.role === 'co') return; if (s.role === 'remote' && !this.state.ovl) return;
     try { const c = this.peer.call(s.id, this.stream); this.calls.set(s.id, c); c.on('close', () => this.calls.delete(s.id)); } catch (e) { console.warn(e); }
   },
   shareStream(stream, opts) { this.stopStream(true); this.stream = stream; this.setState({ view: 'screen', ovl: !!(opts && opts.ovl) }); this.students.forEach(s => this._call(s)); },
@@ -3805,7 +3867,7 @@ const Live = {
     this.calls.forEach(c => { try { c.close(); } catch (e) { } }); this.calls.clear();
     if (this.stream) { this.stream = null; if (!silent) { const patch = { view: this.state.view === 'screen' ? 'board' : this.state.view, ovl: false }; if (this.active) this.setState(patch); else this.state = Object.assign({}, this.state, patch); } }
   },
-  list(role = 'student') { return [...this.students.values()].filter(s => s.role === role); }
+  list(role = 'student') { return [...this.students.values()].filter(s => s.role === role && !s.gated); }
 };
 
 /* ---------- ฝั่งนักเรียน / จอแสดงผล ---------- */
@@ -3814,11 +3876,11 @@ const LiveClient = {
   setStatus(s, info) { this.status = s; this.cb.status && this.cb.status(s, info); },
   async join(code, name, role, cb) {
     Object.assign(this, { code, name, role, cb, left: false, retry: 0 });
-    this.setStatus('connecting');
+    this.setStatus('connecting'); this._wire();
     try { await loadLib('peer'); } catch (e) { this.setStatus('error', e.message); return; }
     this.peer = new Peer(undefined, peerOpts());
     this.peer.on('open', () => this._connect());
-    this.peer.on('call', call => { call.answer(); call.on('stream', st => this.cb.stream && this.cb.stream(st)); call.on('close', () => this.cb.stream && this.cb.stream(null)); });
+    this.peer.on('call', call => { if (call.peer !== Code.pid(this.code)) { try { call.close(); } catch (e) { } return; } call.answer(); call.on('stream', st => this.cb.stream && this.cb.stream(st)); call.on('close', () => this.cb.stream && this.cb.stream(null)); });
     this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch (e) { } });
     this.peer.on('error', e => {
       if (e.type === 'peer-unavailable') this.setStatus('error', T('ไม่พบห้องรหัสนี้ (ตรวจรหัส หรือครูยังไม่ได้เปิดห้อง)', 'Room not found'));
@@ -3826,11 +3888,21 @@ const LiveClient = {
       else this.setStatus('error', e.type || String(e));
     });
   },
+  /* รหัสเครื่อง: cid = ต่อแท็บ (คงเดิมเมื่อรีเฟรช/เน็ตหลุด → กลับเข้าห้องด้วยชื่อ/แต้มเดิม) · did = ต่ออุปกรณ์ (ใช้จำ “อุปกรณ์ที่เชื่อถือ” ของครู) */
+  _id(store, key) { try { let v = store.getItem(key); if (!/^[\w-]{8,64}$/.test(v || '')) { v = Array.from(crypto.getRandomValues(new Uint8Array(12)), x => x.toString(16).padStart(2, '0')).join(''); store.setItem(key, v); } return v; } catch (e) { return this._tmp || (this._tmp = Math.random().toString(36).slice(2) + Date.now().toString(36)); } },
+  cid() { return this._id(sessionStorage, 'sic.cid'); }, did() { return this._id(localStorage, 'sic.did'); },
+  _wire() {
+    if (this._wired) return; this._wired = true;
+    const kick = () => { if (!this.left && this.role && this.status !== 'online' && this.status !== 'closed' && this.status !== 'connecting' && this.status !== 'pending') { this.retry = 0; this._retry(); } };
+    window.addEventListener('online', kick); document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+  },
+  _retry() { if (this.left) return; try { if (this.peer && this.peer.destroyed) { this.join(this.code, this.name, this.role, this.cb); return; } if (this.peer && this.peer.disconnected) { this.peer.reconnect(); return; } this._connect(); } catch (e) { } },
   _connect() {
-    if (this.left) return;
-    const c = this.peer.connect(Code.pid(this.code), { reliable: true }); this.conn = c;
+    if (this.left || (this.conn && this.conn.open)) return;
+    const prevC = this.conn;
+    const c = this.peer.connect(Code.pid(this.code), { reliable: true }); this.conn = c; try { prevC && prevC.close(); } catch (e) { }
     const to = setTimeout(() => { if (!c.open) this.setStatus('error', T('เชื่อมต่อห้องไม่สำเร็จ (เครือข่ายอาจบล็อก WebRTC)', 'Connection timed out')); }, 15000);
-    c.on('open', () => { clearTimeout(to); this.retry = 0; c.send({ t: 'hello', name: this.name, role: this.role, dev: typeof devLabel === 'function' ? devLabel() : '', ck: this.ckInfo || undefined }); });
+    c.on('open', () => { clearTimeout(to); this.retry = 0; c.send({ t: 'hello', name: this.name, role: this.role, dev: typeof devLabel === 'function' ? devLabel() : '', ck: this.ckInfo || undefined, cid: this.cid(), did: this.did() }); });
     c.on('data', m => {
       if (!m) return;
       if (m.t === 'welcome') { this.name = m.name; this.state = m.state || this.state; this.board = m.board; this.setStatus('online'); this.cb.state && this.cb.state(this.state); this.board && this.cb.board && this.cb.board(this.board); }
@@ -3839,10 +3911,12 @@ const LiveClient = {
       else if (m.t === 'result') { this.cb.result && this.cb.result(m); }
       else if (m.t === 'hand') { this.cb.hand && this.cb.hand(!!m.on); }
       else if (m.t === 'closed') { this.setStatus('closed'); }
-      else if (m.t === 'kick') { this.left = true; this.setStatus('closed'); }
+      else if (m.t === 'pending') { this.setStatus('pending'); }
+      else if (m.t === 'denied') { this.left = true; this.setStatus('error', DENY_TX(m.why)); }
+      else if (m.t === 'kick') { this.left = true; this.setStatus('error', DENY_TX('kicked')); }
       else if (this.cb.msg) this.cb.msg(m);
     });
-    c.on('close', () => { if (this.left || this.status === 'closed') return; this.setStatus('reconnecting'); if (this.retry++ < 8) setTimeout(() => { try { this._connect(); } catch (e) { } }, 2500); else this.setStatus('error', T('การเชื่อมต่อขาดหาย', 'Connection lost')); });
+    c.on('close', () => { if (c !== this.conn || this.left || this.status === 'closed') return; this.setStatus('reconnecting'); if (this.retry++ < 40) setTimeout(() => this._retry(), Math.min(2500 + this.retry * 400, 8000)); else this.setStatus('error', T('การเชื่อมต่อขาดหาย', 'Connection lost')); });
   },
   send(m) { if (this.conn && this.conn.open) { this.conn.send(m); return true; } toast(T('ยังไม่ได้เชื่อมต่อ', 'Not connected'), 'err'); return false; },
   leave() { this.left = true; try { this.peer && this.peer.destroy(); } catch (e) { } }
@@ -5263,7 +5337,7 @@ const Devices = {
   ident(s) { Live.send(s.id, { t: 'ident', text: s.label || s.name }); },
   async rename(s) { const v = await askText(T('ชื่อเครื่อง', 'Device name'), s.label || s.name); if (v && v.trim()) { s.label = v.trim().slice(0, 30); Live.send(s.id, { t: 'label', text: s.label }); Live.emit(); } },
   kick(s) { Live.send(s.id, { t: 'kick' }); setTimeout(() => { try { s.conn.close(); } catch (e) { } Live.students.delete(s.id); Live.emit(); }, 250); },
-  list() { return [...Live.students.values()].filter(x => x.role === 'display' || x.role === 'remote' || x.role === 'mirror' || x.role === 'co'); },
+  list() { return [...Live.students.values()].filter(x => !x.gated && (x.role === 'display' || x.role === 'remote' || x.role === 'mirror' || x.role === 'co')); },
   /* ---------- หน้าต่างจัดการ ---------- */
   async open() {
     if (!await Hub.room()) return; const uD = Live.joinUrl('display'), uR = Live.joinUrl('remote'), uM = Live.joinUrl('mirror'), uC = Live.joinUrl('co');
@@ -5279,6 +5353,11 @@ const Devices = {
         $$('[data-qr]', m).forEach(d => { try { const c = qrCanvas(urls[d.dataset.qr], 300, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; d.appendChild(c); } catch (e) { } });
         $$('[data-cp]', m).forEach(b => b.onclick = async () => { const ok = await copyText(urls[b.dataset.cp]); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); });
         $$('[data-sh]', m).forEach(b => b.onclick = async () => { const u = urls[b.dataset.sh]; if (navigator.share) { try { await navigator.share({ title: CONFIG.appName, url: u }); } catch (e) { } } else { await copyText(u); toast(T('คัดลอกแล้ว', 'Copied'), 'ok', 1400); } });
+        { const hh = $('#devList', m).previousElementSibling; const trN = () => Object.keys(DB.settings.trustDev || {}).length;
+          hh.insertAdjacentHTML('beforebegin', `<div class="card flat" style="padding:10px 12px;margin-top:14px"><label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="dvGate" ${DB.settings.devApprove !== false ? 'checked' : ''} style="margin-top:3px"><span><b>🛡 ${T('ขออนุญาตก่อนเชื่อมอุปกรณ์', 'Ask before a device connects')}</b> <span class="muted">${T('(แนะนำ) กันคนที่รู้รหัสห้องเปลี่ยนเป็นรีโมท/จอฉายเข้ามาคุมกระดานของครู', '(recommended)')}</span></span></label><div class="row" style="margin-top:6px"><span class="tiny muted">${T('อุปกรณ์ที่เชื่อถือแล้ว', 'Trusted devices')}: <b id="dvTrN">${trN()}</b></span><button class="btn sm" id="dvTrClr">${T('ล้างรายการ', 'Clear')}</button><span class="sp"></span><label class="small"><input type="checkbox" id="dvLock" ${Live.locked ? 'checked' : ''}> 🔒 ${T('ล็อกห้อง ไม่รับนักเรียนเพิ่ม', 'Lock room')}</label></div></div>`);
+          $('#dvGate', m).onchange = e => { DB.settings.devApprove = e.target.checked; save(); if (!e.target.checked) toast(T('ปิดการขออนุญาต — ใครมีรหัสห้องก็เชื่อมเป็นอุปกรณ์ได้ทันที', 'Approval is off'), 'err', 3200); };
+          $('#dvLock', m).onchange = e => { Live.locked = e.target.checked; };
+          $('#dvTrClr', m).onclick = () => { DB.settings.trustDev = {}; save(); $('#dvTrN', m).textContent = '0'; }; }
         const L = $('#devList', m), N = $('#devN', m), ICON = { iPad: '📱', iPhone: '📱', Android: '📱', 'Android Tablet': '📱', Windows: '🖥', Mac: '💻', Chromebook: '💻', Linux: '🖥' };
         const MODES = [['auto', 'ตามครู'], ['slide', 'สไลด์'], ['screen', 'หน้าจอแชร์'], ['blank', 'จอดำ']];
         const draw = () => {
@@ -5289,6 +5368,33 @@ const Devices = {
         draw(); const un = Live.sub(() => { if (!document.body.contains(m)) { un(); return; } draw(); });
       }
     });
+  }
+};
+
+/* =====================================================================
+   DevGate — ด่านอนุญาตอุปกรณ์: จอฉาย/รีโมท/มิเรอร์ ที่ใส่รหัสห้องเข้ามา ต้องให้ครูกดอนุญาตก่อน
+   (รหัสห้องอยู่ใน QR ที่นักเรียนสแกน — ถ้าไม่มีด่านนี้ ใครรู้รหัสก็สลับเป็น ?remote= แล้วคุมกระดานครูได้)
+   ===================================================================== */
+const DevGate = {
+  key: '',
+  box() { let b = $('#devGate'); if (!b) { b = document.createElement('div'); b.id = 'devGate'; b.className = 'hide'; b.onclick = e => { const a = e.target.closest('[data-a]'), row = e.target.closest('.dg'); if (!a || !row) return; const s = Live.students.get(row.dataset.id); if (s && s.gated) this[a.dataset.a](s); }; document.body.appendChild(b); } return b; },
+  roleLabel(r) { return r === 'display' ? T('จอฉาย', 'Display') : r === 'mirror' ? T('มิเรอร์', 'Mirror') : T('รีโมทปากกา / iPad', 'Pen remote / iPad'); },
+  draw() {
+    const ps = [...Live.students.values()].filter(x => x.gated), key = ps.map(x => x.id).join('|');
+    if (key === this.key) return; const b = this.box(); const added = ps.some(x => !this.key.includes(x.id)); this.key = key;
+    b.classList.toggle('hide', !ps.length);
+    b.innerHTML = ps.map(s => `<div class="dg" data-id="${esc(s.id)}"><div><b>🔔 ${esc(s.label || s.name)}</b> <span class="chip pk">${this.roleLabel(s.role)}</span></div><div class="tiny muted" style="margin-top:4px">${T('ขอเชื่อมต่อด้วยรหัสห้อง — เป็นอุปกรณ์ของคุณหรือไม่?', 'Wants to join with the room code — is this your device?')}</div><div class="row"><button class="btn sm pri" data-a="ok">${T('อนุญาต', 'Allow')}</button><button class="btn sm" data-a="always" title="${T('ครั้งต่อไปไม่ต้องถามอีก', 'Do not ask again for this device')}">${T('อนุญาตเสมอ', 'Always')}</button><button class="btn sm danger" data-a="no">${T('ไม่อนุญาต', 'Deny')}</button></div></div>`).join('');
+    if (added) { try { navigator.vibrate && navigator.vibrate(60); } catch (e) { } }
+  },
+  ok(s, always) {
+    if (always && s.did) { DB.settings.trustDev = DB.settings.trustDev || {}; DB.settings.trustDev[s.did] = { label: s.label || s.name, role: s.role, ts: Date.now() }; save(); }
+    Live._admit(s, {}, null); toast('✔ ' + (s.label || s.name) + ' ' + T('เชื่อมต่อแล้ว', 'connected'), 'ok', 1800);
+  },
+  always(s) { this.ok(s, true); },
+  no(s) {
+    try { s.conn.send({ t: 'denied', why: 'no' }); } catch (e) { }
+    if (s.did) Live.banned.set('d:' + s.did, Date.now() + 600000);
+    Live.students.delete(s.id); setTimeout(() => { try { s.conn.close(); } catch (e) { } }, 250); Live.emit();
   }
 };
 
@@ -5485,7 +5591,7 @@ function bootRemote(code) {
   cv.addEventListener('pointerup', e => { const w = R.sw; if (w && w.id === e.pointerId) { R.sw = null; const dx = e.clientX - w.x, dy = e.clientY - w.y; if (Math.abs(dx) > 70 && Math.abs(dy) < Math.abs(dx) * .6 && performance.now() - w.t < 700) LiveClient.send({ t: 'cmd', c: 'page', d: dx < 0 ? 1 : -1 }); return; } end(e); }); cv.addEventListener('pointercancel', e => { if (R.sw) { R.sw = null; return; } end(e); });
   /* ---- เชื่อมต่อ ---- */
   LiveClient.join(code, 'Remote', 'remote', {
-    status: (s, info) => { const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('เชื่อมต่อแล้ว', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }; $('#rSt').textContent = map[s] || s; $('#rSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn'); const w = $('#rWaitTx'); if (w) w.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for slides…') : (map[s] || s); if (s === 'closed') $('#rWait').classList.remove('hide'); },
+    status: (s, info) => { const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), pending: PENDING_TX(), online: T('เชื่อมต่อแล้ว', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }; $('#rSt').textContent = map[s] || s; $('#rSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn'); const w = $('#rWaitTx'); if (w) w.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for slides…') : (map[s] || s); if (s === 'closed') $('#rWait').classList.remove('hide'); },
     state: st => { R.st = st || {}; refreshLayer(); modeChips(); tools.render(); }, stream: s => { R.stream = s; refreshLayer(); },
     msg: m => { if (m.t === 'att') { R.att = m; tools.render(); } else if (m.t === 'attsum') { R.attSum = m.text || ''; tools.render(true); } else if (m.t === 'fileack') { toast((m.ok ? '✔ ' : '✖ ') + m.msg, m.ok ? 'ok' : 'err', 3500); } else if (m.t === 'th') { m.items.forEach(x => TH.set(x.id, x.img)); drawSheet(); if (m.next >= 0 && !$('#rSheet').classList.contains('hide')) reqTh(m.next); } else if (m.t === 'ident') { const e = $('#rIdent'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); setTimeout(() => e.classList.add('hide'), 3000); } else if (m.t === 'label') { $('#rSt').textContent = m.text; } else view.onMsg(m); }
   });
@@ -5592,7 +5698,7 @@ function bootMirror(code) {
   $('#mName').onchange = sendName; $('#mName').onkeydown = e => { if (e.key === 'Enter') { e.target.blur(); } };
   $('#mV').onclick = () => { const v = $('#mV'); try { (v.requestFullscreen || v.webkitRequestFullscreen || (() => { })).call(v); } catch (e) { } };
   LiveClient.join(code, saved || 'Mirror', 'mirror', {
-    status: (s, info) => { if (s === 'online') { stream ? place() : st('● ' + T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); } else st({ connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }[s] || s); if (s === 'closed') stop(); },
+    status: (s, info) => { if (s === 'online') { stream ? place() : st('● ' + T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); } else st({ connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), pending: PENDING_TX(), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }[s] || s); if (s === 'closed') stop(); },
     state: () => { }, stream: () => { }, msg: m => { if (m.t === 'label') st(m.text); }
   });
 }
@@ -5637,7 +5743,7 @@ const Co = {
         const draw = () => {
           if (!document.body.contains(mm)) { un && un(); return; }
           if (!this.on()) {
-            const st = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('Studio หลักปิดห้องแล้ว', 'closed'), error: this.info || 'error', idle: '' }[this.status] || '';
+            const st = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), pending: PENDING_TX(), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('Studio หลักปิดห้องแล้ว', 'closed'), error: this.info || 'error', idle: '' }[this.status] || '';
             box.innerHTML = `<p class="small muted" style="margin-top:0">${T('ที่ Studio หลักกด “เชื่อมอุปกรณ์” → การ์ด “เครื่องนำเสนอที่ 2” แล้วสแกน QR หรือกรอกรหัสห้องที่นี่ — เครื่องนี้จะยังใช้สไลด์/กระดานของตัวเองได้อิสระ', 'On the main Studio open Devices → “Second presenter”, scan the QR or enter its 6-digit code.')}</p>
               <div class="row" style="gap:8px"><input class="inp" id="coCode" placeholder="ABCD-EFGH" value="${esc(this.code || '')}" style="max-width:200px;font-size:1.3rem;letter-spacing:.12em;text-align:center"><button class="btn pri" id="coGo">${T('เชื่อมต่อ', 'Connect')}</button></div>${st ? `<p class="small" style="margin:10px 0 0"><span class="chip ${this.status === 'error' || this.status === 'closed' ? 'bad' : 'warn'}">${esc(st)}</span></p>` : ''}`;
             Code.bind($('#coCode', box)); const go = () => { const v = Code.norm($('#coCode', box).value); if (!v) return toast(T('กรอกรหัสห้อง เช่น ABCD-EFGH', 'Enter the room code, e.g. ABCD-EFGH'), 'err', 1800); this.connect(v); };
@@ -5883,7 +5989,7 @@ PAGES.lessons = {
       $('#fPdf', el).onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const d = await createLesson(f.name.replace(/\.pdf$/i, ''), false); sessionStorage.setItem('sic.pendingPdf', '1'); window._pendingPdf = f; go('studio/' + d.id); };
       $('#fJson', el).onchange = async e => {
         const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-        try { const d = JSON.parse(await readFile(f, 'text')); if (!d || !Array.isArray(d.pages)) throw new Error('bad'); if (d._imgs) { for (const k in d._imgs) await IDB.put('imgs', d._imgs[k], k); delete d._imgs; } d.id = uid('l_'); await IDB.put('lessons', d); DB.lessons.unshift(lessonMeta(d)); saveNow(); toast(T('นำเข้าแล้ว', 'Imported')); draw(); } catch (er) { toast(T('ไฟล์ไม่ถูกต้อง', 'Invalid file'), 'err'); }
+        try { const d = safeParse(await readFile(f, 'text')); if (!d || !Array.isArray(d.pages)) throw new Error('bad'); if (d._imgs) { for (const k in d._imgs) await IDB.put('imgs', d._imgs[k], k); delete d._imgs; } d.id = uid('l_'); await IDB.put('lessons', d); DB.lessons.unshift(lessonMeta(d)); saveNow(); toast(T('นำเข้าแล้ว', 'Imported')); draw(); } catch (er) { toast(T('ไฟล์ไม่ถูกต้อง', 'Invalid file'), 'err'); }
       };
       $$('[data-open]', el).forEach(b => b.onclick = () => go('studio/' + b.dataset.open));
       $$('[data-ren]', el).forEach(b => b.onclick = async () => { const l = DB.lessons.find(x => x.id === b.dataset.ren); const n = await askText(T('เปลี่ยนชื่อ', 'Rename'), l.name); if (n && n.trim()) { const d = await IDB.get('lessons', l.id); if (d) { d.name = n.trim(); await IDB.put('lessons', d); } l.name = n.trim(); save(); draw(); } });
@@ -6192,12 +6298,13 @@ PAGES.studio = {
       const w = document.createElement('div'); w.className = 'media-win'; w.id = 'mw'; let inner = '', title = '';
       if (file) { const u = URL.createObjectURL(file); w._u = u; title = file.name; inner = file.type.startsWith('audio') ? `<audio controls src="${u}" autoplay></audio>` : `<video controls playsinline src="${u}" autoplay></video>`; }
       else {
+        url = safeUrl(url); if (!url) { toast(T('ลิงก์ไม่ถูกต้อง (รองรับเฉพาะ http/https)', 'Invalid link (http/https only)'), 'err', 3000); return; }
         title = url; let m;
         if ((m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/.exec(url))) inner = `<iframe src="https://www.youtube.com/embed/${m[1]}?rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
         else if ((m = /vimeo\.com\/(\d+)/.exec(url))) inner = `<iframe src="https://player.vimeo.com/video/${m[1]}" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
         else if (/\.(mp4|webm|ogg|m4v|mov)(\?|$)/i.test(url)) inner = `<video controls playsinline src="${esc(url)}"></video>`;
         else if (/\.(mp3|wav|m4a|aac|oga)(\?|$)/i.test(url)) inner = `<audio controls src="${esc(url)}"></audio>`;
-        else inner = `<iframe src="${esc(url)}" referrerpolicy="no-referrer"></iframe>`;
+        else inner = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"></iframe>`;
       }
       w.innerHTML = `<div class="mh"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(title)}</span><span>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="color:#9fc2f0;margin-right:10px">${T('เปิดในแท็บใหม่', 'open')}</a>` : ''}<button class="btn ghost icon sm" style="color:#fff;min-height:26px;width:26px" id="mx">${ic('x', 16)}</button></span></div>${inner}`;
       $s('#stage').appendChild(w); $('#mx', w).onclick = () => { if (w._u) URL.revokeObjectURL(w._u); w.remove(); };
@@ -6557,7 +6664,7 @@ function roomPanel(el, opts = {}) {
         <div class="small muted">${T('รหัสห้อง', 'Room code')}</div><div class="code-big">${Live.code}</div>
         <div class="qr-box" id="qrJ" style="margin:8px 0"></div>
         <div class="tiny muted" style="word-break:break-all">${esc(url)}</div>
-        <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm" id="cpJ">${ic('copy', 14)} ${T('คัดลอกลิงก์นักเรียน', 'Copy student link')}</button><button class="btn sm" id="cpD">${ic('screen', 14)} ${T('ลิงก์จอแสดงผล', 'Display link')}</button><a class="btn sm" href="${esc(url)}&name=ทดสอบ" target="_blank" rel="noopener">${ic('play', 14)} ${T('ทดลองเป็นนักเรียน', 'Test as student')}</a></div>
+        <div class="row" style="justify-content:center;margin-top:8px"><button class="btn sm" id="cpJ">${ic('copy', 14)} ${T('คัดลอกลิงก์นักเรียน', 'Copy student link')}</button><button class="btn sm" id="cpD">${ic('screen', 14)} ${T('ลิงก์จอแสดงผล', 'Display link')}</button><button class="btn sm ${Live.locked ? 'on' : ''}" id="lkR" title="${T('เมื่อล็อก ผู้ที่ยังไม่เคยเข้าห้องจะเข้าไม่ได้ (คนที่หลุดแล้วกลับเข้า ยังเข้าได้)', 'Blocks new students; people who dropped can still rejoin')}">${Live.locked ? '🔒 ' + T('ห้องล็อกอยู่ (กดเพื่อเปิดรับ)', 'Locked — tap to unlock') : '🔓 ' + T('ล็อกห้อง', 'Lock room')}</button><a class="btn sm" href="${esc(url)}&name=ทดสอบ" target="_blank" rel="noopener">${ic('play', 14)} ${T('ทดลองเป็นนักเรียน', 'Test as student')}</a></div>
         ${location.protocol === 'file:' && !DB.settings.publicUrl ? `<p class="tiny" style="color:var(--warn);margin-top:6px">⚠ ${T('เปิดจาก file:// — ลิงก์นี้ใช้กับเครื่องอื่นไม่ได้ กรุณาโฮสต์บน GitHub Pages', 'file:// links will not work on other devices')}</p>` : ''}
       </div>
       <div>
@@ -6567,17 +6674,18 @@ function roomPanel(el, opts = {}) {
         <label class="f" style="margin-top:6px">${T('สิ่งที่นักเรียน/จอแสดงผลเห็น', 'What viewers see')}</label>
         <div class="tabs" id="vtabs">${[['none', T('เฉพาะคำถาม', 'Questions only')], ['board', T('สไลด์/กระดานสอน (สด)', 'Live slides / whiteboard')], ['screen', T('หน้าจอที่แชร์', 'Shared screen')]].map(v => `<button data-v="${v[0]}" class="${Live.state.view === v[0] ? 'on' : ''}">${v[1]}</button>`).join('')}</div>
         <div class="tiny muted" style="margin-top:4px">${T('"กระดานสอน" ส่งภาพจาก Teaching Studio ที่เปิดอยู่ · "หน้าจอที่แชร์" ต้องกดแชร์จอใน Studio ก่อน', '')}</div>
-        ${Live.submissions.length ? `<div style="margin-top:10px"><b>${T('งานที่ส่งมา', 'Submissions')}</b> <span class="chip">${Live.submissions.length}</span><div style="display:flex;gap:8px;overflow:auto;margin-top:6px">${Live.submissions.slice(0, 20).map(s => `<a data-sub="${s.id}" style="flex:none;cursor:pointer;text-align:center"><img src="${s.file}" style="height:64px;border-radius:8px;border:1px solid var(--line)"><div class="tiny">${esc(s.name)}</div></a>`).join('')}</div></div>` : ''}
+        ${Live.submissions.length ? `<div style="margin-top:10px"><b>${T('งานที่ส่งมา', 'Submissions')}</b> <span class="chip">${Live.submissions.length}</span><div style="display:flex;gap:8px;overflow:auto;margin-top:6px">${Live.submissions.slice(0, 20).map(s => `<a data-sub="${s.id}" style="flex:none;cursor:pointer;text-align:center"><img src="${esc(s.file)}" style="height:64px;border-radius:8px;border:1px solid var(--line)"><div class="tiny">${esc(s.name)}</div></a>`).join('')}</div></div>` : ''}
         <div class="row" style="margin-top:12px"><button class="btn sm danger" id="lvStop">${ic('stop', 14)} ${T('ปิดห้อง', 'Close room')}</button></div>
       </div>
     </div>`;
     try { const c = qrCanvas(url, 240, 'M'); c.style.width = 'min(220px,60vw)'; c.style.height = 'auto'; $('#qrJ', el).appendChild(c); } catch (e) { $('#qrJ', el).textContent = 'QR error'; }
     $('#cpJ', el).onclick = async () => toast((await copyText(url)) ? T('คัดลอกแล้ว', 'Copied') : 'copy failed');
+    $('#lkR', el).onclick = e => { Live.locked = !Live.locked; e.currentTarget.classList.toggle('on', Live.locked); e.currentTarget.textContent = Live.locked ? '🔒 ' + T('ห้องล็อกอยู่ (กดเพื่อเปิดรับ)', 'Locked — tap to unlock') : '🔓 ' + T('ล็อกห้อง', 'Lock room'); toast(Live.locked ? T('ล็อกห้องแล้ว — ไม่รับนักเรียนใหม่', 'Room locked') : T('เปิดรับนักเรียนแล้ว', 'Room unlocked'), 'ok', 1800); };
     $('#cpD', el).onclick = async () => toast((await copyText(durl)) ? T('คัดลอกลิงก์จอแสดงผลแล้ว (เปิดบนทีวี/คอมอีกเครื่อง)', 'Display link copied') : 'copy failed');
-    $$('[data-kick]', el).forEach(a => a.onclick = () => { Live.send(a.dataset.kick, { t: 'kick' }); const s = Live.students.get(a.dataset.kick); if (s) { try { s.conn.close(); } catch (e) { } Live.students.delete(a.dataset.kick); Live.emit(); } });
+    $$('[data-kick]', el).forEach(a => a.onclick = () => { const s = Live.students.get(a.dataset.kick); if (s) Live.kick(s); });
     $$('[data-lower]', el).forEach(b => b.onclick = () => { const s = Live.students.get(b.dataset.lower); if (s) { s.hand = false; Live.send(s.id, { t: 'hand', on: false }); Live.emit(); } });
     $$('#vtabs [data-v]', el).forEach(b => b.onclick = () => { const v = b.dataset.v; if (v === 'screen' && !Live.stream) { toast(T('ยังไม่ได้แชร์หน้าจอ — ไปที่ Teaching Studio กด "แชร์จอ"', 'Start screen sharing in the Studio first'), 'err', 3500); return; } Live.setState({ view: v }); if (v === 'board' && opts.onBoard) opts.onBoard(); if (v === 'board' && !opts.fromStudio && !Live.lastBoard) toast(T('เปิด Teaching Studio เพื่อส่งภาพกระดาน', 'Open the Studio to send the whiteboard'), 'ok', 3200); });
-    $$('[data-sub]', el).forEach(a => a.onclick = () => { const s = Live.submissions.find(x => x.id === a.dataset.sub); modal({ title: s.name, body: `<img src="${s.file}" style="width:100%;border-radius:12px">`, actions: [{ label: T('ดาวน์โหลด', 'Download'), onClick: () => { const l = document.createElement('a'); l.href = s.file; l.download = `${s.name}-${Date.now()}.jpg`; l.click(); return false; } }, { label: T('ปิด', 'Close'), cls: 'pri' }] }); });
+    $$('[data-sub]', el).forEach(a => a.onclick = () => { const s = Live.submissions.find(x => x.id === a.dataset.sub); modal({ title: s.name, body: `<img src="${esc(s.file)}" style="width:100%;border-radius:12px">`, actions: [{ label: T('ดาวน์โหลด', 'Download'), onClick: () => { const l = document.createElement('a'); l.href = s.file; l.download = `${s.name}-${Date.now()}.jpg`; l.click(); return false; } }, { label: T('ปิด', 'Close'), cls: 'pri' }] }); });
     $('#lvStop', el).onclick = async () => { if (await confirmBox(T('ปิดห้องสดและตัดการเชื่อมต่อทุกคน?', 'Close the room and disconnect everyone?'))) { Run.reset(); Live.stop(); } };
   };
   draw();
@@ -6679,6 +6787,7 @@ function bootStudent(code, role, nameParam) {
   const app = $('#app'); app.style.cssText = 'display:block;height:100%;overflow:auto'; app.className = '';
   const S = { code, role, name: nameParam || localStorage.getItem('sic.stuName') || '', state: { view: 'none', status: 'idle' }, answered: {}, results: {}, total: 0, hand: false, stream: null, board: null, deadline: 0, drawn: {} };
   const display = role === 'display';
+  if (!display) keepAwake();
   document.title = (display ? 'Display · ' : 'ห้องเรียน · ') + CONFIG.appName;
   let qKey = '', tm = 0;
 
@@ -6727,7 +6836,7 @@ function bootStudent(code, role, nameParam) {
   }
   function updHand() { const b = $('#hand'); if (b) { b.classList.toggle('pink', S.hand); b.innerHTML = `${ic('hand', 18)} ${S.hand ? T('ลดมือ', 'Lower hand') : T('ยกมือ', 'Raise hand')}`; } }
   function setStatus(s, info) {
-    const el = $('#st'); const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('ออนไลน์', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว', 'room closed'), error: info || 'error' };
+    const el = $('#st'); const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), pending: PENDING_TX(), online: T('ออนไลน์', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว', 'room closed'), error: info || 'error' };
     if (el) el.textContent = map[s] || s;
     if (s === 'error' || s === 'closed') {
       const q = $('#qa'); if (q) q.innerHTML = `<div class="card" style="text-align:center"><div style="font-size:2rem">${s === 'closed' ? '👋' : '⚠️'}</div><h3 style="justify-content:center">${s === 'closed' ? T('ห้องเรียนปิดแล้ว', 'The room has closed') : T('เชื่อมต่อไม่สำเร็จ', 'Could not connect')}</h3><p class="muted small">${esc(info || '')}</p><button class="btn pri" onclick="location.reload()">${T('ลองใหม่', 'Retry')}</button></div>`;
@@ -7027,7 +7136,7 @@ function bootDisplay(code) {
 
   LiveClient.join(code, 'Display', 'display', {
     status: (s, info) => {
-      const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('เชื่อมต่อแล้ว · รหัส ', 'online · code ') + code, reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว', 'room closed'), error: info || 'error' };
+      const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), pending: PENDING_TX(), online: T('เชื่อมต่อแล้ว · รหัส ', 'online · code ') + code, reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว', 'room closed'), error: info || 'error' };
       $('#dSt').textContent = map[s] || s; $('#dSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn');
       const wt = $('#dWaitTx'); if (wt) wt.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for the teacher to open slides…') : (map[s] || s);
       if (s === 'closed') { $('#dWait').classList.remove('hide'); }
@@ -7945,7 +8054,7 @@ PAGES.settings = {
         <div class="card"><h3 style="color:var(--bad)">${T('ล้างข้อมูล', 'Reset')}</h3><p class="small muted">${T('ลบข้อมูลทั้งหมดในเบราว์เซอร์นี้ (ห้องเรียน แบบทดสอบ รายงาน การตั้งค่า)', 'Delete all data in this browser')}</p><button class="btn danger" id="wipe">${ic('trash', 16)} ${T('ล้างข้อมูลทั้งหมด', 'Erase everything')}</button></div></div>`;
       $('#bk', b).onclick = () => { downloadBlob(`sic-backup-${today()}.json`, JSON.stringify(DB), 'application/json'); logEvent('backup', 'export'); };
       $('#rs', b).onclick = () => $('#rsf', b).click();
-      $('#rsf', b).onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { const o = JSON.parse(await readFile(f, 'text')); if (!o || typeof o !== 'object' || !Array.isArray(o.classes)) throw new Error('bad'); if (!await confirmBox(T('แทนที่ข้อมูลปัจจุบันด้วยไฟล์สำรอง?', 'Replace current data with this backup?'))) return; DB = Object.assign(defaultDB(), o); saveNow(); buildShell(); route(); toast(T('กู้คืนแล้ว', 'Restored')); } catch (er) { toast(T('ไฟล์สำรองไม่ถูกต้อง', 'Invalid backup'), 'err'); } };
+      $('#rsf', b).onchange = async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; try { const o = safeParse(await readFile(f, 'text')); if (!o || typeof o !== 'object' || !Array.isArray(o.classes)) throw new Error('bad'); if (!await confirmBox(T('แทนที่ข้อมูลปัจจุบันด้วยไฟล์สำรอง?', 'Replace current data with this backup?'))) return; DB = Object.assign(defaultDB(), o); saveNow(); buildShell(); route(); toast(T('กู้คืนแล้ว', 'Restored')); } catch (er) { toast(T('ไฟล์สำรองไม่ถูกต้อง', 'Invalid backup'), 'err'); } };
       $('#wipe', b).onclick = async () => { if (await confirmBox(T('ลบข้อมูลทั้งหมดถาวร? (แนะนำให้สำรองก่อน)', 'Erase all data?'), T('ลบทั้งหมด', 'Erase'))) { localStorage.removeItem(LS_KEY); DB = loadDB(); saveNow(); buildShell(); route(); toast(T('ล้างแล้ว', 'Cleared')); } };
     }
     function privacy(b) {
