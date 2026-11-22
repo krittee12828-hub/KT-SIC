@@ -420,6 +420,71 @@ body.dsp-body{background:#000;overflow:hidden}
 .pad-feat{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-bottom:14px}.pf{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px;color:var(--navy)}.pf>span{font-size:1.5rem}
 .padui.compact .pad-feat{display:none}
 
+/* ======== Studio top bar v2: แถวไฟล์ + แถวฟีเจอร์ + ชิป “กำลังใช้งาน” ======== */
+.studio .bar-top{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:6px;padding:8px 14px 6px}
+.bt-row{display:flex;align-items:center;gap:8px;min-width:0}
+.bt-row .name{flex:0 1 300px;min-width:100px}
+.bt-row .sp{flex:1 1 0;min-width:4px}
+.bt-row .btn{flex:none}
+.fx-chips{display:flex;gap:6px;align-items:center;min-width:0;flex:0 1 auto;overflow-x:auto;scrollbar-width:none}
+.fx-chips::-webkit-scrollbar,.fbar::-webkit-scrollbar{display:none}
+.fxc{display:inline-flex;align-items:center;gap:6px;flex:none;white-space:nowrap;padding:5px 10px;border-radius:999px;background:var(--navy);color:#fff;font-size:.8rem;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(20,43,74,.22);animation:fxin .22s ease-out}
+.fxc.live{background:#e03131}.fxc.warn{background:#e8890c}.fxc.min{background:#6a7fa3}
+.fxc b{width:20px;height:20px;margin-right:-4px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.22);font-size:.95rem;line-height:1;cursor:pointer}
+.fxc b:hover{background:rgba(255,255,255,.4)}
+@keyframes fxin{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.fbar{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.btn.fx{flex:none;min-height:38px;background:#f3f6fb;border-color:#dfe7f3;gap:7px;position:relative}
+.btn.fx .chip{margin:0 0 0 2px;padding:1px 7px;font-size:.72rem}
+.fxdot{display:none;width:8px;height:8px;border-radius:50%;background:#2f9e44;box-shadow:0 0 0 3px rgba(47,158,68,.25);flex:none}
+.btn.fx.fx-on{background:var(--pink);border-color:var(--pink2);color:var(--deep);box-shadow:0 0 0 2px rgba(233,143,166,.4),inset 0 -3px 0 var(--pink2)}
+.btn.fx.fx-on .fxdot{display:inline-block;animation:fxp 1.6s infinite}
+@keyframes fxp{50%{box-shadow:0 0 0 5px rgba(47,158,68,.08)}}
+@media (max-width:640px){.bt-row .name{flex:1 1 90px}.fx-chips{order:9;flex:1 0 100%}.bt-row{flex-wrap:wrap}}
+/* ย่อเมนูซ้ายเป็นไอคอนตอนอยู่ใน Studio บนจอแท็บเล็ต/โน้ตบุ๊กเล็ก → เวทีเขียนกว้างขึ้น */
+@media (min-width:861px) and (max-width:1400px){
+  body.in-studio{--side:72px}
+  body.in-studio .side{padding:12px 8px;align-items:center}
+  body.in-studio .brand{padding:4px 0 14px}.body.in-studio .brand small{display:none}
+  body.in-studio .brand>div:last-child{display:none}
+  body.in-studio .nav a,body.in-studio .side .tiny-link{justify-content:center;padding:11px}
+  body.in-studio .nav a span,body.in-studio .side .tiny-link span{display:none}
+  body.in-studio .nav a.on{box-shadow:inset 0 -3px 0 var(--pink)}
+}
+.studio .bar-top{container-type:inline-size}
+.bt-row #saveSt{flex:none;white-space:nowrap}
+.bt-row .name{flex:0 1 230px}
+@container (max-width:1240px){.bt-row .btn .hide-m{display:none}.bt-row .btn{padding:5px 10px}}
+/* แถบเครื่องมือเขียน: แท็บเล็ตแนวนอน → แถวเดียวเรียบร้อย (ไม่ตกบรรทัดเดียวโดด ๆ) เลื่อนได้ถ้าจอแคบมาก */
+@media (min-width:861px) and (max-width:1180px){
+  .tb{flex-wrap:nowrap;justify-content:flex-start;width:auto;max-width:calc(100% - 20px);overflow-x:auto;overflow-y:hidden;gap:1px;padding:5px 8px}
+  .tb::before,.tb::after{content:"";margin:auto}
+  .tb .tbtn{width:40px;height:40px}
+  .tb .vsep{display:block;height:22px;margin:0 3px}
+}
+/* ---- Pen remote (iPad): ปุ่มมีป้ายชื่อ, แถบเครื่องมือแถวเดียว, สถานะโหมดเด่น ---- */
+.rmt .rtop{flex-wrap:wrap;max-width:44%;align-items:center}
+.rtop .chip.warn{background:#ffe6b3;color:#7a4a00;font-weight:700}
+.rtop2{gap:6px;max-width:none;flex-wrap:nowrap}
+.rb2{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-width:54px;height:54px;padding:2px 8px}
+.rb2 .ri{font-size:1.2rem;line-height:1.15}
+.rb2 small{font-size:.7rem;font-weight:700;opacity:.75;line-height:1.1;white-space:nowrap}
+.rb2.on small{opacity:.95}
+.rb2.on{background:var(--pink);color:var(--deep);box-shadow:0 0 0 3px #fff,0 0 0 5px var(--pink2)}
+.rtb{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;max-width:calc(100% - 16px);justify-content:flex-start;padding:7px 10px}
+.rtb::before,.rtb::after{content:"";margin:auto}
+.rtb::-webkit-scrollbar{display:none}
+.rtb .tbtn,.rtb .rcol,.rtb .rsz,.rtb .vsep{flex:none}
+.rtb .tbtn.on{box-shadow:0 0 0 2px var(--pink)}
+@media (max-width:900px){.rb2{min-width:46px;height:50px;padding:2px 6px}.rmt .rtop{max-width:38%}}
+/* รายการอุปกรณ์: ชื่อ+สถานะบนบรรทัดเดียว ปุ่มอยู่บรรทัดถัดไป ไม่ซ้อนกัน */
+.dev-row{flex-wrap:wrap;align-items:center}
+.dev-row>div:nth-child(2){flex:1 1 140px;min-width:0}
+.dev-row .chip{white-space:nowrap}
+.dev-act{flex:1 1 100%;justify-content:flex-start}
+@container (max-width:1240px){.bt-row .name{flex:0 1 150px;min-width:80px}}
+.fx-chips{flex:1 1 auto}
+
 </style>
 </head>
 <body>
@@ -3045,7 +3110,7 @@ function buildShell() {
   $('#app').innerHTML = `
   <aside class="side" id="side">
     <div class="brand"><div class="logo">${ic('board', 22)}</div><div>${esc(sys.length > 22 ? 'SMART INTERACTIVE' : sys)}<small>${sys.length > 22 ? 'CLASSROOM' : 'ALL-IN-ONE CLASSROOM'}</small></div></div>
-    <nav class="nav">${NAV.map(n => `<a data-r="${n[0]}">${ic(n[1])}<span>${esc(T(n[2], n[3]))}</span></a>`).join('')}</nav>
+    <nav class="nav">${NAV.map(n => `<a data-r="${n[0]}" title="${esc(T(n[2], n[3]))}">${ic(n[1])}<span>${esc(T(n[2], n[3]))}</span></a>`).join('')}</nav>
     <div class="foot">
       ${DB.support.enabled ? `<a class="tiny-link" data-r="support">${ic('heart')}<span>${T('สนับสนุนผู้พัฒนา', 'Support the Developer')}</span></a>` : ''}
       <a class="tiny-link" id="joinBtn">${ic('qr')}<span>${T('ฉันเป็นนักเรียน: เข้าห้องด้วยรหัส', 'I\'m a student: join with code')}</span></a>
@@ -3123,6 +3188,7 @@ function route() {
   const main = $('#main'); if (!main) return;
   main.className = page.flush ? 'flush' : ''; main.innerHTML = '';
   _curPage = pname;
+  document.body.classList.toggle('in-studio', pname === 'studio');
   $('#title').textContent = titleOf(pname);
   const hi = pname === 'studio' ? 'lessons' : pname;
   $$('.nav a, .bottom a').forEach(a => a.classList.toggle('on', a.dataset.r === hi));
@@ -4151,7 +4217,7 @@ const Hub = {
   },
   /* ---------- ฟีเจอร์ ---------- */
   async room() { if (Live.active) return true; const ok = await Live.start(); if (ok) { this.push(); } return ok; },
-  setFrozen(on) { this.frozen = !!on; Cast.setFrozen(this.frozen); toast(this.frozen ? '❄ ' + T('หยุดภาพบนจอฉาย — ครูเตรียมหน้าถัดไปได้เงียบๆ', 'Display frozen') : T('ปล่อยภาพ — จอฉายตามทันแล้ว', 'Display live again'), 'ok', 2600); this.draw(); },
+  setFrozen(on) { this.frozen = !!on; Cast.setFrozen(this.frozen); try { Live.setState({ fz: this.frozen }); } catch (e) { } toast(this.frozen ? '❄ ' + T('หยุดภาพบนจอฉาย — ครูเตรียมหน้าถัดไปได้เงียบๆ', 'Display frozen') : T('ปล่อยภาพ — จอฉายตามทันแล้ว', 'Display live again'), 'ok', 2600); this.draw(); },
   timer(sec) { this.w = Object.assign({}, this.w, { timer: { end: Date.now() + sec * 1000, total: sec, label: '', paused: false } }); this.push(); this.hint(); this.draw(); },
   timerPause() { const t = this.w.timer; if (!t) return; const n = Object.assign({}, t); if (t.paused) { n.paused = false; n.end = Date.now() + t.left * 1000; } else { n.paused = true; n.left = Math.max(0, (t.end - Date.now()) / 1000); } this.w = Object.assign({}, this.w, { timer: n }); this.push(); this.draw(); },
   async pick() {
@@ -4253,10 +4319,11 @@ const Win = {
     el.onpointerdown = () => { if (+el.style.zIndex < this.z) el.style.zIndex = ++this.z; };
     el.querySelector('[data-w=x]').onclick = () => this.close(id); el.querySelector('[data-w=min]').onclick = () => this.setMin(w, !w.min);
     if (sv.min) this.setMin(w, true);
+    this.onChange && this.onChange();
     return w;
   },
   setMin(w, on) { w.min = on; w.el.classList.toggle('min', on); this.place(w); this.persist(w); },
-  close(id) { const w = this.map.get(id); if (!w) return; try { w.spec.onClose && w.spec.onClose(false); } catch (e) { } w.el.remove(); this.map.delete(id); if (typeof Hub !== 'undefined' && Hub.el) Hub.draw(); },
+  close(id) { const w = this.map.get(id); if (!w) return; try { w.spec.onClose && w.spec.onClose(false); } catch (e) { } w.el.remove(); this.map.delete(id); if (typeof Hub !== 'undefined' && Hub.el) Hub.draw(); this.onChange && this.onChange(); },
   toggle(id, spec) { if (this.has(id)) this.close(id); else this.open(id, spec); },
 
   /* ---------- หน้าต่างสำเร็จรูป ---------- */
@@ -4377,6 +4444,7 @@ const Devices = {
       }
       case 'rl': if (m.pid === pg.id) this.relay(s, { t: 'lz', pid: pg.id, x: this.num(m.x, -200, pg.w + 200, 0), y: this.num(m.y, -200, pg.h + 200, 0) }); return;
       case 'rl0': this.relay(s, { t: 'lz0' }); return;
+      case 'rlc': this.ext = null; b.ext = null; b.render(); this.relay(s, { t: 'le' }); return; /* remote cancelled a stroke (e.g. 2nd finger landed → pinch) */
       case 'cmd': {
         const c = String(m.c), A = Hub.api;
         if (c === 'undo') b.undo(); else if (c === 'redo') b.redo();
@@ -4385,6 +4453,11 @@ const Devices = {
         else if (c === 'freeze') Hub.setFrozen(!Hub.frozen);
         else if (c === 'goto' && A) { const n = this.num(m.i, 0, 9999, -1) | 0; if (n >= 0 && n < A.doc().pages.length) A.gotoPage(n); }
         else if (c === 'addpage' && A) A.addPage();
+        else if (c === 'view') { /* absolute zoom/pan from a pinch on the remote: z = × fit, (cx,cy) = page point at the centre of the screen */
+          const z = m.z == null ? null : this.num(m.z, 1, 8, 1);
+          if (z == null || z < 1.03) { b.autoFit = true; b.fit(); } else { const sc = b.fitS * z; b.autoFit = false; b.view.s = sc; b.view.ox = b.cw / 2 - this.num(m.cx, 0, pg.w, pg.w / 2) * sc; b.view.oy = b.ch / 2 - this.num(m.cy, 0, pg.h, pg.h / 2) * sc; }
+          b.baseDirty = true; b.render();
+        }
         else if (c === 'zoom' && A) A.click(m.d > 0 ? 'bZi' : m.d < 0 ? 'bZo' : 'bFit');
         else if (c === 'timer') { const mi = [1, 3, 5, 10].includes(+m.m) ? +m.m : 0; if (mi) Hub.timer(mi * 60); else { Hub.w = Object.assign({}, Hub.w, { timer: null }); Hub.push(); Hub.draw(); } }
         else if (c === 'pick') Hub.pick();
@@ -4464,8 +4537,8 @@ function bootRemote(code) {
   const COLS = ['#142B4A', '#e03131', '#1c7ed6', '#2f9e44', '#111111', '#d6336c'];
   app.innerHTML = `<div class="dsp rmt hud" id="rmt"><div class="dmain"><div class="dstage" id="rStage"></div>
       <div class="dwait" id="rWait"><div class="dlogo">PEN REMOTE</div><div id="rWaitTx">${T('กำลังเชื่อมต่อ…', 'Connecting…')}</div></div></div>
-    <div class="rtop"><span class="chip" id="rSt">…</span><span class="chip" id="rPg"></span></div>
-    <div class="rtop2" id="rt2"><button class="rb2" data-k="sheet" title="${T('สไลด์ทั้งหมด', 'Slides')}">📑</button><button class="rb2" data-k="zout">−</button><button class="rb2" data-k="fit">⤢</button><button class="rb2" data-k="zin">＋</button><button class="rb2" data-k="finger" id="rFg" title="${T('นิ้ว: เขียน / ปัดเปลี่ยนหน้า', 'Finger: draw / swipe pages')}">👆</button><button class="rb2" data-k="more" title="${T('จับเวลา/สุ่ม', 'Timer / pick')}">⏱</button><button class="rb2" data-k="file" title="${T('เปิดไฟล์ PDF/รูปจาก iPad ขึ้นจอฉาย', 'Send a PDF/image to the presentation')}">📂</button><button class="rb2" data-k="fs">⛶</button></div>
+    <div class="rtop"><span class="chip" id="rSt">…</span><span class="chip" id="rPg"></span><span class="chip warn hide" id="rZm" style="cursor:pointer"></span><span class="chip hide" id="rMd1"></span><span class="chip hide" id="rMd2"></span><span class="chip hide" id="rMd3"></span></div>
+    <div class="rtop2" id="rt2">${[['sheet', '📑', T('สไลด์', 'Slides'), T('สไลด์ทั้งหมด', 'Slides')], ['zout', '−', T('ย่อ', 'Out'), ''], ['fit', '⤢', T('พอดี', 'Fit'), ''], ['zin', '＋', T('ขยาย', 'In'), ''], ['finger', '👆', T('นิ้ว', 'Finger'), T('นิ้ว: เขียน / ปัดเปลี่ยนหน้า', 'Finger: draw / swipe pages')], ['more', '⏱', T('เวลา', 'Timer'), T('จับเวลา/สุ่ม', 'Timer / pick')], ['file', '📂', T('ไฟล์', 'File'), T('เปิดไฟล์ PDF/รูปจาก iPad ขึ้นจอฉาย', 'Send a PDF/image to the presentation')], ['fs', '⛶', T('เต็มจอ', 'Full'), '']].map(x => `<button class="rb2" data-k="${x[0]}"${x[0] === 'finger' ? ' id="rFg"' : ''} title="${x[3] || x[2]}"><span class="ri">${x[1]}</span><small>${x[2]}</small></button>`).join('')}</div>
     <div class="rsheet hide" id="rSheet"><div class="rsh-h"><b>📑 ${T('สไลด์ทั้งหมด — แตะเพื่อไปหน้านั้น', 'All slides — tap to jump')}</b><span style="flex:1"></span><button class="rb2" data-k="addpage">＋ ${T('เพิ่มหน้า', 'Add page')}</button><button class="rb2" data-k="closesheet">✕</button></div><div class="rsh-g" id="rShG"></div></div>
     <div class="rsheet small hide" id="rMore"><div class="rsh-h"><b>⏱ ${T('จับเวลา / สุ่มนักเรียน', 'Timer / Pick')}</b><span style="flex:1"></span><button class="rb2" data-k="closemore">✕</button></div><div class="rsh-b">${[1, 3, 5, 10].map(m => `<button class="rb2 w" data-tm="${m}">${m} ${T('นาที', 'min')}</button>`).join('')}<button class="rb2 w" data-tm="0">✕ ${T('ยกเลิกเวลา', 'Clear')}</button><button class="rb2 w pri" data-k="pick">🎯 ${T('สุ่มนักเรียน', 'Pick a student')}</button></div></div>
     <div class="rtb" id="rtb">
@@ -4476,9 +4549,10 @@ function bootRemote(code) {
       <button class="tbtn" data-k="prev">${ic('chevL')}</button><button class="tbtn" data-k="next">${ic('chevR')}</button><span class="vsep"></span>
       <button class="tbtn" data-k="blank" title="blank">⬛</button><button class="tbtn" data-k="freeze" title="freeze">❄</button></div>
     <div class="dblank hide" id="rIdent"></div></div>`;
+  const modeChips = () => { const m = [R.finger === 'nav' ? '👆 ' + T('นิ้ว = ปัดเปลี่ยนหน้า', 'Finger = swipe pages') : '', R.st && R.st.w && R.st.w.blank ? '⬛ ' + T('จอฉายดำอยู่', 'Display blanked') : '', R.st && R.st.fz ? '❄ ' + T('หยุดภาพอยู่', 'Frozen') : ''];[1, 2, 3].forEach(n => { const e = $('#rMd' + n); if (!e) return; e.textContent = m[n - 1]; e.classList.toggle('hide', !m[n - 1]); e.classList.add('warn'); }); const bl = $('#rtb [data-k=blank]'), fz = $('#rtb [data-k=freeze]'); if (bl) bl.classList.toggle('on', !!(R.st && R.st.w && R.st.w.blank)); if (fz) fz.classList.toggle('on', !!(R.st && R.st.fz)); };
   const R = { tool: 'pen', color: COLS[0], size: 6, finger: 'draw', penSeen: false, stream: null, st: {} }; const view = new CastView($('#rStage')); view.onFirst = () => $('#rWait').classList.add('hide');
   const $t = (s) => $(s); const cv = view.cv; cv.style.touchAction = 'none';
-  const sel = () => { const fg = $('#rFg'); if (fg) fg.classList.toggle('on', R.finger === 'nav'); $$('#rtb [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === R.tool)); $$('#rtb .rcol').forEach(b => b.classList.toggle('on', b.dataset.c === R.color)); $$('#rtb .rsz').forEach(b => b.classList.toggle('on', +b.dataset.s === R.size)); }; sel();
+  const sel = () => { const fg = $('#rFg'); if (fg) { fg.classList.toggle('on', R.finger === 'nav'); const sm = $('small', fg); if (sm) sm.textContent = R.finger === 'nav' ? T('ปัดหน้า', 'Swipe') : T('นิ้ว', 'Finger'); } modeChips(); $$('#rtb [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === R.tool)); $$('#rtb .rcol').forEach(b => b.classList.toggle('on', b.dataset.c === R.color)); $$('#rtb .rsz').forEach(b => b.classList.toggle('on', +b.dataset.s === R.size)); }; sel();
   $$('#rtb [data-t]').forEach(b => b.onclick = () => { R.tool = b.dataset.t; sel(); }); $$('#rtb .rcol').forEach(b => b.onclick = () => { R.color = b.dataset.c; if (R.tool === 'eraser' || R.tool === 'laser') R.tool = 'pen'; sel(); }); $$('#rtb .rsz').forEach(b => b.onclick = () => { R.size = +b.dataset.s; sel(); });
   const cmd = { undo: { c: 'undo' }, redo: { c: 'redo' }, prev: { c: 'page', d: -1 }, next: { c: 'page', d: 1 }, blank: { c: 'blank' }, freeze: { c: 'freeze' } };
   $$('#rtb [data-k]').forEach(b => b.onclick = () => LiveClient.send(Object.assign({ t: 'cmd' }, cmd[b.dataset.k])));
@@ -4501,7 +4575,41 @@ function bootRemote(code) {
   $$('#rMore [data-tm]').forEach(b => b.onclick = () => { LiveClient.send({ t: 'cmd', c: 'timer', m: +b.dataset.tm }); $('#rMore').classList.add('hide'); });
   let lastSig = ''; setInterval(() => { const sh = $('#rSheet'); if (!sh || sh.classList.contains('hide')) { lastSig = ''; return; } const sig = view.pid + '|' + view.pages.size; if (sig !== lastSig) { lastSig = sig; drawSheet(); reqTh(0); } }, 900);
   let wl = null; const wake = async () => { try { if (navigator.wakeLock) wl = await navigator.wakeLock.request('screen'); } catch (e) { } }; wake(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake(); });
-  setInterval(() => { const ks = [...view.pages.keys()], i = ks.indexOf(view.pid); const e = $('#rPg'); if (e) e.textContent = ks.length ? `${i + 1} / ${ks.length}` : ''; }, 400);
+  setInterval(() => { const ks = [...view.pages.keys()], i = ks.indexOf(view.pid); const e = $('#rPg'); if (e) e.textContent = ks.length ? `${i + 1} / ${ks.length}` : ''; const z = $('#rZm'); if (z) { const p = Math.round((view.vw ? view.vw.z : 1) * 100); z.textContent = '🔍 ' + p + '%'; z.classList.toggle('hide', p <= 100); z.onclick = () => fnk.fit(); } }, 400);
+  /* ---- นิ้วบีบย่อ/ขยาย + ลากเลื่อน (2 นิ้ว) · Ctrl/⌘+ล้อเมาส์/ทัชแพด · ปากกายังเขียนอยู่ ---- */
+  const tp = new Map(); let pz = null, vwT = 0, penAt = 0; const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+  const sendVw = () => { if (vwT) return; vwT = setTimeout(() => { vwT = 0; const v = view.vw; LiveClient.send({ t: 'cmd', c: 'view', z: v ? v.z : null, cx: v ? v.cx : 0, cy: v ? v.cy : 0 }); }, 45); };
+  const applyVw = (z, cx, cy) => { const pg = view.pages.get(view.pid); if (!pg) return; if (z < 1.03) view.vw = null; else view.vw = { z: Math.min(8, z), cx: clampN(cx, 0, pg.w), cy: clampN(cy, 0, pg.h) }; view.dirtyBase = true; view.need = true; view.holdVw = performance.now() + 700; sendVw(); };
+  const mid = () => { const a = [...tp.values()]; return { x: (a[0].x + a[1].x) / 2, y: (a[0].y + a[1].y) / 2, d: Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1 }; };
+  const startPinch = () => {
+    const pg = view.pages.get(view.pid); if (!pg) return; R.sw = null;
+    if (d) { const dd = d; d = null; if (dd.kind === 's') { view.live = null; view.mine = false; view.pred = null; view.need = true; LiveClient.send({ t: 'rlc' }); } else if (dd.kind === 'l') LiveClient.send({ t: 'rl0' }); }
+    const m = mid(), T0 = view.xf(pg), r = cv.getBoundingClientRect(); const fit = Math.min(view.W / pg.w, view.H / pg.h);
+    pz = { d0: m.d, z0: view.vw ? view.vw.z : 1, fit, ax: ((m.x - r.left) * view.dpr - T0.ox) / T0.s, ay: ((m.y - r.top) * view.dpr - T0.oy) / T0.s };
+  };
+  const movePinch = () => {
+    const pg = view.pages.get(view.pid); if (!pz || !pg) return; const m = mid(), r = cv.getBoundingClientRect();
+    const z = clampN(pz.z0 * m.d / pz.d0, 1, 8), s = pz.fit * z; const ox = (m.x - r.left) * view.dpr - pz.ax * s, oy = (m.y - r.top) * view.dpr - pz.ay * s;
+    applyVw(z, (view.W / 2 - ox) / s, (view.H / 2 - oy) / s);
+  };
+  cv.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'pen') { penAt = performance.now(); return; }
+    if (e.pointerType !== 'touch' || performance.now() - penAt < 700 || !view.pid) return;
+    tp.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (tp.size === 2) { e.preventDefault(); e.stopImmediatePropagation(); try { cv.setPointerCapture(e.pointerId); } catch (_) { } startPinch(); } else if (tp.size > 2 || pz) e.stopImmediatePropagation();
+  }, true);
+  cv.addEventListener('pointermove', e => {
+    if (e.pointerType === 'pen') penAt = performance.now();
+    if (!tp.has(e.pointerId)) return; tp.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pz && tp.size >= 2) { e.preventDefault(); e.stopImmediatePropagation(); movePinch(); }
+  }, true);
+  const tpEnd = e => { if (!tp.has(e.pointerId)) return; tp.delete(e.pointerId); if (pz) { e.stopImmediatePropagation(); if (tp.size < 2) { pz = null; sendVw(); } } };
+  cv.addEventListener('pointerup', tpEnd, true); cv.addEventListener('pointercancel', tpEnd, true);
+  cv.addEventListener('wheel', e => {
+    const pg = view.pages.get(view.pid); if (!pg) return; e.preventDefault(); const r = cv.getBoundingClientRect(), T0 = view.xf(pg), fit = Math.min(view.W / pg.w, view.H / pg.h), z0 = view.vw ? view.vw.z : 1;
+    if (e.ctrlKey || e.metaKey) { const z = clampN(z0 * Math.exp(-e.deltaY * (e.deltaMode ? .05 : .01)), 1, 8), s = fit * z; const px = (e.clientX - r.left) * view.dpr, py = (e.clientY - r.top) * view.dpr, ax = (px - T0.ox) / T0.s, ay = (py - T0.oy) / T0.s; applyVw(z, (view.W / 2 - (px - ax * s)) / s, (view.H / 2 - (py - ay * s)) / s); }
+    else if (view.vw) { const k = view.dpr / T0.s; applyVw(z0, view.vw.cx + (e.shiftKey ? e.deltaY : e.deltaX) * k, view.vw.cy + (e.shiftKey ? 0 : e.deltaY) * k); }
+  }, { passive: false });
   /* ---- เขียน ---- */
   let d = null, lastPen = 0, raf = 0; const r1_ = v => Math.round(v * 10) / 10;
   const flush = () => { raf = 0; if (!d || d.kind !== 's') return; const o = d.obj; if (o.pts.length > d.sent) { LiveClient.send({ t: 'rls', pid: view.pid, id: o.id, h: { tool: o.tool, color: o.color, w: o.w, a: o.a, pr: o.pr }, from: d.sent, pts: o.pts.slice(d.sent).map(p => [r1_(p[0]), r1_(p[1]), Math.round(p[2] * 100) / 100]) }); d.sent = o.pts.length; } };
@@ -4532,7 +4640,7 @@ function bootRemote(code) {
   /* ---- เชื่อมต่อ ---- */
   LiveClient.join(code, 'Remote', 'remote', {
     status: (s, info) => { const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('เชื่อมต่อแล้ว', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }; $('#rSt').textContent = map[s] || s; $('#rSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn'); const w = $('#rWaitTx'); if (w) w.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for slides…') : (map[s] || s); if (s === 'closed') $('#rWait').classList.remove('hide'); },
-    state: st => { R.st = st || {}; refreshLayer(); }, stream: s => { R.stream = s; refreshLayer(); },
+    state: st => { R.st = st || {}; refreshLayer(); modeChips(); }, stream: s => { R.stream = s; refreshLayer(); },
     msg: m => { if (m.t === 'fileack') { toast((m.ok ? '✔ ' : '✖ ') + m.msg, m.ok ? 'ok' : 'err', 3500); } else if (m.t === 'th') { m.items.forEach(x => TH.set(x.id, x.img)); drawSheet(); if (m.next >= 0 && !$('#rSheet').classList.contains('hide')) reqTh(m.next); } else if (m.t === 'ident') { const e = $('#rIdent'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); setTimeout(() => e.classList.add('hide'), 3000); } else if (m.t === 'label') { $('#rSt').textContent = m.text; } else view.onMsg(m); }
   });
 }
@@ -4943,7 +5051,7 @@ PAGES.lessons = {
 PAGES.studio = {
   flush: true,
   render(el, [id]) {
-    let alive = true, board = null, doc = null, stream = null, shareMode = 'off', saveT = 0, thumbT = 0, bcT = 0, lastBc = 0, keyH = null, fsH = null, popOpen = null;
+    let fxSig = '', fxIv = 0, alive = true, board = null, doc = null, stream = null, shareMode = 'off', saveT = 0, thumbT = 0, bcT = 0, lastBc = 0, keyH = null, fsH = null, popOpen = null;
     el.innerHTML = `<div class="empty" style="margin:30px">${T('กำลังโหลดบทเรียน…', 'Loading lesson…')}</div>`;
     (async () => {
       doc = await IDB.get('lessons', id);
@@ -4956,21 +5064,26 @@ PAGES.studio = {
       el.innerHTML = `
       <div class="studio" id="st">
         <div class="bar-top">
-          <button class="btn sm" id="bBack">${ic('chevL', 16)}<span class="hide-m"> ${T('บทเรียน', 'Lessons')}</span></button>
-          <input class="name" id="lname" value="${esc(doc.name)}" aria-label="lesson name">
-          <span class="chip" id="saveSt">${T('บันทึกแล้ว', 'Saved')}</span>
-          <span class="sp"></span>
-          <button class="btn sm" id="bPages">${ic('file', 16)}<span class="hide-m"> ${T('หน้า', 'Pages')}</span></button>
-          <button class="btn sm" id="bImport">${ic('up', 16)}<span class="hide-m"> ${T('นำเข้า', 'Import')}</span></button>
-          <button class="btn sm" id="bExport">${ic('down', 16)}<span class="hide-m"> ${T('ส่งออก', 'Export')}</span></button>
-          <button class="btn sm" id="bShare">${ic('screen', 16)}<span class="hide-m" id="shareLbl"> ${T('แชร์จอ', 'Share')}</span></button>
-          <button class="btn sm" id="bRoom">${ic('qr', 16)}<span class="hide-m"> ${T('ห้องสด/QR', 'Room/QR')}</span></button>
-          <button class="btn sm" id="bPad" title="${T('iPad ควบคุมการนำเสนอ / เขียน', 'iPad controller')}">✏️<span class="hide-m"> ${T('iPad ควบคุม', 'iPad')}</span><span class="chip hide" id="padN" style="margin-left:4px"></span></button>
-          <button class="btn sm" id="bMir" title="SCREEN MIRRORING">${ic('screen', 16)}<span class="hide-m"> Screen Mirroring</span><span class="chip hide" id="mirN" style="margin-left:4px"></span></button>
-          <button class="btn sm" id="bDev">${ic('screen', 16)}<span class="hide-m"> ${T('เชื่อมอุปกรณ์', 'Devices')}</span></button>
-          <button class="btn sm" id="bCo" title="${T('นำเสนอ 2 เครื่อง: เชื่อมกับ Studio หลัก', 'Link to main Studio')}">${ic('qr', 16)}<span class="hide-m" id="coLbl"> ${T('เชื่อม Studio หลัก', 'Link main')}</span></button>
-          <button class="btn sm" id="bHub" title="Q">${ic('sparkle', 16)}<span class="hide-m"> ${T('เมนูด่วน', 'Quick menu')}</span></button>
-          <button class="btn sm pri" id="bFull">${ic('full', 16)}<span class="hide-m"> ${T('เต็มจอ', 'Present')}</span></button>
+          <div class="bt-row">
+            <button class="btn sm" id="bBack">${ic('chevL', 16)}<span class="hide-m"> ${T('บทเรียน', 'Lessons')}</span></button>
+            <input class="name" id="lname" value="${esc(doc.name)}" aria-label="lesson name">
+            <span class="chip" id="saveSt">${T('บันทึกแล้ว', 'Saved')}</span>
+            <div class="fx-chips" id="fxChips" aria-label="active features"></div>
+            <span class="sp"></span>
+            <button class="btn sm" id="bPages" title="${T('หน้า', 'Pages')}">${ic('file', 16)}<span class="hide-m"> ${T('หน้า', 'Pages')}</span></button>
+            <button class="btn sm" id="bImport" title="${T('นำเข้า', 'Import')}">${ic('up', 16)}<span class="hide-m"> ${T('นำเข้า', 'Import')}</span></button>
+            <button class="btn sm" id="bExport" title="${T('ส่งออก', 'Export')}">${ic('down', 16)}<span class="hide-m"> ${T('ส่งออก', 'Export')}</span></button>
+            <button class="btn sm pri" id="bFull" title="${T('เต็มจอ', 'Present')}">${ic('full', 16)}<span class="hide-m"> ${T('เต็มจอ', 'Present')}</span></button>
+          </div>
+          <div class="fbar" id="fbar" role="toolbar">
+            <button class="btn sm fx" id="bShare"><i class="fxdot"></i>${ic('screen', 16)}<span id="shareLbl"> ${T('แชร์จอ', 'Share')}</span></button>
+            <button class="btn sm fx" id="bRoom"><i class="fxdot"></i>${ic('qr', 16)}<span id="roomLbl"> ${T('ห้องสด/QR', 'Room/QR')}</span></button>
+            <button class="btn sm fx" id="bPad" title="${T('iPad ควบคุมการนำเสนอ / เขียน', 'iPad controller')}"><i class="fxdot"></i>✏️<span> ${T('iPad ควบคุม', 'iPad')}</span><span class="chip hide" id="padN"></span></button>
+            <button class="btn sm fx" id="bMir" title="SCREEN MIRRORING"><i class="fxdot"></i>${ic('screen', 16)}<span> Screen Mirroring</span><span class="chip hide" id="mirN"></span></button>
+            <button class="btn sm fx" id="bDev"><i class="fxdot"></i>${ic('screen', 16)}<span> ${T('เชื่อมอุปกรณ์', 'Devices')}</span></button>
+            <button class="btn sm fx" id="bCo" title="${T('นำเสนอ 2 เครื่อง: เชื่อมกับ Studio หลัก', 'Link to main Studio')}"><i class="fxdot"></i>${ic('qr', 16)}<span id="coLbl"> ${T('เชื่อม Studio หลัก', 'Link main')}</span></button>
+            <button class="btn sm fx" id="bHub" title="Q"><i class="fxdot"></i>${ic('sparkle', 16)}<span> ${T('เมนูด่วน', 'Quick menu')}</span></button>
+          </div>
         </div>
         <div class="stage" id="stage"><video id="vid" class="hide" playsinline muted></video></div>
         <div class="pages" id="pages"></div>
@@ -5079,8 +5192,31 @@ PAGES.studio = {
       $s('#bHub').onclick = () => { if (!Hub.cfg().show) Hub.setShown(true); Hub.open ? Hub.close() : (Hub.open = true, Hub.path = [], Hub.tempPos = null, Hub.draw()); }; $s('#bDev').onclick = () => Devices.open(); $s('#bCo').onclick = () => Co.openPanel(); $s('#bMir').onclick = () => Win.mirrors(); $s('#bPad').onclick = () => Win.pad();
       const updPad = () => { const e = $s('#padN'); if (!e) return; const n = Live.list('remote').length; e.textContent = n; e.classList.toggle('hide', !n); }; const unPad = Live.sub(updPad); updPad();
       const updMir = () => { const e = $s('#mirN'); if (!e) return; const n = Mirror.map.size; e.textContent = n; e.classList.toggle('hide', !n); }; const unMir = Live.sub(updMir); updMir();
-      const updCo = () => { const l = $s('#coLbl'), b = $s('#bCo'); if (!l) return; const on = Co.on(); l.textContent = ' ' + (on ? T('เชื่อมแล้ว · ', 'Linked · ') + (Co.src === 'B' || Co.src === 'ab' || Co.src === 'ba' ? T('ฉายเครื่องนี้', 'projecting') : T('รอ', 'idle')) : Co.status === 'connecting' || Co.status === 'reconnecting' ? T('กำลังเชื่อม…', 'linking…') : T('เชื่อม Studio หลัก', 'Link main')); b.classList.toggle('pri', on); }; const unCo = Co.sub(updCo); updCo(); $s('#bShare').onclick = shareMenu; $s('#bRoom').onclick = () => modal({ title: T('ห้องสด / QR เข้าร่วม', 'Live room / QR'), wide: true, body: (() => { const d = document.createElement('div'); roomPanel(d, { fromStudio: true, onBoard: scheduleBc }); return d; })(), actions: [{ label: T('ปิด', 'Close') }] });
+      const updCo = () => { const l = $s('#coLbl'), b = $s('#bCo'); if (!l) return; const on = Co.on(); l.textContent = ' ' + (on ? T('เชื่อมแล้ว · ', 'Linked · ') + (Co.src === 'B' || Co.src === 'ab' || Co.src === 'ba' ? T('ฉายเครื่องนี้', 'projecting') : T('รอ', 'idle')) : Co.status === 'connecting' || Co.status === 'reconnecting' ? T('กำลังเชื่อม…', 'linking…') : T('เชื่อม Studio หลัก', 'Link main')); b.classList.toggle('fx-on', on); updFx(); }; const unCo = Co.sub(updCo); updCo(); $s('#bShare').onclick = shareMenu; $s('#bRoom').onclick = () => modal({ title: T('ห้องสด / QR เข้าร่วม', 'Live room / QR'), wide: true, body: (() => { const d = document.createElement('div'); roomPanel(d, { fromStudio: true, onBoard: scheduleBc }); return d; })(), actions: [{ label: T('ปิด', 'Close') }] });
       $s('#bFull').onclick = togglePresent; $s('#bExit').onclick = togglePresent;
+      /* ---- แถบแสดงฟีเจอร์ที่กำลังใช้งาน: ปุ่มที่เปิดอยู่เปลี่ยนสีเด่น + ชิปบนแถบบน (กดเพื่อโฟกัส / × เพื่อปิด) ---- */
+      function fxOn(id, on) { const b = $s('#' + id); if (b) b.classList.toggle('fx-on', !!on); }
+      function updFx() {
+        if (!alive || !board) return;
+        const chips = []; const z = board.autoFit || !board.fitS ? 100 : Math.round(board.view.s / board.fitS * 100);
+        const pads = Live.list('remote').length, mirs = Mirror.map.size;
+        fxOn('bShare', shareMode !== 'off'); fxOn('bRoom', Live.active); fxOn('bPad', Win.has('pad') || pads > 0); fxOn('bMir', Win.has('mirrors') || mirs > 0); fxOn('bDev', Live.list('display').length > 0); fxOn('bHub', Hub.open);
+        const rl = $s('#roomLbl'); if (rl) rl.textContent = ' ' + (Live.active ? Live.code : T('ห้องสด/QR', 'Room/QR'));
+        if (shareMode !== 'off') chips.push({ k: 'share', t: '● ' + T('กำลังแชร์จอ', 'Sharing screen'), c: 'live', f: () => shareMenu() });
+        if (Hub.w && Hub.w.blank) chips.push({ k: 'blank', t: '⬛ ' + T('จอฉายดำ', 'Screen blanked'), c: 'warn', f: () => $s('#bHub').click() });
+        if (Hub.frozen) chips.push({ k: 'frz', t: '❄ ' + T('หยุดภาพจอฉาย', 'Display frozen'), c: 'warn', f: () => $s('#bHub').click() });
+        if (z > 101 || z < 99) chips.push({ k: 'zm', t: '🔍 ' + z + '%', c: '', f: () => $s('#bFit') && $s('#bFit').click() });
+        Win.map.forEach((w, id) => id !== 'pad' && id !== 'mirrors' && chips.push({ k: 'w:' + id, t: String(w.spec.title || id), c: w.min ? 'min' : '', win: id }));
+        const sig = chips.map(c => c.k + c.t + c.c).join('|'); if (sig === fxSig) return; fxSig = sig;
+        const box = $s('#fxChips'); box.textContent = '';
+        chips.forEach(c => {
+          const e = document.createElement('span'); e.className = 'fxc ' + c.c; const tx = document.createElement('span'); tx.textContent = c.t; e.appendChild(tx);
+          if (c.win) { const x = document.createElement('b'); x.textContent = '×'; x.title = T('ปิด', 'Close'); x.onclick = ev => { ev.stopPropagation(); Win.close(c.win); updFx(); }; e.appendChild(x); e.onclick = () => { const w = Win.map.get(c.win); if (w) { Win.focus(c.win); if (w.min) Win.setMin(w, false); } }; }
+          else if (c.f) e.onclick = c.f;
+          box.appendChild(e);
+        });
+      }
+      fxIv = setInterval(updFx, 350); Win.onChange = updFx; updFx();
       $s('#selbar').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; const a = b.dataset.s; if (a === 'del') board.deleteSel(); else if (a === 'dup') board.dupSel(); else if (a === 'big') board.scaleSel(1.2); else if (a === 'small') board.scaleSel(1 / 1.2); else board.clearSel(); };
       keyH = e => {
         if (/input|textarea|select/i.test(document.activeElement && document.activeElement.tagName)) return; if ($('.mask')) return;
@@ -5297,7 +5433,7 @@ PAGES.studio = {
       shareMode = 'off'; if (mine && Live.stream === mine) Live.stopStream(); updLive();
     }
     return () => {
-      alive = false; cancelAnimationFrame(vidRaf); Win.unmount(); Hub.unmount(); Cast.detach(); try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
+      alive = false; cancelAnimationFrame(vidRaf); clearInterval(fxIv); Win.onChange = null; Win.unmount(); Hub.unmount(); Cast.detach(); try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
       if (keyH) document.removeEventListener('keydown', keyH); if (fsH) document.removeEventListener('fullscreenchange', fsH);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
       if (doc) { doc.updated = Date.now(); IDB.put('lessons', doc).catch(() => { }); const i = DB.lessons.findIndex(x => x.id === doc.id); if (i >= 0) { DB.lessons[i] = lessonMeta(doc); save(); } }
@@ -5862,7 +5998,7 @@ class CastView {
         if (m.from <= this.live.pts.length) this.live.pts.push(...m.pts.slice(this.live.pts.length - m.from)); break;
       case 'lh': if (m.pid !== this.pid) return; this.live = m.o; break;
       case 'le': this.live = null; break;
-      case 'vw': this.vw = m.z ? { z: m.z, cx: m.cx, cy: m.cy } : null; this.dirtyBase = true; break;
+      case 'vw': if (this.holdVw && performance.now() < this.holdVw) return; this.vw = m.z ? { z: m.z, cx: m.cx, cy: m.cy } : null; this.dirtyBase = true; break;
       case 'lz': if (m.pid !== this.pid) return; this.trail.push([m.x, m.y, performance.now()]); break;
       case 'lz0': break;
       default: return;
