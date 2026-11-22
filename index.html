@@ -205,7 +205,7 @@ table.t td{padding:9px 10px;border-bottom:1px solid #eef2f8;vertical-align:middl
 .wc{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:center;padding:10px;min-height:120px}
 .wc span{font-weight:800;color:var(--navy);line-height:1}
 .draw-pad{border:2px solid var(--line);border-radius:14px;background:#fff;touch-action:none;width:100%;display:block}
-.code-big{font-size:2.4rem;font-weight:800;letter-spacing:.18em;color:var(--navy);font-variant-numeric:tabular-nums}
+.code-big{white-space:nowrap;font-size:clamp(1.5rem,6.5vw,2.4rem);font-weight:800;letter-spacing:.18em;color:var(--navy);font-variant-numeric:tabular-nums}
 .pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:#1f9d6b;box-shadow:0 0 0 0 rgba(31,157,107,.6);animation:pl 1.8s infinite}
 @keyframes pl{70%{box-shadow:0 0 0 9px rgba(31,157,107,0)}100%{box-shadow:0 0 0 0 rgba(31,157,107,0)}}
 
@@ -3085,15 +3085,30 @@ function moreSheet() {
     onMount: (m, close) => $$('[data-go]', m).forEach(b => b.onclick = () => { close(); b.dataset.go === 'classes-join' ? joinDialog() : go(b.dataset.go); })
   });
 }
+/* ---- room codes: 8 random chars from a 32-symbol alphabet (no I L O U) = 32^8 ≈ 1.1×10^12 combinations, shown as ABCD-EFGH.
+   Random source = crypto.getRandomValues; uniqueness among live rooms is enforced by the signalling server (an id can only be registered once).
+   Legacy 6-digit codes are still accepted so old links keep working. ---- */
+const Code = {
+  A: '0123456789ABCDEFGHJKMNPQRSTVWXYZ',
+  gen() { const b = new Uint8Array(8); (window.crypto || window.msCrypto).getRandomValues(b); let s = ''; for (let i = 0; i < 8; i++) s += this.A[b[i] & 31]; return s.slice(0, 4) + '-' + s.slice(4); },
+  /* typed/scanned text → canonical code, or '' when invalid. Forgives case, spaces, hyphens and look-alikes (O→0, I/L→1) */
+  norm(v) {
+    let s = String(v || '').toUpperCase().replace(/[\s\-_.]/g, ''); if (/^\d{6}$/.test(s)) return s;
+    s = s.replace(/O/g, '0').replace(/[IL]/g, '1'); return /^[0-9A-HJKMNP-TV-Z]{8}$/.test(s) ? s.slice(0, 4) + '-' + s.slice(4) : '';
+  },
+  pid(code) { const n = this.norm(code); return n.length === 6 ? 'sicl-' + n : 'sicl2-' + n.replace('-', ''); },
+  bind(inp) { inp.setAttribute('autocapitalize', 'characters'); inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('spellcheck', 'false'); inp.maxLength = 9; inp.addEventListener('input', () => { const v = inp.value.toUpperCase().replace(/[^0-9A-Z]/g, ''); inp.value = /^\d+$/.test(v) && v.length <= 6 ? v : (v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4, 8) : v); }); }
+};
 function joinDialog() {
   modal({
     title: T('เข้าร่วมห้องเรียน', 'Join a classroom'),
-    body: `<label class="f">${T('รหัสห้อง (6 หลัก)', 'Room code (6 digits)')}</label><input class="inp" id="jc" inputmode="numeric" maxlength="6" placeholder="123456" style="font-size:1.4rem;letter-spacing:.2em;text-align:center">
+    body: `<label class="f">${T('รหัสห้อง (8 ตัวอักษร/ตัวเลข)', 'Room code (8 characters)')}</label><input class="inp" id="jc" placeholder="ABCD-EFGH" style="font-size:1.4rem;letter-spacing:.14em;text-align:center">
     <label class="f">${T('ชื่อของคุณ', 'Your name')}</label><input class="inp" id="jn" placeholder="${T('เช่น ก้องภพ', 'e.g. Alex')}">`,
+    onMount: m => Code.bind($('#jc', m)),
     actions: [{ label: T('ยกเลิก', 'Cancel') }, {
       label: T('เข้าร่วม', 'Join'), cls: 'pri', onClick: () => {
-        const c = $('#jc').value.replace(/\D/g, ''), n = $('#jn').value.trim();
-        if (c.length !== 6 || !n) { toast(T('กรอกรหัส 6 หลักและชื่อ', 'Enter 6-digit code and name'), 'err'); return false; }
+        const c = Code.norm($('#jc').value), n = $('#jn').value.trim();
+        if (!c || !n) { toast(T('กรอกรหัสห้อง (เช่น ABCD-EFGH) และชื่อ', 'Enter the room code (e.g. ABCD-EFGH) and your name'), 'err'); return false; }
         const u = new URL(location.href); u.hash = ''; u.search = '?join=' + c + '&name=' + encodeURIComponent(n); location.href = u.toString();
       }
     }]
@@ -3374,7 +3389,7 @@ function supportAdmin(el) {
 
 /* =====================================================================
    Live Room — WebRTC (PeerJS) peer-to-peer ระหว่างครูกับนักเรียน/จอแสดงผล
-   ครู = host รหัส 6 หลัก  |  นักเรียน/Display = เปิด ?join=รหัส  หรือ ?display=รหัส
+   ครู = host รหัสห้อง 8 ตัว (ABCD-EFGH)  |  นักเรียน/Display = เปิด ?join=รหัส  หรือ ?display=รหัส
    ===================================================================== */
 const peerOpts = () => Object.assign({ debug: 0 }, CONFIG.peer || {});
 const Live = {
@@ -3392,11 +3407,11 @@ const Live = {
     return this.starting = (async () => {
       try {
         await loadLib('peer');
-        for (let attempt = 0; attempt < 5; attempt++) {
-          const code = String(Math.floor(100000 + Math.random() * 900000));
+        for (let attempt = 0; attempt < 8; attempt++) {
+          const code = Code.gen();
           try {
             await new Promise((res, rej) => {
-              const p = new Peer('sicl-' + code, peerOpts());
+              const p = new Peer(Code.pid(code), peerOpts());
               const to = setTimeout(() => { try { p.destroy(); } catch (e) { } rej(new Error('timeout')); }, 12000);
               p.on('open', () => { clearTimeout(to); this.peer = p; this.code = code; res(); });
               p.on('error', e => { clearTimeout(to); try { p.destroy(); } catch (_) { } rej(e); });
@@ -3488,7 +3503,7 @@ const LiveClient = {
   },
   _connect() {
     if (this.left) return;
-    const c = this.peer.connect('sicl-' + this.code, { reliable: true }); this.conn = c;
+    const c = this.peer.connect(Code.pid(this.code), { reliable: true }); this.conn = c;
     const to = setTimeout(() => { if (!c.open) this.setStatus('error', T('เชื่อมต่อห้องไม่สำเร็จ (เครือข่ายอาจบล็อก WebRTC)', 'Connection timed out')); }, 15000);
     c.on('open', () => { clearTimeout(to); this.retry = 0; c.send({ t: 'hello', name: this.name, role: this.role, dev: typeof devLabel === 'function' ? devLabel() : '' }); });
     c.on('data', m => {
@@ -3519,7 +3534,7 @@ const IMGS = {
     const p = (async () => {
       const url = await IDB.get('imgs', id); if (!url) throw new Error('missing');
       const im = await loadImageEl(url); this.map.set(id, im); this.pend.delete(id); this.cb && this.cb(); return im;
-    })().catch(() => { this.pend.delete(id); this.map.set(id, false); return null; });
+    })().catch(() => { this.pend.delete(id); if (!this.map.get(id)) this.map.set(id, false); return this.map.get(id) || null; });   // ห้ามเขียนทับรูปที่ส่งมาทางเครือข่ายด้วย false
     this.pend.set(id, p); return p;
   },
   async ensure(id) { if (!id) return null; if (this.map.has(id)) return this.map.get(id) || null; return await (this.pend.get(id) || this.load(id)); },
@@ -3554,17 +3569,43 @@ function strokePath(ctx, pts) {
   for (let i = 1; i < pts.length - 1; i++) { const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2; ctx.quadraticCurveTo(pts[i][0], pts[i][1], mx, my); }
   const l = pts[pts.length - 1]; ctx.lineTo(l[0], l[1]);
 }
+/* one segment of a stroke; used by both the final renderer and the incremental "wet ink" renderer so they look identical */
+function penSeg(ctx, o, pts, i) {
+  const p0 = pts[i - 1], p1 = pts[i], p2 = pts[Math.min(i + 1, pts.length - 1)];
+  const pr = (p0[2] + p1[2]) / 2; ctx.lineWidth = o.w * (.35 + 1.1 * pr);
+  ctx.beginPath(); ctx.moveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2); ctx.quadraticCurveTo(p1[0], p1[1], (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2); ctx.stroke();
+}
+function plainSeg(ctx, pts, i) {
+  const n = pts.length, p0 = pts[i - 1], p1 = pts[i];
+  ctx.beginPath(); if (i === 1) ctx.moveTo(p0[0], p0[1]); else ctx.moveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2);
+  if (i < n - 1) { const p2 = pts[i + 1]; ctx.quadraticCurveTo(p1[0], p1[1], (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2); } else ctx.lineTo(p1[0], p1[1]);
+  ctx.stroke();
+}
+function inkSeg(ctx, o, pts, i) { if (o.pr) penSeg(ctx, o, pts, i); else plainSeg(ctx, pts, i); }
+/* wet ink: finished segments are drawn once onto an offscreen layer; each frame only blits it and draws the 1–3 newest segments */
+class InkLayer {
+  constructor() { this.c = document.createElement('canvas'); this.x = this.c.getContext('2d'); this.obj = null; this.n = 0; this.key = ''; }
+  static ok(l) { return !!(l && l.pts && l.tool === 'pen' && l.a >= .99 && l.pts.length > 2); }
+  paint(m, l, W, H, sx, ox, oy, pred) {
+    const w = this.x, pts = l.pts, n = pts.length, key = sx + '|' + ox + '|' + oy;
+    if (this.c.width !== W || this.c.height !== H) { this.c.width = W; this.c.height = H; this.obj = null; }
+    if (this.obj !== l || this.key !== key) { w.setTransform(1, 0, 0, 1, 0, 0); w.clearRect(0, 0, W, H); this.obj = l; this.n = 0; this.key = key; }
+    w.setTransform(sx, 0, 0, sx, ox, oy); w.strokeStyle = w.fillStyle = l.color; w.globalAlpha = 1; w.lineCap = w.lineJoin = 'round'; w.lineWidth = l.w;
+    for (let i = this.n + 1; i <= n - 2; i++) { inkSeg(w, l, pts, i); this.n = i; }
+    m.save(); m.setTransform(1, 0, 0, 1, 0, 0); m.drawImage(this.c, 0, 0); m.restore();
+    const tp = pred && pred.length ? pts.concat(pred) : pts;
+    m.save(); m.strokeStyle = m.fillStyle = l.color; m.globalAlpha = 1; m.lineCap = m.lineJoin = 'round'; m.lineWidth = l.w;
+    for (let i = this.n + 1; i < tp.length; i++) inkSeg(m, l, tp, i);
+    m.restore();
+  }
+}
 function drawStroke(ctx, o) {
   const pts = o.pts; if (!pts.length) return;
   ctx.strokeStyle = ctx.fillStyle = o.color; ctx.globalAlpha = o.a; ctx.lineWidth = o.w;
   if (pts.length === 1 || (pts.length === 2 && pts[0][0] === pts[1][0] && pts[0][1] === pts[1][1])) { ctx.beginPath(); ctx.arc(pts[0][0], pts[0][1], Math.max(.8, o.w / 2), 0, 6.2832); ctx.fill(); return; }
   if (o.tool === 'hl') ctx.lineCap = 'butt';
   if (o.pr && o.a >= .99 && o.tool === 'pen' && pts.length > 2) {
-    for (let i = 1; i < pts.length; i++) {
-      const p0 = pts[i - 1], p1 = pts[i], p2 = pts[Math.min(i + 1, pts.length - 1)];
-      const pr = (p0[2] + p1[2]) / 2; ctx.lineWidth = o.w * (.35 + 1.1 * pr);
-      ctx.beginPath(); ctx.moveTo((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2); ctx.quadraticCurveTo(p1[0], p1[1], (p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2); ctx.stroke();
-    }
+    for (let i = 1; i < pts.length; i++) penSeg(ctx, o, pts, i);
   } else { strokePath(ctx, pts); ctx.stroke(); }
 }
 function shapePoly(o) {
@@ -3643,6 +3684,7 @@ class Board {
     this.doc = null; this.tool = 'pen'; this.color = '#142B4A'; this.size = 4; this.alpha = 1; this.shape = 'r'; this.fill = false; this.fingerPan = false;
     this.view = { s: 1, ox: 0, oy: 0 }; this.autoFit = true; this.padB = 84; this.transparent = false;
     this.sel = new Set(); this.hist = {}; this.pointers = new Map(); this.live = null; this.gesture = null; this.lastPen = 0; this.trail = []; this.baseDirty = true; this.raf = 0; this.eraseAt = null;
+    this.ink = new InkLayer(); this.inc = []; this.pred = null; this.lastInput = 0;
     this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(stage);
     const m = this.main;
     m.addEventListener('pointerdown', e => this.down(e)); m.addEventListener('pointermove', e => this.move(e)); m.addEventListener('pointerup', e => this.up(e)); m.addEventListener('pointercancel', e => this.up(e));
@@ -3660,6 +3702,7 @@ class Board {
     for (const c of [this.main, this.fx, this.base]) { c.width = Math.max(1, Math.round(this.cw * this.dpr)); c.height = Math.max(1, Math.round(this.ch * this.dpr)); }
     if (this.doc && this.autoFit) this.fit(); this.baseDirty = true; this.render();
   }
+  busy() { return this.pointers.size > 0 || performance.now() - this.lastInput < 500; }
   fit() {
     if (!this.doc) return; const p = this.page; const padT = 56, pad = 14, padB = this.cw < 1180 ? Math.max(this.padB, 150) : this.padB;
     const aw = Math.max(50, this.cw - pad * 2), ah = Math.max(50, this.ch - padT - padB);
@@ -3677,7 +3720,7 @@ class Board {
   canUndo() { return this.doc && this.h().undo.length > 0; } canRedo() { return this.doc && this.h().redo.length > 0; }
   undo() { const h = this.h(); if (!h.undo.length) return; h.redo.push(this.page.objs); this.page.objs = h.undo.pop(); this.sel.clear(); this.changed(); }
   redo() { const h = this.h(); if (!h.redo.length) return; h.undo.push(this.page.objs); this.page.objs = h.redo.pop(); this.sel.clear(); this.changed(); }
-  changed() { this.baseDirty = true; this.render(); this.cb.change && this.cb.change(); this.cb.hist && this.cb.hist(); this.cb.select && this.cb.select(this.sel.size); }
+  changed(inc) { if (inc && !this.baseDirty) this.inc.push(inc); else this.baseDirty = true; this.render(); this.cb.change && this.cb.change(); this.cb.hist && this.cb.hist(); this.cb.select && this.cb.select(this.sel.size); }
   add(o) { this.pushHist(); this.page.objs = [...this.page.objs, o]; this.changed(); }
   clearPage() { if (!this.page.objs.length) return; this.pushHist(); this.page.objs = []; this.sel.clear(); this.changed(); }
   /* ---- selection ops ---- */
@@ -3689,7 +3732,7 @@ class Board {
   clearSel() { if (this.sel.size) { this.sel.clear(); this.render(); this.cb.select && this.cb.select(0); } }
   /* ---- pointer ---- */
   down(e) {
-    if (!this.doc) return; e.preventDefault();
+    if (!this.doc) return; e.preventDefault(); this.lastInput = performance.now();
     try { this.main.setPointerCapture(e.pointerId); } catch (_) { }
     const now = performance.now();
     if (e.pointerType === 'pen') this.lastPen = now;
@@ -3734,13 +3777,24 @@ class Board {
     }
     const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
     for (const ev of evs) this.moveOne(ev, e);
+    this.lastInput = performance.now(); this.predict(e);
     this.render();
+  }
+  /* predicted tip: a few points ahead of the pen (browser prediction when available, otherwise a short extrapolation); drawn only on screen, never stored */
+  predict(e) {
+    this.pred = null; const l = this.live; if (!l || !l.pts || l.pts.length < 3 || l.tool !== 'pen') return;
+    try {
+      const pe = e.getPredictedEvents ? e.getPredictedEvents() : null;
+      if (pe && pe.length) { const pr = l.pts[l.pts.length - 1][2]; this.pred = pe.slice(0, 3).map(ev => { const [x, y] = this.toL(ev); return [x, y, pr]; }); return; }
+    } catch (_) { }
+    const a = l.pts[l.pts.length - 2], b = l.pts[l.pts.length - 1]; const dx = b[0] - a[0], dy = b[1] - a[1], dd = Math.hypot(dx, dy) * this.view.s;
+    if (dd > .5 && dd < 40) this.pred = [[b[0] + dx * .6, b[1] + dy * .6, b[2]]];
   }
   moveOne(e, orig) {
     const [x, y] = this.toL(e); const t = this.tool;
     if (this.live && this.live.pts) {
       const l = this.live.pts[this.live.pts.length - 1];
-      if (Math.hypot(x - l[0], y - l[1]) * this.view.s >= 1.2) this.live.pts.push([x, y, orig.pointerType === 'pen' ? (e.pressure || .5) : .5]);
+      if (Math.hypot(x - l[0], y - l[1]) * this.view.s >= 1.2) this.live.pts.push([x, y, orig.pointerType === 'pen' ? l[2] * .45 + (e.pressure || .5) * .55 : .5]);
     } else if (this.live && this.live.k === 'lasso') this.live.poly.push([x, y]);
     else if (this.live && this.live.k === 'drag') {
       const d = this.drag; const dx = x - d.sx, dy = y - d.sy; if (Math.abs(dx) + Math.abs(dy) > 1) d.moved = true;
@@ -3754,7 +3808,8 @@ class Board {
     if (!had) return;
     if (this.gesture) { if (this.pointers.size < 2 && this.gesture.type === 'pinch') this.gesture = null; else if (this.gesture.type === 'pan') this.gesture = null; return; }
     const t = this.tool, l = this.live; this.live = null;
-    if (l && l.pts) { this.page.objs = [...this.page.objs, l]; this.pushHistBefore(l); this.changed(); }
+    this.pred = null;
+    if (l && l.pts) { this.page.objs = [...this.page.objs, l]; this.pushHistBefore(l); this.changed(l); }
     else if (l && l.k === 'lasso') {
       const poly = l.poly; if (poly.length > 3) { this.sel = new Set(this.page.objs.filter(o => { const b = bboxOf(o); const cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2; return pointInPoly(cx, cy, poly) || (o.k === 's' && o.pts.some(p => pointInPoly(p[0], p[1], poly))); }).map(o => o.id)); }
       this.cb.select && this.cb.select(this.sel.size); this.render();
@@ -3804,13 +3859,16 @@ class Board {
     if (this.baseDirty) {
       const c = this.bctx; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.base.width, this.base.height); c.setTransform(d * v.s, 0, 0, d * v.s, d * v.ox, d * v.oy);
       if (!this.transparent) { c.save(); c.shadowColor = 'rgba(20,43,74,.28)'; c.shadowBlur = 24; c.shadowOffsetY = 6; c.fillStyle = '#fff'; c.fillRect(0, 0, p.w, p.h); c.restore(); }
-      c.save(); c.beginPath(); c.rect(0, 0, p.w, p.h); c.clip(); drawPaper(c, p, this.transparent); for (const o of p.objs) drawObj(c, o); c.restore(); this.baseDirty = false;
+      c.save(); c.beginPath(); c.rect(0, 0, p.w, p.h); c.clip(); drawPaper(c, p, this.transparent); for (const o of p.objs) drawObj(c, o); c.restore(); this.baseDirty = false; this.inc.length = 0;
+    } else if (this.inc.length) {
+      const c = this.bctx; c.setTransform(d * v.s, 0, 0, d * v.s, d * v.ox, d * v.oy); c.save(); c.beginPath(); c.rect(0, 0, p.w, p.h); c.clip(); for (const o of this.inc) drawObj(c, o); c.restore(); this.inc.length = 0;
     }
     const m = this.mctx; m.setTransform(1, 0, 0, 1, 0, 0); m.clearRect(0, 0, this.main.width, this.main.height); m.drawImage(this.base, 0, 0);
     m.setTransform(d * v.s, 0, 0, d * v.s, d * v.ox, d * v.oy);
     m.save(); m.beginPath(); m.rect(0, 0, p.w, p.h); m.clip();
     const l = this.live;
-    if (l && (l.pts || l.x1 !== undefined)) drawObj(m, l);
+    if (InkLayer.ok(l)) this.ink.paint(m, l, this.main.width, this.main.height, d * v.s, d * v.ox, d * v.oy, this.pred);
+    else if (l && (l.pts || l.x1 !== undefined)) drawObj(m, l);
     if (this.ext && this.ext.pts && this.ext.pts.length) drawObj(m, this.ext);
     m.restore();
     if (l && l.k === 'lasso' && l.poly.length > 1) { m.save(); m.setLineDash([8 / v.s, 6 / v.s]); m.lineWidth = 2 / v.s; m.strokeStyle = '#e0426b'; m.beginPath(); m.moveTo(l.poly[0][0], l.poly[0][1]); l.poly.forEach(q => m.lineTo(q[0], q[1])); m.closePath(); m.fillStyle = 'rgba(242,184,198,.18)'; m.fill(); m.stroke(); m.restore(); }
@@ -3851,8 +3909,8 @@ const Cast = {
     for (const s of (targets || this.disp())) {
       if (!s.imgs) s.imgs = new Set();
       for (const id of ids) {
-        if (!id || s.imgs.has(id)) continue; s.imgs.add(id);
-        const data = await IDB.get('imgs', id); if (!data) continue;
+        if (!id || s.imgs.has(id)) continue;
+        const data = await IDB.get('imgs', id); if (!data) continue; s.imgs.add(id);
         this.out(s, { t: 'img', id, data });
       }
     }
@@ -4332,7 +4390,23 @@ const Devices = {
         else if (c === 'pick') Hub.pick();
         else if (c === 'thumbs') this.thumbs(s, this.num(m.from, 0, 9999, 0) | 0);
       }
+      return;
+      case 'file': return this.recvFile(s, m);
     }
+  },
+  /* ---------- iPad ส่งไฟล์ PDF/รูป มานำเสนอที่เครื่องหลัก (ครูต้องกดอนุญาตทุกครั้ง) ---------- */
+  async recvFile(s, m) {
+    const A = Hub.api, ack = (ok, msg) => Live.send(s.id, { t: 'fileack', ok, msg });
+    if (this.fileBusy) return ack(false, T('เครื่องหลักกำลังรอยืนยันไฟล์อื่นอยู่', 'Another file is pending'));
+    const name = String(m.name || 'file').slice(0, 120), type = String(m.type || ''), buf = m.data, okType = /\.pdf$/i.test(name) || type === 'application/pdf' || /^image\/(png|jpeg|webp|gif)$/.test(type);
+    if (!A) return ack(false, T('เปิด Teaching Studio ที่เครื่องหลักก่อน', 'Open the Studio first'));
+    if (!okType || !(buf instanceof ArrayBuffer || ArrayBuffer.isView(buf)) || buf.byteLength > 60e6) return ack(false, T('รองรับเฉพาะ PDF/รูปภาพ ขนาดไม่เกิน 60 MB', 'PDF or image up to 60 MB'));
+    this.fileBusy = true;
+    try {
+      const ok = await confirmBox(T(`“${s.label || s.name}” ส่งไฟล์ “${name}” (${(buf.byteLength / 1048576).toFixed(1)} MB) มานำเสนอ — นำเข้าเป็นสไลด์ไหม?`, `Import "${name}" from ${s.label || s.name}?`), T('นำเข้า', 'Import'));
+      if (!ok) return ack(false, T('ครูไม่อนุญาต', 'Declined'));
+      ack(true, T('กำลังนำเข้า…', 'Importing…')); A.importFiles([new File([buf], name, { type: type || (/\.pdf$/i.test(name) ? 'application/pdf' : '') })]);
+    } finally { this.fileBusy = false; }
   },
   /* ---------- ภาพย่อสไลด์ให้ iPad (ขอทีละชุด) ---------- */
   thc: new Map(),
@@ -4391,7 +4465,7 @@ function bootRemote(code) {
   app.innerHTML = `<div class="dsp rmt hud" id="rmt"><div class="dmain"><div class="dstage" id="rStage"></div>
       <div class="dwait" id="rWait"><div class="dlogo">PEN REMOTE</div><div id="rWaitTx">${T('กำลังเชื่อมต่อ…', 'Connecting…')}</div></div></div>
     <div class="rtop"><span class="chip" id="rSt">…</span><span class="chip" id="rPg"></span></div>
-    <div class="rtop2" id="rt2"><button class="rb2" data-k="sheet" title="${T('สไลด์ทั้งหมด', 'Slides')}">📑</button><button class="rb2" data-k="zout">−</button><button class="rb2" data-k="fit">⤢</button><button class="rb2" data-k="zin">＋</button><button class="rb2" data-k="finger" id="rFg" title="${T('นิ้ว: เขียน / ปัดเปลี่ยนหน้า', 'Finger: draw / swipe pages')}">👆</button><button class="rb2" data-k="more" title="${T('จับเวลา/สุ่ม', 'Timer / pick')}">⏱</button><button class="rb2" data-k="fs">⛶</button></div>
+    <div class="rtop2" id="rt2"><button class="rb2" data-k="sheet" title="${T('สไลด์ทั้งหมด', 'Slides')}">📑</button><button class="rb2" data-k="zout">−</button><button class="rb2" data-k="fit">⤢</button><button class="rb2" data-k="zin">＋</button><button class="rb2" data-k="finger" id="rFg" title="${T('นิ้ว: เขียน / ปัดเปลี่ยนหน้า', 'Finger: draw / swipe pages')}">👆</button><button class="rb2" data-k="more" title="${T('จับเวลา/สุ่ม', 'Timer / pick')}">⏱</button><button class="rb2" data-k="file" title="${T('เปิดไฟล์ PDF/รูปจาก iPad ขึ้นจอฉาย', 'Send a PDF/image to the presentation')}">📂</button><button class="rb2" data-k="fs">⛶</button></div>
     <div class="rsheet hide" id="rSheet"><div class="rsh-h"><b>📑 ${T('สไลด์ทั้งหมด — แตะเพื่อไปหน้านั้น', 'All slides — tap to jump')}</b><span style="flex:1"></span><button class="rb2" data-k="addpage">＋ ${T('เพิ่มหน้า', 'Add page')}</button><button class="rb2" data-k="closesheet">✕</button></div><div class="rsh-g" id="rShG"></div></div>
     <div class="rsheet small hide" id="rMore"><div class="rsh-h"><b>⏱ ${T('จับเวลา / สุ่มนักเรียน', 'Timer / Pick')}</b><span style="flex:1"></span><button class="rb2" data-k="closemore">✕</button></div><div class="rsh-b">${[1, 3, 5, 10].map(m => `<button class="rb2 w" data-tm="${m}">${m} ${T('นาที', 'min')}</button>`).join('')}<button class="rb2 w" data-tm="0">✕ ${T('ยกเลิกเวลา', 'Clear')}</button><button class="rb2 w pri" data-k="pick">🎯 ${T('สุ่มนักเรียน', 'Pick a student')}</button></div></div>
     <div class="rtb" id="rtb">
@@ -4420,6 +4494,7 @@ function bootRemote(code) {
     zin() { LiveClient.send({ t: 'cmd', c: 'zoom', d: 1 }); }, zout() { LiveClient.send({ t: 'cmd', c: 'zoom', d: -1 }); }, fit() { LiveClient.send({ t: 'cmd', c: 'zoom', d: 0 }); },
     addpage() { LiveClient.send({ t: 'cmd', c: 'addpage' }); setTimeout(() => reqTh(0), 500); }, pick() { LiveClient.send({ t: 'cmd', c: 'pick' }); $('#rMore').classList.add('hide'); },
     finger() { R.finger = R.finger === 'draw' ? 'nav' : 'draw'; sel(); toast(R.finger === 'nav' ? T('นิ้ว = ปัดซ้าย/ขวาเปลี่ยนหน้า (ปากกา Pencil ใช้เขียน)', 'Finger swipes pages; Pencil draws') : T('นิ้ว = เขียนได้', 'Finger draws'), 'ok', 2200); },
+    file() { const i = document.createElement('input'); i.type = 'file'; i.accept = 'application/pdf,.pdf,image/*'; i.style.display = 'none'; i.onchange = async () => { const f = i.files[0]; i.remove(); if (!f) return; if (f.size > 60e6) return toast(T('ไฟล์ใหญ่เกิน 60 MB', 'File too large'), 'err', 3000); toast('📤 ' + T('กำลังส่งไฟล์ไปเครื่องหลัก…', 'Sending to the main device…'), 'ok', 4000); try { const data = await f.arrayBuffer(); LiveClient.send({ t: 'file', name: f.name, type: f.type, data }); } catch (e) { toast(T('ส่งไฟล์ไม่สำเร็จ', 'Failed'), 'err'); } }; document.body.appendChild(i); i.click(); },
     fs() { const d = document.documentElement, f = d.requestFullscreen || d.webkitRequestFullscreen; try { f && f.call(d); } catch (e) { } }
   };
   $$('#rt2 [data-k], #rSheet [data-k], #rMore [data-k]').forEach(b => { if (fnk[b.dataset.k]) b.onclick = () => fnk[b.dataset.k](); });
@@ -4444,13 +4519,13 @@ function bootRemote(code) {
   cv.addEventListener('pointermove', e => {
     if (!d || e.pointerId !== d.id) return; e.preventDefault(); const evs = (e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e]; const pgm = view.pages.get(view.pid); if (!pgm) return;
     for (const ev of evs) { const [x, y] = view.toPage(ev);
-      if (d.kind === 's') { const l = d.obj.pts[d.obj.pts.length - 1]; if (Math.hypot(x - l[0], y - l[1]) * view.xf(pgm).s / view.dpr >= 1.2) d.obj.pts.push([x, y, ev.pointerType === 'pen' ? (ev.pressure || .5) : .5]); }
+      if (d.kind === 's') { const l = d.obj.pts[d.obj.pts.length - 1]; if (Math.hypot(x - l[0], y - l[1]) * view.xf(pgm).s / view.dpr >= 1.2) d.obj.pts.push([x, y, ev.pointerType === 'pen' ? l[2] * .45 + (ev.pressure || .5) * .55 : .5]); }
       else if (d.kind === 'e') eraseAt(x, y); else { view.trail.push([x, y, performance.now()]); LiveClient.send({ t: 'rl', pid: view.pid, x: r1_(x), y: r1_(y) }); } }
-    if (d.kind === 's') { view.need = true; if (!raf) raf = requestAnimationFrame(flush); }
+    if (d.kind === 's') { view.pred = null; const lp = d.obj.pts, pgx = view.pages.get(view.pid); if (lp.length > 2 && d.obj.tool === 'pen' && pgx) { try { const pe = e.getPredictedEvents ? e.getPredictedEvents() : null; if (pe && pe.length) view.pred = pe.slice(0, 3).map(q => { const [px, py] = view.toPage(q); return [px, py, lp[lp.length - 1][2]]; }); } catch (_) { } if (!view.pred) { const a = lp[lp.length - 2], b = lp[lp.length - 1], dx = b[0] - a[0], dy = b[1] - a[1], dd = Math.hypot(dx, dy) * view.xf(pgx).s / view.dpr; if (dd > .5 && dd < 40) view.pred = [[b[0] + dx * .6, b[1] + dy * .6, b[2]]]; } } view.need = true; if (!raf) raf = requestAnimationFrame(flush); }
   });
   const end = e => {
     if (!d || e.pointerId !== d.id) return; const k = d.kind; const dd = d; if (k === 's') flush(); d = null;
-    if (k === 's') { const o = dd.obj; view.live = null; view.mine = false; view.objs = [...view.objs, o]; view.dirtyBase = true; view.need = true; LiveClient.send({ t: 'rs', pid: view.pid, obj: Object.assign({}, o, { pts: o.pts.map(p => [r1_(p[0]), r1_(p[1]), Math.round(p[2] * 100) / 100]) }) }); }
+    if (k === 's') { const o = dd.obj; view.live = null; view.mine = false; view.pred = null; view.objs = [...view.objs, o]; if (view.dirtyBase) { } else view.inc.push(o); view.need = true; LiveClient.send({ t: 'rs', pid: view.pid, obj: Object.assign({}, o, { pts: o.pts.map(p => [r1_(p[0]), r1_(p[1]), Math.round(p[2] * 100) / 100]) }) }); }
     else if (k === 'e') { if (dd.ids.size) LiveClient.send({ t: 're', pid: view.pid, ids: [...dd.ids] }); } else LiveClient.send({ t: 'rl0' });
   };
   cv.addEventListener('pointerup', e => { const w = R.sw; if (w && w.id === e.pointerId) { R.sw = null; const dx = e.clientX - w.x, dy = e.clientY - w.y; if (Math.abs(dx) > 70 && Math.abs(dy) < Math.abs(dx) * .6 && performance.now() - w.t < 700) LiveClient.send({ t: 'cmd', c: 'page', d: dx < 0 ? 1 : -1 }); return; } end(e); }); cv.addEventListener('pointercancel', e => { if (R.sw) { R.sw = null; return; } end(e); });
@@ -4458,7 +4533,7 @@ function bootRemote(code) {
   LiveClient.join(code, 'Remote', 'remote', {
     status: (s, info) => { const map = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), online: T('เชื่อมต่อแล้ว', 'online'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }; $('#rSt').textContent = map[s] || s; $('#rSt').className = 'chip ' + (s === 'online' ? 'ok' : s === 'error' || s === 'closed' ? 'bad' : 'warn'); const w = $('#rWaitTx'); if (w) w.textContent = s === 'online' ? T('รอครูเปิดสไลด์ใน Teaching Studio…', 'Waiting for slides…') : (map[s] || s); if (s === 'closed') $('#rWait').classList.remove('hide'); },
     state: st => { R.st = st || {}; refreshLayer(); }, stream: s => { R.stream = s; refreshLayer(); },
-    msg: m => { if (m.t === 'th') { m.items.forEach(x => TH.set(x.id, x.img)); drawSheet(); if (m.next >= 0 && !$('#rSheet').classList.contains('hide')) reqTh(m.next); } else if (m.t === 'ident') { const e = $('#rIdent'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); setTimeout(() => e.classList.add('hide'), 3000); } else if (m.t === 'label') { $('#rSt').textContent = m.text; } else view.onMsg(m); }
+    msg: m => { if (m.t === 'fileack') { toast((m.ok ? '✔ ' : '✖ ') + m.msg, m.ok ? 'ok' : 'err', 3500); } else if (m.t === 'th') { m.items.forEach(x => TH.set(x.id, x.img)); drawSheet(); if (m.next >= 0 && !$('#rSheet').classList.contains('hide')) reqTh(m.next); } else if (m.t === 'ident') { const e = $('#rIdent'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); setTimeout(() => e.classList.add('hide'), 3000); } else if (m.t === 'label') { $('#rSt').textContent = m.text; } else view.onMsg(m); }
   });
 }
 
@@ -4550,7 +4625,7 @@ function bootMirror(code) {
     try { const snd = call && call.peerConnection && call.peerConnection.getSenders().find(x => x.track && x.track.kind === 'video'); if (snd) { const p = snd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = c.br; await snd.setParameters(p); } } catch (e) { }
   };
   const stop = () => { try { call && call.close(); } catch (e) { } call = null; if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; try { wl && wl.release(); } catch (e) { } wl = null; $('#mV').srcObject = null; $('#mPh').classList.remove('hide'); $('#mStop').disabled = true; if (LiveClient.status === 'online') st('● ' + T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); };
-  const place = () => { if (!stream || !LiveClient.peer || LiveClient.status !== 'online') return; try { call && call.close(); } catch (e) { } call = LiveClient.peer.call('sicl-' + code, stream); st('🔴 ' + T('กำลังส่งภาพสดไปยังครู', 'Streaming to the teacher')); setTimeout(applyQ, 700); };
+  const place = () => { if (!stream || !LiveClient.peer || LiveClient.status !== 'online') return; try { call && call.close(); } catch (e) { } call = LiveClient.peer.call(Code.pid(code), stream); st('🔴 ' + T('กำลังส่งภาพสดไปยังครู', 'Streaming to the teacher')); setTimeout(applyQ, 700); };
   const start = async (getter, hint) => {
     try { stop(); stream = await getter(); const t = stream.getVideoTracks()[0]; try { t.contentHint = hint; } catch (e) { } $('#mV').srcObject = stream; $('#mPh').classList.add('hide'); $('#mStop').disabled = false; t.addEventListener('ended', stop); wake(); place(); }
     catch (e) { toast(T('เริ่มส่งภาพไม่สำเร็จ: ', 'Failed: ') + (e.name === 'NotAllowedError' ? T('ไม่ได้รับอนุญาต', 'permission denied') : e.message), 'err', 4000); }
@@ -4609,9 +4684,9 @@ const Co = {
           if (!document.body.contains(mm)) { un && un(); return; }
           if (!this.on()) {
             const st = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('Studio หลักปิดห้องแล้ว', 'closed'), error: this.info || 'error', idle: '' }[this.status] || '';
-            box.innerHTML = `<p class="small muted" style="margin-top:0">${T('ที่ Studio หลักกด “เชื่อมอุปกรณ์” → การ์ด “เครื่องนำเสนอที่ 2” แล้วสแกน QR หรือกรอกรหัส 6 หลักที่นี่ — เครื่องนี้จะยังใช้สไลด์/กระดานของตัวเองได้อิสระ', 'On the main Studio open Devices → “Second presenter”, scan the QR or enter its 6-digit code.')}</p>
-              <div class="row" style="gap:8px"><input class="inp" id="coCode" inputmode="numeric" maxlength="6" placeholder="${T('รหัส 6 หลัก', '6-digit code')}" value="${esc(this.code || '')}" style="max-width:180px;font-size:1.3rem;letter-spacing:.2em;text-align:center"><button class="btn pri" id="coGo">${T('เชื่อมต่อ', 'Connect')}</button></div>${st ? `<p class="small" style="margin:10px 0 0"><span class="chip ${this.status === 'error' || this.status === 'closed' ? 'bad' : 'warn'}">${esc(st)}</span></p>` : ''}`;
-            const go = () => { const v = ($('#coCode', box).value || '').replace(/\D/g, ''); if (v.length !== 6) return toast(T('กรอกรหัส 6 หลัก', 'Enter 6 digits'), 'err', 1800); this.connect(v); };
+            box.innerHTML = `<p class="small muted" style="margin-top:0">${T('ที่ Studio หลักกด “เชื่อมอุปกรณ์” → การ์ด “เครื่องนำเสนอที่ 2” แล้วสแกน QR หรือกรอกรหัสห้องที่นี่ — เครื่องนี้จะยังใช้สไลด์/กระดานของตัวเองได้อิสระ', 'On the main Studio open Devices → “Second presenter”, scan the QR or enter its 6-digit code.')}</p>
+              <div class="row" style="gap:8px"><input class="inp" id="coCode" placeholder="ABCD-EFGH" value="${esc(this.code || '')}" style="max-width:200px;font-size:1.3rem;letter-spacing:.12em;text-align:center"><button class="btn pri" id="coGo">${T('เชื่อมต่อ', 'Connect')}</button></div>${st ? `<p class="small" style="margin:10px 0 0"><span class="chip ${this.status === 'error' || this.status === 'closed' ? 'bad' : 'warn'}">${esc(st)}</span></p>` : ''}`;
+            Code.bind($('#coCode', box)); const go = () => { const v = Code.norm($('#coCode', box).value); if (!v) return toast(T('กรอกรหัสห้อง เช่น ABCD-EFGH', 'Enter the room code, e.g. ABCD-EFGH'), 'err', 1800); this.connect(v); };
             $('#coGo', box).onclick = go; $('#coCode', box).onkeydown = e => { if (e.key === 'Enter') go(); };
           } else {
             box.innerHTML = `<p style="margin-top:0"><span class="chip ok">● ${T('เชื่อมแล้ว · รหัส', 'Linked · code')} ${esc(this.code)}</span></p>
@@ -4906,7 +4981,7 @@ PAGES.studio = {
         tool: t => setTool(t), imgLoaded: () => { scheduleThumb(); scheduleBc(); }
       });
       board.setDoc(doc); Cast.attach(board);
-      Hub.mount(stage, { get board() { return board; }, doc: () => doc, setTool: t => setTool(t), gotoPage: i => gotoPage(i), addPage: () => addPage(), click: id => $s('#' + id).click(), setStyle: (c, s) => { if (c) board.color = c; if (s) board.size = s; curDot(); } });
+      Hub.mount(stage, { get board() { return board; }, doc: () => doc, setTool: t => setTool(t), gotoPage: i => gotoPage(i), addPage: () => addPage(), click: id => $s('#' + id).click(), importFiles: fl => { fl = [...fl]; const pdf = fl.find(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf'); if (pdf) return importPdf(pdf); const im = fl.filter(f => /^image\//.test(f.type)); if (im.length) return importImagePages(im); }, setStyle: (c, s) => { if (c) board.color = c; if (s) board.size = s; curDot(); } });
       Win.mount(stage);
       stage.insertAdjacentHTML('beforeend', `
         <div class="pgnav"><button id="pPrev" aria-label="prev">${ic('chevL', 18)}</button><span id="pNo" class="small" style="min-width:48px;text-align:center;font-weight:700"></span><button id="pNext" aria-label="next">${ic('chevR', 18)}</button></div>
@@ -4931,7 +5006,14 @@ PAGES.studio = {
       if (window._pendingPdf) { const f = window._pendingPdf; window._pendingPdf = null; importPdf(f); }
     }
     const $s = s => $(s, el);
-    function markDirty() { const c = $s('#saveSt'); if (c) { c.textContent = T('กำลังบันทึก…', 'Saving…'); c.className = 'chip warn'; } clearTimeout(saveT); saveT = setTimeout(saveDoc, 700); }
+    /* heavy background work (save, thumbnails, board snapshot) waits until the pen has been idle, so writing is never interrupted; max wait keeps it from starving */
+    const idleTok = {};
+    function whenIdle(key, fn, maxMs = 6000) {
+      const t0 = Date.now(), tok = idleTok[key] = (idleTok[key] || 0) + 1;
+      const go = () => { if (!alive || idleTok[key] !== tok) return; if (board && board.busy() && Date.now() - t0 < maxMs) return setTimeout(go, 150); (window.requestIdleCallback ? requestIdleCallback(() => { if (alive && idleTok[key] === tok) fn(); }, { timeout: 500 }) : fn()); };
+      go();
+    }
+    function markDirty() { const c = $s('#saveSt'); if (c) { c.textContent = T('กำลังบันทึก…', 'Saving…'); c.className = 'chip warn'; } clearTimeout(saveT); saveT = setTimeout(() => { whenIdle('save', saveDoc, 8000); }, 700); }
     async function saveDoc() {
       if (!doc) return; doc.updated = Date.now();
       try {
@@ -4960,7 +5042,7 @@ PAGES.studio = {
     }
     const unsubLive = Live.sub(updLive);
     function gotoPage(i) { board.setPage(i); updPage(); scheduleBc(); }
-    function scheduleThumb() { clearTimeout(thumbT); thumbT = setTimeout(() => refreshThumbs(false), 450); }
+    function scheduleThumb() { clearTimeout(thumbT); thumbT = setTimeout(() => { whenIdle('thumb', () => refreshThumbs(false), 3000); }, 450); }
     async function refreshThumbs(all) {
       const box = $s('#pages'); if (!box || !alive) return;
       if (all || box.children.length - 1 !== doc.pages.length) {
@@ -4971,7 +5053,7 @@ PAGES.studio = {
       if (all) { for (let i = 0; i < doc.pages.length && alive; i++) { await draw(i); if (i % 6 === 5) await sleep(0); } } else await draw(doc.cur);
       updPage();
     }
-    function scheduleBc() { if (!Live.active || Live.state.view !== 'board') return; clearTimeout(bcT); const wait = Math.max(120, 700 - (Date.now() - lastBc)); bcT = setTimeout(async () => { lastBc = Date.now(); try { await IMGS.ensurePage(board.page); Live.sendBoard(renderPage(board.page, 960).toDataURL('image/jpeg', .62)); } catch (e) { } }, wait); }
+    function scheduleBc() { if (!Live.active || Live.state.view !== 'board') return; clearTimeout(bcT); const wait = Math.max(120, 700 - (Date.now() - lastBc)); bcT = setTimeout(() => { whenIdle('bc', async () => { lastBc = Date.now(); try { await IMGS.ensurePage(board.page); Live.sendBoard(renderPage(board.page, 960).toDataURL('image/jpeg', .62)); } catch (e) { } }, 3000); }, wait); }
     /* ---- page ops ---- */
     function addPage() { const cur = board.page; const bg = Object.assign({}, cur.bg, { img: null }); const np = cur.bg.img ? newPage(PW, PH, bg) : newPage(cur.w, cur.h, bg); doc.pages.splice(doc.cur + 1, 0, np); board.setPage(doc.cur + 1); markDirty(); refreshThumbs(true); scheduleBc(); }
     function dupPage() { const c = JSON.parse(JSON.stringify(board.page)); c.id = uid('p_'); doc.pages.splice(doc.cur + 1, 0, c); board.setPage(doc.cur + 1); markDirty(); refreshThumbs(true); scheduleBc(); }
@@ -5749,7 +5831,7 @@ class CastView {
   constructor(host) {
     this.host = host; this.cv = document.createElement('canvas'); this.cv.className = 'castcv'; host.appendChild(this.cv); this.ctx = this.cv.getContext('2d');
     this.base = document.createElement('canvas'); this.bctx = this.base.getContext('2d');
-    this.pages = new Map(); this.pid = null; this.objs = []; this.live = null; this.vw = null; this.trail = []; this.need = true; this.dirtyBase = true; this.got = false; this.onFirst = null; this.overlay = false; this.onRect = null;
+    this.pages = new Map(); this.pid = null; this.objs = []; this.live = null; this.vw = null; this.trail = []; this.need = true; this.dirtyBase = true; this.ink = new InkLayer(); this.inc = []; this.pred = null; this.got = false; this.onFirst = null; this.overlay = false; this.onRect = null;
     this.ro = new ResizeObserver(() => this.resize()); this.ro.observe(host); this.resize();
     const loop = () => { this.raf = requestAnimationFrame(loop); if (this.trail.length) { const n = performance.now(); this.trail = this.trail.filter(p => n - p[2] < 900); this.need = true; } if (this.need) { this.need = false; this.paint(); } };
     this.raf = requestAnimationFrame(loop);
@@ -5765,13 +5847,15 @@ class CastView {
   onMsg(m) {
     switch (m.t) {
       case 'doc': this.pages = new Map(m.pages.map(p => [p.id, p])); this.dirtyBase = true; break;
-      case 'img': loadImageEl(m.data).then(im => { IMGS.map.set(m.id, im); this.dirtyBase = true; this.need = true; }).catch(() => { }); return;
+      case 'img': loadImageEl(m.data).then(im => { IMGS.map.set(m.id, im); IMGS.pend.delete(m.id); this.dirtyBase = true; this.need = true; }).catch(() => { }); return;
       case 'pg': this.pid = m.pid; this.objs = m.objs; this.live = null; this.dirtyBase = true; if (!this.got) { this.got = true; this.onFirst && this.onFirst(); } break;
       case 'd': {
         if (m.pid !== this.pid) return; const del = new Set(m.del || []); let arr = this.objs.filter(o => !del.has(o.id)); const idx = new Map(arr.map((o, i) => [o.id, i]));
         for (const o of [...(m.set || []), ...(m.add || [])]) { if (idx.has(o.id)) arr[idx.get(o.id)] = o; else { idx.set(o.id, arr.length); arr.push(o); } if (this.live && this.live.id === o.id) this.live = null; }
         if (m.ord) { const mp = new Map(arr.map(o => [o.id, o])); const out = m.ord.map(id => mp.get(id)).filter(Boolean); const have = new Set(m.ord); arr.forEach(o => { if (!have.has(o.id)) out.push(o); }); arr = out; }
-        this.objs = arr; this.dirtyBase = true; break;
+        const pure = !del.size && !(m.set && m.set.length) && !m.ord && arr.length === this.objs.length + (m.add || []).length && (m.add || []).every(o => !this.objs.some(q => q.id === o.id));
+        if (pure && !this.dirtyBase) this.inc.push(...m.add); else this.dirtyBase = true;
+        this.objs = arr; break;
       }
       case 'ls':
         if (m.pid !== this.pid || this.mine) return; if (!this.live || this.live.id !== m.id) this.live = Object.assign({ id: m.id, pts: [] }, m.h);
@@ -5790,11 +5874,14 @@ class CastView {
     const pg = this.pages.get(this.pid); if (!pg) return; const T = this.xf(pg); if (this.onRect) this.onRect(T, pg, this.dpr);
     if (this.dirtyBase) {
       const b = this.bctx; b.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, W, H); b.save(); b.setTransform(T.s, 0, 0, T.s, T.ox, T.oy); b.beginPath(); b.rect(0, 0, pg.w, pg.h); b.clip();
-      drawPaper(b, pg, this.overlay); this.objs.forEach(o => drawObj(b, o)); b.restore(); this.dirtyBase = false;
+      drawPaper(b, pg, this.overlay); this.objs.forEach(o => drawObj(b, o)); b.restore(); this.dirtyBase = false; this.inc.length = 0;
+    } else if (this.inc.length) {
+      const b = this.bctx; b.save(); b.setTransform(T.s, 0, 0, T.s, T.ox, T.oy); b.beginPath(); b.rect(0, 0, pg.w, pg.h); b.clip(); for (const o of this.inc) drawObj(b, o); b.restore(); this.inc.length = 0;
     }
     ctx.drawImage(this.base, 0, 0);
     ctx.save(); ctx.setTransform(T.s, 0, 0, T.s, T.ox, T.oy); ctx.beginPath(); ctx.rect(0, 0, pg.w, pg.h); ctx.clip();
-    if (this.live && (this.live.pts ? this.live.pts.length : true)) drawObj(ctx, this.live);
+    if (InkLayer.ok(this.live)) this.ink.paint(ctx, this.live, W, H, T.s, T.ox, T.oy, this.mine ? this.pred : null);
+    else if (this.live && (this.live.pts ? this.live.pts.length : true)) drawObj(ctx, this.live);
     const now = performance.now(); ctx.lineCap = 'round';
     this.trail.forEach((p, i, a) => { const age = (now - p[2]) / 900, al = Math.max(0, 1 - age); const r = (10 + 8 * al) / T.s * this.dpr * .6; ctx.globalAlpha = al * .85; ctx.fillStyle = '#ff2d55'; ctx.beginPath(); ctx.arc(p[0], p[1], r, 0, 6.2832); ctx.fill(); ctx.globalAlpha = al * .25; ctx.beginPath(); ctx.arc(p[0], p[1], r * 2.2, 0, 6.2832); ctx.fill(); });
     ctx.restore(); ctx.globalAlpha = 1;
@@ -6532,12 +6619,12 @@ const DEFAULT_TERMS = 'ใช้งานเพื่อการเรียน
   window.addEventListener('beforeunload', e => { if (typeof Live !== 'undefined' && Live.active) { e.preventDefault(); e.returnValue = ''; } });
   window.addEventListener('unhandledrejection', e => console.warn('unhandled', e.reason));
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { }
-  if (j && /^\d{6}$/.test(j)) return bootStudent(j, 'student', qp.get('name') || '');
-  if (d && /^\d{6}$/.test(d)) return bootDisplay(d);
-  const mr = qp.get('mirror'); if (mr && /^\d{6}$/.test(mr)) return bootMirror(mr);
-  const rm = qp.get('remote'); if (rm && /^\d{6}$/.test(rm)) return bootRemote(rm);
+  if (Code.norm(j)) return bootStudent(Code.norm(j), 'student', qp.get('name') || '');
+  if (Code.norm(d)) return bootDisplay(Code.norm(d));
+  const mr = qp.get('mirror'); if (Code.norm(mr)) return bootMirror(Code.norm(mr));
+  const rm = qp.get('remote'); if (Code.norm(rm)) return bootRemote(Code.norm(rm));
   buildShell(); window.addEventListener('hashchange', route); route();
-  { let c = qp.get('co'); if (!(c && /^\d{6}$/.test(c))) { try { c = sessionStorage.getItem('sic.co'); } catch (e) { c = null; } } if (c && /^\d{6}$/.test(c)) { Co.connect(c); if (qp.get('co')) { history.replaceState(null, '', location.pathname + location.hash); setTimeout(() => toast('🔗 ' + T('เชื่อมกับ Studio หลักแล้ว — เปิดบทเรียน → Teaching Studio เพื่อเริ่มนำเสนอ', 'Linked — open a lesson in Teaching Studio'), 'ok', 5000), 600); } } }
+  { let c = qp.get('co'); if (!Code.norm(c)) { try { c = sessionStorage.getItem('sic.co'); } catch (e) { c = null; } } if (Code.norm(c)) { c = Code.norm(c); Co.connect(c); if (qp.get('co')) { history.replaceState(null, '', location.pathname + location.hash); setTimeout(() => toast('🔗 ' + T('เชื่อมกับ Studio หลักแล้ว — เปิดบทเรียน → Teaching Studio เพื่อเริ่มนำเสนอ', 'Linked — open a lesson in Teaching Studio'), 'ok', 5000), 600); } } }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
 })();
 
