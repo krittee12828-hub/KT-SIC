@@ -216,6 +216,20 @@ table.t td{padding:9px 10px;border-bottom:1px solid #eef2f8;vertical-align:middl
 .stu.display{background:#0b1b33;color:#fff}
 .view-box{background:#0b1b33;border-radius:16px;overflow:hidden;position:relative;aspect-ratio:16/9;display:grid;place-items:center;color:#9fb4d3}
 .view-box img,.view-box video{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}
+.jroles{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}.jr{flex-direction:column;gap:2px;min-height:62px;padding:8px 6px;font-size:.86rem;justify-content:center}.jr .jri{font-size:1.4rem;line-height:1}
+.dev-code{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1.5px dashed var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;background:#f8fafd}.dev-codev{font-size:1.8rem;font-weight:800;letter-spacing:.14em;color:var(--navy);line-height:1.1}
+.view-box .vstage{position:absolute;inset:0;z-index:1}.view-box .vfs{position:absolute;right:8px;bottom:8px;z-index:4;width:38px;height:38px;border-radius:10px;border:0;background:rgba(10,20,40,.6);color:#fff;font-size:1.1rem;cursor:pointer}
+.view-box:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh;background:#000}
+.spill{position:fixed;left:0;right:0;top:66px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 10px}.spill>*{pointer-events:auto}
+.spill .pl{background:#142B4A;color:#fff;border-radius:999px;padding:8px 16px;font-weight:800;box-shadow:0 6px 20px rgba(20,43,74,.3);display:flex;gap:8px;align-items:center;font-size:1.05rem;border:0;font-family:inherit}
+.spill .pl.low{background:#c92a2a;animation:spPulse .6s infinite alternate}.spill .pl.pk{background:#d6336c;cursor:pointer}.spill .pl.done{background:#c92a2a}
+.spill .bn{background:#fff3bf;color:#5c4400;border:1.5px solid #f0b429;border-radius:14px;padding:8px 14px;font-weight:700;max-width:min(560px,94vw);text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.15)}
+@keyframes spPulse{to{transform:scale(1.07)}}@keyframes spPop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.spop{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(10,20,40,.55);padding:16px}.spop.hide{display:none}
+.spop .pc{background:#fff;border-radius:22px;padding:22px 20px;text-align:center;max-width:min(480px,94vw);width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);max-height:88vh;overflow:auto;animation:spPop .25s}
+.spop .pc.me{border:4px solid var(--pink2);background:linear-gradient(180deg,#fff,#fff0f5)}
+.spop .pk-e{font-size:3rem;line-height:1}.spop .pk-name{font-size:2rem;font-weight:800;color:var(--navy);word-break:break-word;margin:6px 0 10px;line-height:1.2}
+.spop .gg{display:grid;gap:8px;text-align:left;margin:10px 0}.spop .gg>div{border:1.5px solid var(--line);border-radius:12px;padding:8px 12px}.spop .gg>div.me{border-color:var(--pink2);background:#fff0f5}.spop .gg b{display:block;margin-bottom:2px}
 .qr-box{background:#fff;padding:12px;border-radius:16px;display:inline-block;box-shadow:var(--sh)}
 .qr-box canvas{display:block;max-width:100%;height:auto}
 .thanks{position:fixed;inset:0;display:grid;place-items:center;background:rgba(11,27,51,.62);backdrop-filter:blur(4px);z-index:700;padding:20px;animation:fade .25s}
@@ -3198,13 +3212,14 @@ function buildShell() {
     <nav class="nav">${NAV.map(n => `<a data-r="${n[0]}" title="${esc(T(n[2], n[3]))}">${ic(n[1])}<span>${esc(T(n[2], n[3]))}</span></a>`).join('')}</nav>
     <div class="foot">
       ${DB.support.enabled ? `<a class="tiny-link" data-r="support">${ic('heart')}<span>${T('สนับสนุนผู้พัฒนา', 'Support the Developer')}</span></a>` : ''}
-      <a class="tiny-link" id="joinBtn">${ic('qr')}<span>${T('ฉันเป็นนักเรียน: เข้าห้องด้วยรหัส', 'I\'m a student: join with code')}</span></a>
+      <a class="tiny-link" id="joinBtn">${ic('qr')}<span>${T('ใส่รหัสห้อง (นักเรียน / อุปกรณ์ครู)', 'Join with a code')}</span></a>
     </div>
   </aside>
   <header class="top">
     <button class="btn ghost icon menu-btn" id="menuBtn" aria-label="menu">${ic('menu')}</button>
     <h1 id="title"></h1>
     <span id="liveChip"></span>
+    <button class="btn sm" id="joinTop" title="${T('ใส่รหัสห้อง: นักเรียน หรือเพิ่มอุปกรณ์การสอน', 'Enter a room code')}">${ic('qr', 16)} <span class="hide-m">${T('ใส่รหัสห้อง', 'Join code')}</span></button>
     <button class="btn sm" id="langBtn" title="Language">${ic('globe', 16)} ${DB.lang === 'en' ? 'EN' : 'TH'}</button>
   </header>
   <main id="main"></main>
@@ -3215,7 +3230,7 @@ function buildShell() {
   $$('[data-r]').forEach(a => a.onclick = () => { closeSide(); go(a.dataset.r); });
   $('#menuBtn').onclick = () => { $('#side').classList.toggle('open'); toggleScrim(); };
   $('#langBtn').onclick = () => { DB.lang = DB.lang === 'en' ? 'th' : 'en'; saveNow(); buildShell(); route(); };
-  $('#joinBtn').onclick = () => { closeSide(); joinDialog(); };
+  $('#joinBtn').onclick = () => { closeSide(); joinDialog(); }; $('#joinTop').onclick = () => joinDialog();
   $('#moreBtn').onclick = moreSheet;
   refreshLiveChip();
 }
@@ -3230,7 +3245,7 @@ function moreSheet() {
   modal({
     title: T('เมนูทั้งหมด', 'All menus'),
     body: `<div class="grid g3" style="gap:10px">${items.map(n => `<button class="btn" data-go="${n[0]}" style="justify-content:flex-start">${ic(n[1])} ${esc(T(n[2], n[3]))}</button>`).join('')}</div>
-    <div class="row" style="margin-top:14px;justify-content:space-between"><button class="btn ghost sm" data-go="classes-join">${ic('qr', 16)} ${T('เข้าห้องด้วยรหัส (นักเรียน)', 'Join with code')}</button>
+    <div class="row" style="margin-top:14px;justify-content:space-between"><button class="btn ghost sm" data-go="classes-join">${ic('qr', 16)} ${T('ใส่รหัสห้อง (นักเรียน / อุปกรณ์ครู)', 'Join with a code')}</button>
     ${DB.support.enabled ? `<button class="btn ghost sm muted" data-go="support">${ic('heart', 16)} ${T('สนับสนุนผู้พัฒนา', 'Support')}</button>` : ''}</div>`,
     onMount: (m, close) => $$('[data-go]', m).forEach(b => b.onclick = () => { close(); b.dataset.go === 'classes-join' ? joinDialog() : go(b.dataset.go); })
   });
@@ -3249,19 +3264,59 @@ const Code = {
   pid(code) { const n = this.norm(code); return n.length === 6 ? 'sicl-' + n : 'sicl2-' + n.replace('-', ''); },
   bind(inp) { inp.setAttribute('autocapitalize', 'characters'); inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('spellcheck', 'false'); inp.maxLength = 9; inp.addEventListener('input', () => { const v = inp.value.toUpperCase().replace(/[^0-9A-Z]/g, ''); inp.value = /^\d+$/.test(v) && v.length <= 6 ? v : (v.length > 4 ? v.slice(0, 4) + '-' + v.slice(4, 8) : v); }); }
 };
-function joinDialog() {
+/* =====================================================================
+   ใส่รหัสห้อง — ใช้ได้ทั้งนักเรียน และครูที่ต้องการเพิ่มอุปกรณ์การสอน (จอฉาย · รีโมทปากกา · เครื่องนำเสนอที่ 2 · มิเรอร์)
+   ไม่ต้องสแกน QR: เปิดเว็บแอปบนอุปกรณ์นั้น → กด “ใส่รหัสห้อง” → เลือกบทบาท → กรอกรหัสที่ครูเห็นในหน้า “เชื่อมอุปกรณ์/ห้องสด”
+   วางลิงก์ทั้งเส้น (…?display=ABCD-EFGH) ลงช่องรหัสได้ ระบบแยกบทบาท+รหัสให้เอง
+   ===================================================================== */
+const JOIN_ROLES = [
+  ['student', '🎓', 'นักเรียน', 'Student', 'เข้าห้องเรียนสด ดูสไลด์แบบ real-time ตอบคำถาม เช็คชื่อ ยกมือ', 'Join the live class: watch slides, answer, check in'],
+  ['display', '🖥', 'จอฉาย', 'Display', 'คอม/ทีวีที่ต่อโปรเจกเตอร์ แสดงสไลด์เต็มจอ (ดับเบิลคลิกหรือกด F11 เพื่อเต็มจอ)', 'Computer/TV on the projector'],
+  ['remote', '✏️', 'รีโมทปากกา', 'Pen remote', 'iPad/แท็บเล็ต เขียนลงสไลด์ของเครื่องครูหลัก พลิกหน้า ควบคุมจับเวลา สุ่ม เช็คชื่อ', 'Write on the main Studio slides from a tablet'],
+  ['co', '👥', 'เครื่องที่ 2', '2nd presenter', 'เปิด Studio ของเครื่องนี้เอง (สไลด์แยกอิสระ) แล้วเชื่อมกับเครื่องหลัก เพื่อฉายหรือแบ่งจอร่วมกัน — ไม่ต้องรีโหลดหน้า', 'Use this device’s own Studio and link it to the main one'],
+  ['mirror', '📲', 'มิเรอร์', 'Mirror', 'ส่งหน้าจอ (คอม/Android) หรือกล้อง (iPad) มาเป็นหน้าต่างสดใน Studio เครื่องหลัก', 'Send your screen or camera to the main Studio']
+];
+function parseJoinInput(text) {
+  const t = String(text || '').trim(), m = t.match(/[?&](join|display|remote|mirror|co)=([0-9A-Za-z\-]+)/i);
+  if (m) { const k = m[1].toLowerCase(); return { role: k === 'join' ? 'student' : k, code: Code.norm(m[2]) }; }
+  return { role: '', code: Code.norm(t) };
+}
+function joinGo(role, code, name) {
+  try { localStorage.setItem('sic.joinRole', role); if (role === 'student' && name) localStorage.setItem('sic.stuName', name); } catch (e) { }
+  if (role === 'co') { Co.connect(code); toast('🔗 ' + T('กำลังเชื่อมกับ Studio หลัก…', 'Linking to the main Studio…'), 'ok', 2400); Co.openPanel(); return true; }
+  const u = new URL(location.href); u.hash = ''; const q = new URLSearchParams();
+  if (role === 'student') { q.set('join', code); if (name) q.set('name', name); } else q.set(role, code);
+  u.search = '?' + q.toString(); location.href = u.toString(); return true;
+}
+/* ฟอร์มใส่รหัส (ใช้ซ้ำทั้งในหน้าต่างและการ์ดหน้าแรก) */
+function joinForm(el, opts = {}) {
+  let role = opts.role || ''; if (!JOIN_ROLES.some(r => r[0] === role)) { try { role = localStorage.getItem('sic.joinRole') || ''; } catch (e) { } } if (!JOIN_ROLES.some(r => r[0] === role)) role = 'student';
+  el.innerHTML = `<div class="jroles" id="jRoles">${JOIN_ROLES.map(r => `<button type="button" class="btn jr" data-jr="${r[0]}"><span class="jri">${r[1]}</span><span>${esc(T(r[2], r[3]))}</span></button>`).join('')}</div>
+    <p class="small muted" id="jDesc" style="margin:8px 0 10px;min-height:2.4em"></p>
+    <div class="row" style="gap:10px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:190px"><label class="f">${T('รหัสห้อง (8 ตัว) หรือวางลิงก์', 'Room code (8 chars) or paste the link')}</label><input class="inp" id="jCode" placeholder="ABCD-EFGH" style="font-size:1.4rem;letter-spacing:.14em;text-align:center"></div>
+    <div style="flex:1;min-width:150px" id="jNameW"><label class="f">${T('ชื่อของคุณ (ไม่ใส่ก็ได้)', 'Your name (optional)')}</label><input class="inp" id="jName" maxlength="40" style="min-height:52px" placeholder="${T('เช่น ก้องภพ', 'e.g. Alex')}"></div>
+    <button type="button" class="btn pri" id="jGo" style="min-height:48px;min-width:120px">${ic('play', 16)} ${T('เข้าร่วม', 'Join')}</button></div>
+    <p class="tiny muted" style="margin:8px 0 0" id="jHint"></p>`;
+  const code = $('#jCode', el), nm = $('#jName', el); Code.bind(code); try { nm.value = localStorage.getItem('sic.stuName') || ''; } catch (e) { }
+  const draw = () => {
+    $$('[data-jr]', el).forEach(b => b.classList.toggle('pri', b.dataset.jr === role)); const r = JOIN_ROLES.find(x => x[0] === role);
+    $('#jDesc', el).textContent = T(r[4], r[5]); $('#jNameW', el).style.display = role === 'student' ? '' : 'none';
+    $('#jHint', el).textContent = role === 'student' ? T('ครูจะบอกรหัสหรือแสดง QR ที่หน้าจอ — ถ้ามีลิงก์ แตะลิงก์ได้เลย', 'Your teacher shows the code or a QR on screen') : T('ครูดูรหัสได้ที่ Studio → “เชื่อมอุปกรณ์” หรือเมนู “ห้องสด” (รหัสเดียวกับของนักเรียน)', 'Find the code in Studio → Devices, or the Live Room page');
+  };
+  $$('[data-jr]', el).forEach(b => b.onclick = () => { role = b.dataset.jr; draw(); code.focus(); });
+  code.addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData).getData('text'), p = parseJoinInput(t); if (p.code && (p.role || /[?&=]/.test(t))) { e.preventDefault(); if (p.role) role = p.role; code.value = p.code; draw(); } });
+  const submit = () => {
+    const p = parseJoinInput(code.value), c = p.code; if (p.role) role = p.role;
+    if (!c) { toast(T('กรอกรหัสห้อง 8 ตัว เช่น ABCD-EFGH', 'Enter the 8-character room code, e.g. ABCD-EFGH'), 'err', 2600); code.focus(); return false; }
+    if (opts.onGo) opts.onGo(); return joinGo(role, c, role === 'student' ? nm.value.trim() : '');
+  };
+  $('#jGo', el).onclick = submit; code.onkeydown = nm.onkeydown = e => { if (e.key === 'Enter') submit(); };
+  draw(); return { focus: () => code.focus(), setCode: v => { code.value = v; } };
+}
+function joinDialog(role) {
   modal({
-    title: T('เข้าร่วมห้องเรียน', 'Join a classroom'),
-    body: `<label class="f">${T('รหัสห้อง (8 ตัวอักษร/ตัวเลข)', 'Room code (8 characters)')}</label><input class="inp" id="jc" placeholder="ABCD-EFGH" style="font-size:1.4rem;letter-spacing:.14em;text-align:center">
-    <label class="f">${T('ชื่อของคุณ', 'Your name')}</label><input class="inp" id="jn" placeholder="${T('เช่น ก้องภพ', 'e.g. Alex')}">`,
-    onMount: m => Code.bind($('#jc', m)),
-    actions: [{ label: T('ยกเลิก', 'Cancel') }, {
-      label: T('เข้าร่วม', 'Join'), cls: 'pri', onClick: () => {
-        const c = Code.norm($('#jc').value), n = $('#jn').value.trim();
-        if (!c || !n) { toast(T('กรอกรหัสห้อง (เช่น ABCD-EFGH) และชื่อ', 'Enter the room code (e.g. ABCD-EFGH) and your name'), 'err'); return false; }
-        const u = new URL(location.href); u.hash = ''; u.search = '?join=' + c + '&name=' + encodeURIComponent(n); location.href = u.toString();
-      }
-    }]
+    title: '🔑 ' + T('ใส่รหัสห้องเพื่อเข้าร่วม', 'Enter a room code'), wide: true, body: `<div id="jfHost"></div>`, actions: [{ label: T('ปิด', 'Close') }],
+    onMount: (m, close) => { const f = joinForm($('#jfHost', m), { role, onGo: close }); setTimeout(() => f.focus(), 60); }
   });
 }
 function go(path) { if (location.hash === '#/' + path) route(); else location.hash = '#/' + path; }
@@ -3718,7 +3773,7 @@ const Live = {
       const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, base, conn, joined: Date.now(), hand: false, handAt: 0 };
       if (role !== 'student') { const same = [...this.students.values()].filter(x => x.role !== 'student' && x.base === base).length; s.label = base + (same ? ' ' + (same + 1) : ''); s.name = s.label; }
       this.students.set(conn.peer, s);
-      conn.send({ t: 'welcome', name: s.name, state: this.state, board: this.lastBoard });
+      conn.send({ t: 'welcome', name: s.name, state: Object.assign({}, this.state, { ts: Date.now() }), board: this.lastBoard });
       if (this.stream) this._call(s);
       if (role === 'display' || role === 'remote') { s.imgs = new Set(); if (typeof Cast !== 'undefined') Cast.onJoin(s); if (role === 'display' && typeof CoHost !== 'undefined') CoHost.onDisplayJoin(s); }
       if (role === 'co') CoHost.onJoin(s);
@@ -3731,12 +3786,16 @@ const Live = {
     else if (m.t === 'ck') { if (typeof Teach !== 'undefined') Teach.onCk(s, m); }
     else if (m.t === 'hand') { if (m.on && !s.hand && typeof Teach !== 'undefined') Teach.ev('hand', s); s.hand = !!m.on; s.handAt = Date.now(); this.emit(); }
     else if (m.t === 'submit' && typeof m.file === 'string' && m.file.length < 3e6) { this.submissions.unshift({ id: uid('sb_'), name: s.name, file: m.file, fname: String(m.fname || ''), ts: Date.now() }); this.emit(); toast(`${s.name} ${T('ส่งงานแล้ว', 'submitted work')}`, 'ok'); }
+    else if (m.t === 'cast') {   /* นักเรียนขอรับสไลด์สดแบบเวกเตอร์ (ลายเส้นสด/เลเซอร์/ซูมตามครู) — ok = วาดหน้าแรกได้แล้ว จึงหยุดส่งภาพนิ่งให้คนนี้ */
+      if (m.on === false) { s.cast = false; s.castOk = false; } else if (m.on) { if (!s.cast) { s.cast = true; s.imgs = new Set(); s.castOk = false; if (typeof Cast !== 'undefined') Cast.onJoin(s); } }
+      if (m.ok && s.cast) s.castOk = true;
+    }
     else if (m.t === 'note') { /* reserved */ }
   },
   send(id, msg) { const s = this.students.get(id); if (s && s.conn.open) { try { s.conn.send(msg); } catch (e) { } } },
   broadcast(msg) { this.students.forEach(s => { if (s.conn.open) { try { s.conn.send(msg); } catch (e) { } } }); },
-  setState(patch) { this.state = Object.assign({}, this.state, patch); this.broadcast({ t: 'state', s: this.state }); this.emit(); },
-  sendBoard(img) { this.lastBoard = img; this.students.forEach(s => { if (s.role === 'student' && s.conn.open) { try { s.conn.send({ t: 'board', img }); } catch (e) { } } }); },
+  setState(patch) { this.state = Object.assign({}, this.state, patch, { ts: Date.now() }); this.broadcast({ t: 'state', s: this.state }); this.emit(); },
+  sendBoard(img) { this.lastBoard = img; this.students.forEach(s => { if (s.role === 'student' && !s.castOk && s.conn.open) { try { s.conn.send({ t: 'board', img }); } catch (e) { } } }); },
   _call(s) {
     if (!this.stream || !this.peer || s.role === 'mirror' || s.role === 'co') return; if (s.role === 'remote' && !this.state.ovl) return;
     try { const c = this.peer.call(s.id, this.stream); this.calls.set(s.id, c); c.on('close', () => this.calls.delete(s.id)); } catch (e) { console.warn(e); }
@@ -4163,7 +4222,7 @@ const Cast = {
   },
   detach() { cancelAnimationFrame(this.raf); this.raf = 0; this.board = null; this.frozen = false; },
   reset() { this.page = null; this.docSig = ''; this.ls = { id: null, n: 0 }; this.lh = ''; this.vw = ''; this.lzT = 0; this.lzOn = false; },
-  disp() { if (typeof Co !== 'undefined' && Co.on()) return [Co.target]; return Live.active ? [...Live.list('display'), ...Live.list('remote')] : []; },
+  disp() { if (typeof Co !== 'undefined' && Co.on()) return [Co.target]; return Live.active ? [...Live.list('display'), ...Live.list('remote'), ...Live.list('student').filter(s => s.cast)] : []; },
   out(s, msg) { if (s.co) Co.send(msg); else Live.send(s.id, msg); },
   tell(msg, targets) { (targets || this.disp()).forEach(s => this.out(s, msg)); this.stats.msgs++; },
   enq(fn) { this.q = this.q.then(fn).catch(e => console.warn('cast', e)); },
@@ -4209,8 +4268,9 @@ const Cast = {
     });
   },
   async prefetch(targets) {
-    const b = this.board; if (!b || !b.doc) return; const c = b.doc.cur;
-    for (const i of [c + 1, c + 2, c - 1, c + 3]) { const p = b.doc.pages[i]; if (p && this.disp().length) await this.ensureImgs(this.imgIdsOf(p), targets); }
+    const b = this.board; if (!b || !b.doc) return; const c = b.doc.cur; targets = (targets || this.disp()).filter(s => s.role !== 'student');   /* ไม่ส่งภาพล่วงหน้าให้นักเรียน (หลายสิบเครื่อง = กินเน็ตครู) */
+    if (!targets.length) return;
+    for (const i of [c + 1, c + 2, c - 1, c + 3]) { const p = b.doc.pages[i]; if (p) await this.ensureImgs(this.imgIdsOf(p), targets); }
   },
   poll() {
     const b = this.board; if (!b || !b.doc || this.frozen) return;
@@ -4261,7 +4321,10 @@ const Cast = {
 const Hub = {
   el: null, stage: null, api: null, open: false, path: [], w: {}, layout: 'full', frozen: false, picked: new Set(), poll: null, hinted: false, tm: 0, ro: null, offState: null, keyH: null, ptr: [0, 0], tempPos: null, _alarmed: false,
   cfg() { const s = DB.settings; if (!s.hub) s.hub = { hidden: [], size: 'm', pos: { fx: .96, fy: .42 }, show: true }; const h = s.hub; h.hidden = h.hidden || []; h.size = h.size || 'm'; h.pos = h.pos || { fx: .96, fy: .42 }; if (h.show === undefined) h.show = true; return h; },
-  push() { try { Live.setState({ w: this.w, layout: this.layout, title: this.api && this.api.doc() ? this.api.doc().name : '' }); } catch (e) { } },
+  push() { try { Live.setState({ w: this.w, layout: this.layout, title: this.api && this.api.doc() ? this.api.doc().name : '', pks: this.pkInfo() }); } catch (e) { } },
+  /* สรุปแหล่งรายชื่อสุ่มปัจจุบัน (ส่งให้ iPad รีโมทแสดงและตั้งค่าได้) */
+  pkInfo() { try { const cc = curClass(), all = wheelPool(cc, true), n = numCfg(cc), q = Quick.list(); return { src: wheelSrc(1), label: pickSrcLabel(cc), total: all.length, left: all.filter(x => !this.picked.has(x.id)).length, nf: n.from, nt: n.to, ns: [...n.skip], ql: q ? q.items.length : 0, hc: !!(cc && cc.students.length) }; } catch (e) { return null; } },
+  pickSetup() { Quick.open(() => { this.picked.clear(); this.push(); }); },
   hint() { if (this.hinted || Live.active) return; this.hinted = true; toast(T('ยังไม่ได้เชื่อมจอฉาย — เมนู “จอฉาย → ลิงก์จอฉาย”', 'No display connected — Screen → Display link'), 'ok', 4200); },
 
   /* ---------- นิยามเมนู ---------- */
@@ -4293,6 +4356,8 @@ const Hub = {
         { id: 'pk1', e: '🎲', label: 'สุ่มนักเรียน', act: () => { this.close(); this.pick(); } },
         { id: 'pkg', e: '👥', label: 'แสดงกลุ่ม', act: () => { this.close(); this.showGroups(); }, active: () => !!(this.w.groups && this.w.groups.length) },
         { id: 'pkc', e: '🧹', label: 'ล้างจอ', act: () => { this.w = Object.assign({}, this.w, { pick: null, groups: null, msg: null }); this.push(); this.close(); } },
+        { id: 'pkn', e: '🔢', label: 'สุ่มตามเลขที่', act: () => { this.close(); Quick.open(() => { this.picked.clear(); this.push(); }, 'num'); } },
+        { id: 'pkq', e: '⚡', label: 'เพิ่มชื่อด่วน', act: () => { this.close(); Quick.open(() => { this.picked.clear(); this.push(); }, 'quick'); } },
         { id: 'pkr', e: '↺', label: 'เริ่มสุ่มใหม่', act: () => { this.picked.clear(); toast(T('รีเซ็ตรายชื่อที่สุ่มแล้ว', 'Reset'), 'ok', 1500); this.close(); } }] },
       { id: 'ask', e: '❓', label: 'ถามด่วน', win: 'poll', sub: [
         { id: 'qa4', e: 'A–D', label: 'เลือกตอบ', act: () => { this.close(); this.quick('mc'); } },
@@ -4421,19 +4486,28 @@ const Hub = {
     return true;
   },
   /* ---------- ฟีเจอร์ ---------- */
-  async room() { if (Live.active) return true; const ok = await Live.start(); if (ok) { this.push(); } return ok; },
+  /* เปิดห้องสดจากใน Studio = กำลังสอน → นักเรียนเห็นสไลด์สดทันที (ปิดได้ที่ปุ่ม “ห้องสด” → แท็บ เฉพาะคำถาม) */
+  async room() { if (Live.active) return true; const ok = await Live.start(); if (ok) { if (Live.state.view === 'none') Live.setState({ view: 'board' }); this.push(); toast('📺 ' + T('นักเรียนที่เข้าห้องจะเห็นสไลด์สดของคุณ (ปิดได้ที่ปุ่ม “ห้องสด”)', 'Students will see your slides live'), 'ok', 4200); } return ok; },
   setFrozen(on) { this.frozen = !!on; Cast.setFrozen(this.frozen); try { Live.setState({ fz: this.frozen }); } catch (e) { } toast(this.frozen ? '❄ ' + T('หยุดภาพบนจอฉาย — ครูเตรียมหน้าถัดไปได้เงียบๆ', 'Display frozen') : T('ปล่อยภาพ — จอฉายตามทันแล้ว', 'Display live again'), 'ok', 2600); this.draw(); },
   timer(sec) { this.w = Object.assign({}, this.w, { timer: { id: 'tm' + Date.now(), end: Date.now() + sec * 1000, total: sec, label: '', paused: false, big: true } }); try { Pop.host && Pop.host.reopen('timer'); } catch (e) { } this.push(); this.hint(); this.draw(); },
   timerAdd(sec) { const t = this.w.timer; if (!t) return this.timer(Math.max(60, sec)); const n = Object.assign({}, t); if (t.paused) n.left = Math.max(1, (t.left || 0) + sec); else n.end = Math.max(Date.now() + 1000, t.end + sec * 1000); n.total = Math.max(1, (t.total || 0) + sec); n._done = false; this.w = Object.assign({}, this.w, { timer: n }); this.push(); this.draw(); },
   timerBig(on) { const t = this.w.timer; if (!t) return; this.w = Object.assign({}, this.w, { timer: Object.assign({}, t, { big: !!on }) }); if (on) { try { Pop.host && Pop.host.reopen('timer'); } catch (e) { } } this.push(); this.draw(); },
   timerPause() { const t = this.w.timer; if (!t) return; const n = Object.assign({}, t); if (t.paused) { n.paused = false; n.end = Date.now() + t.left * 1000; } else { n.paused = true; n.left = Math.max(0, (t.end - Date.now()) / 1000); } this.w = Object.assign({}, this.w, { timer: n }); this.push(); this.draw(); },
-  async pick() {
-    const cc = curClass(); const all = wheelPool(cc, true); if (!all.length) return toast(T('ยังไม่มีรายชื่อนักเรียน — ไปที่เมนู “ห้องเรียน” เพื่อเพิ่ม หรือสร้างรายการในหน้า “สุ่มนักเรียน”', 'No students in this class'), 'err', 3600);
+  async pick(opt) {
+    const cc = curClass(); const all = wheelPool(cc, true); if (!all.length) { toast(T('ยังไม่มีรายชื่อให้สุ่ม — พิมพ์ชื่อด่วน เลือกสุ่มตามเลขที่ หรือเลือกห้องเรียน', 'Nobody to pick from yet'), 'err', 3600); if (!(opt && opt.remote)) this.pickSetup(); return; }
     let pool = all.filter(s => !this.picked.has(s.id)); if (!pool.length) { this.picked.clear(); pool = all.slice(); }
     const final = pool[Math.floor(Math.random() * pool.length)]; this.hint(); const gid = this._pk = Date.now();
-    for (let i = 0; i < 16; i++) { const nm = i === 15 ? final.name : all[Math.floor(Math.random() * all.length)].name; this.w = Object.assign({}, this.w, { pick: { name: nm, done: i === 15 }, groups: null }); this.push(); try { Snd.tick(); } catch (e) { } await sleep(70 + i * 16); if (this._pk !== gid) return; }
-    this.picked.add(final.id); try { if (!final.pseudo) Teach.evId('pick', final.id); Teach.tool('pick'); } catch (e) { } try { Snd.win(); } catch (e) { } toast('🎯 ' + final.name, 'ok', 3500);
+    const who = final.plain || final.name;
+    for (let i = 0; i < 16; i++) { const nm = i === 15 ? final.name : all[Math.floor(Math.random() * all.length)].name; this.w = Object.assign({}, this.w, { pick: { gid, name: nm, done: i === 15, who: i === 15 ? who : '', no: i === 15 && final.no != null ? final.no : null }, groups: null }); this.push(); try { Snd.tick(); } catch (e) { } await sleep(70 + i * 16); if (this._pk !== gid) return; }
+    this.picked.add(final.id); this.push(); this.tellPicked(final, who, gid); try { if (!final.pseudo) Teach.evId('pick', final.id); Teach.tool('pick'); } catch (e) { } try { Snd.win(); } catch (e) { } toast('🎯 ' + final.name, 'ok', 3500);
     setTimeout(() => { if (this._pk === gid && this.w.pick && this.w.pick.name === final.name) { this.w = Object.assign({}, this.w, { pick: null }); this.push(); } }, 20000);
+  },
+  /* บอกนักเรียนคนที่ถูกสุ่มโดยตรง (จับคู่จากเช็คชื่อ หรือชื่อที่ใช้เข้าห้องสด) → ขึ้นป๊อปอัป “ถึงตาคุณแล้ว” บนมือถือของเขา */
+  tellPicked(final, who, gid) {
+    try {
+      if (!Live.active) return; const live = Live.list('student'), cc = curClass(), rec = cc && cc.students.find(x => x.id === final.id), keys = new Set([normName(who), rec && rec.nick ? normName(rec.nick) : ''].filter(Boolean));
+      const hit = live.filter(x => (x.sid && x.sid === final.id) || keys.has(normName(x.name))); hit.forEach(x => Live.send(x.id, { t: 'picked', gid, name: who, no: final.no != null ? final.no : null }));
+    } catch (e) { console.warn(e); }
   },
   showGroups() {
     const cc = curClass(), g = DB.groupsSaved.find(x => !cc || x.classId === cc.id) || DB.groupsSaved[0]; if (!g) return toast(T('ยังไม่มีผลจัดกลุ่ม — ไปที่เมนู “จัดกลุ่ม” ก่อน', 'No saved groups'), 'err', 3600);
@@ -4549,12 +4623,16 @@ const Win = {
   },
   pick() {
     return this.toggle('pick', {
-      title: '🎯 ' + T('สุ่มนักเรียน', 'Random student'), w: 270, h: 250,
+      title: '🎯 ' + T('สุ่มนักเรียน', 'Random student'), w: 290, h: 330,
       build(b) {
-        b.innerHTML = `<div class="wp"><div class="wp-n" data-n>—</div><div class="tiny muted" data-i style="text-align:center"></div><div class="wt-c"><button class="pri" data-a="go">🎲 ${T('สุ่มนักเรียน', 'Pick')}</button></div><div class="wt-c"><button data-a="grp">👥 ${T('กลุ่ม', 'Groups')}</button><button data-a="clr">🧹 ${T('ล้างจอ', 'Clear')}</button><button data-a="rst">↺ ${T('รีเซ็ต', 'Reset')}</button></div></div>`;
-        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a; if (k === 'go') Hub.pick(); else if (k === 'grp') Hub.showGroups(); else if (k === 'clr') { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null, msg: null }); Hub.push(); } else { Hub.picked.clear(); toast(T('รีเซ็ตรายชื่อที่สุ่มแล้ว', 'Reset'), 'ok', 1400); } };
+        b.innerHTML = `<div class="wp"><div class="wp-n" data-n>—</div><div class="tiny muted" data-i style="text-align:center"></div><div class="wt-c"><button class="pri" data-a="go">🎲 ${T('สุ่มนักเรียน', 'Pick')}</button></div>
+          <div class="wt-c"><button data-a="src" data-s style="font-size:.8rem;min-height:34px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${T('เลือกแหล่งรายชื่อ / ตั้งเลขที่', 'Choose who to pick from')}">—</button></div>
+          <div class="wt-c" style="flex-wrap:nowrap"><input class="inp" data-q placeholder="⚡ ${T('พิมพ์ชื่อเพิ่ม + Enter', 'Add a name + Enter')}" style="flex:1;min-width:0;min-height:40px"><button data-a="qa" aria-label="add">＋</button></div>
+          <div class="wt-c"><button data-a="grp">👥 ${T('กลุ่ม', 'Groups')}</button><button data-a="clr">🧹 ${T('ล้างจอ', 'Clear')}</button><button data-a="rst">↺ ${T('รีเซ็ต', 'Reset')}</button></div></div>`;
+        const inp = $('[data-q]', b), add = Quick.bindInput(inp, () => { Hub.picked.clear(); Hub.push(); });
+        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a; if (k === 'go') Hub.pick(); else if (k === 'src') Hub.pickSetup(); else if (k === 'qa') { if (inp.value.trim()) add(inp.value); else inp.focus(); } else if (k === 'grp') Hub.showGroups(); else if (k === 'clr') { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null, msg: null }); Hub.push(); } else { Hub.picked.clear(); Hub.push(); toast(T('รีเซ็ตรายชื่อที่สุ่มแล้ว', 'Reset'), 'ok', 1400); } };
       },
-      update(b) { const n = $('[data-n]', b), p = Hub.w.pick; n.textContent = p ? p.name : '—'; const all = wheelPool(curClass(), true); $('[data-i]', b).textContent = all.length ? T(`เหลือ ${all.filter(s => !Hub.picked.has(s.id)).length} จาก ${all.length} คน`, `${all.length} students`) : T('ยังไม่มีรายชื่อในห้องเรียน', 'No students'); }
+      update(b) { const n = $('[data-n]', b), p = Hub.w.pick; n.textContent = p ? p.name : '—'; const cc = curClass(), all = wheelPool(cc, true); $('[data-i]', b).textContent = all.length ? T(`เหลือ ${all.filter(s => !Hub.picked.has(s.id)).length} จาก ${all.length} คน`, `${all.length} students`) : T('ยังไม่มีรายชื่อ — พิมพ์ชื่อเพิ่มด้านล่างได้เลย', 'No names yet — add some below'); const sb = $('[data-s]', b); const lb = pickSrcLabel(cc); if (sb.textContent !== lb) sb.textContent = lb; }
     });
   },
   poll() {
@@ -5107,10 +5185,18 @@ const Devices = {
         else if (c === 'tpause') Hub.timerPause();
         else if (c === 'tadd') Hub.timerAdd(this.num(m.s, -600, 600, 0));
         else if (c === 'tmin') Hub.timerBig(!!m.on);
-        else if (c === 'pick') Hub.pick();
+        else if (c === 'pick') Hub.pick({ remote: true });
         else if (c === 'pgrp') Hub.showGroups();
         else if (c === 'pclr') { Hub.w = Object.assign({}, Hub.w, { pick: null, groups: null, msg: null }); Hub.push(); Hub.draw(); }
-        else if (c === 'prst') Hub.picked.clear();
+        else if (c === 'prst') { Hub.picked.clear(); Hub.push(); }
+        else if (c === 'qadd') { const names = Array.isArray(m.names) ? m.names.slice(0, 80).map(x => String(x == null ? '' : x).slice(0, 60)) : Quick.parse(String(m.text || '').slice(0, 4000)); Quick.add(names); Hub.picked.clear(); Hub.push(); Hub.draw(); }
+        else if (c === 'psrc') {
+          const k = String(m.k); const q = Quick.list();
+          if (k === 'class' && curClass()) Quick.setSrc('class'); else if (k === 'quick' && q && q.items.length) Quick.setSrc(QUICK_ID);
+          else if (k === 'num') Quick.setNum({ from: this.num(m.f, 1, 999, 1) | 0, to: this.num(m.to, 0, 999, 0) | 0, skip: (Array.isArray(m.skip) ? m.skip : []).slice(0, 100).map(x => this.num(x, 1, 999, 0) | 0).filter(Boolean) });
+          else if (k === 'qclr' && q) { q.items = []; save(); if (wheelSrc(1) === QUICK_ID) Quick.setSrc('class'); }
+          Hub.picked.clear(); Hub.push(); Hub.draw();
+        }
         else if (c === 'poll') { const k = String(m.k); if (k === 'mc' || k === 'tf') Hub.quick(k); else if (['close', 'show', 'end'].includes(k)) Hub.pollAct(k); }
         else if (c === 'layout') { Hub.layout = m.v === 'split' ? 'split' : 'full'; Hub.push(); Hub.draw(); }
         else if (c === 'qr') { if (Hub.w.qr) Hub.w = Object.assign({}, Hub.w, { qr: null }); else if (Live.active) Hub.w = Object.assign({}, Hub.w, { qr: Live.joinUrl('join') }); Hub.push(); Hub.draw(); }
@@ -5184,12 +5270,12 @@ const Devices = {
     const card = (k, ico, title, desc, url) => `<div class="dev-card"><div class="dev-h"><span class="dev-ico">${ico}</span><div><b>${title}</b><div class="tiny muted">${desc}</div></div></div><div class="dev-qr" data-qr="${k}"></div><input class="inp" readonly value="${esc(url)}" onclick="this.select()" style="font-size:.78rem;text-align:center"><div class="row" style="margin-top:8px;justify-content:center"><button class="btn sm" data-cp="${k}">${ic('copy', 14)} ${T('คัดลอก', 'Copy')}</button><button class="btn sm" data-sh="${k}">${ic('up', 14)} ${T('ส่งลิงก์', 'Share')}</button></div></div>`;
     modal({
       title: T('เชื่อมอุปกรณ์', 'Connect devices'), wide: true,
-      body: `<p class="small muted" style="margin-top:0">${T('เปิดลิงก์ หรือสแกน QR บนอุปกรณ์ที่จะเชื่อม (รหัสห้อง', 'Open the link or scan the QR on the device (room code')} <b style="letter-spacing:.12em">${esc(Live.code)}</b>)</p>
+      body: `<div class="dev-code"><div><div class="tiny muted">${T('รหัสห้อง', 'Room code')}</div><div class="dev-codev">${esc(Live.code)}</div></div><div class="small muted" style="flex:1;min-width:220px">${T('บนอุปกรณ์ที่จะเชื่อม เปิดเว็บแอปนี้ แล้วกดปุ่ม', 'On the device, open this web app and tap')} <b>🔑 ${T('ใส่รหัสห้อง', 'Join code')}</b> ${T('(แถบบน) → เลือกบทบาท → กรอกรหัสนี้ — หรือสแกน QR / เปิดลิงก์ด้านล่างแทนก็ได้', '→ choose the role → type this code — or just scan the QR / open a link below')}<br><span class="tiny">${esc(Live.joinUrl('x').split('?')[0])}</span></div><button class="btn sm" id="devCpCode">${ic('copy', 14)} ${T('คัดลอกรหัส', 'Copy code')}</button></div>
         <div class="dev-grid">${card('display', '🖥', T('จอฉาย', 'Display'), T('Mac / Windows / ทีวี ที่ต่อโปรเจกเตอร์', 'Computer or TV on the projector'), uD)}${card('remote', '✏️', T('รีโมทปากกา', 'Pen remote'), T('iPad / แท็บเล็ต เขียนลงสไลด์ของเครื่องนี้', 'iPad / tablet to write on these slides'), uR)}${card('co', '👥', T('เครื่องนำเสนอที่ 2', '2nd presenter'), T('iPad เปิด Studio ของตัวเอง (สไลด์แยกอิสระ) แล้วขึ้นจอฉาย/แบ่งจอร่วมกับเครื่องนี้', 'A second Studio on iPad, shown or split on the projector'), uC)}${card('mirror', '📲', T('มิเรอร์อุปกรณ์', 'Mirror device'), T('ส่งหน้าจอ (คอม/Android) หรือกล้อง (iPad) มาเป็นหน้าต่างสดใน Studio', 'Screen or camera as a live window'), uM)}</div><p class="tiny muted" style="margin:8px 0 0">${T('💡 iPad/iPhone: เว็บจับ “หน้าจอ” ไม่ได้ (ข้อจำกัดของ iOS) — ใช้ “กล้อง” เป็นกล้องเอกสาร หรือ AirPlay ไป Mac แล้วกดแชร์จอ/หน้าต่างนั้นในปุ่ม “แชร์จอ”', 'iOS cannot capture the screen from the web — use the camera, or AirPlay to a Mac and share that window.')}</p>
         <h4 style="margin:16px 0 8px">${T('อุปกรณ์ที่เชื่อมอยู่', 'Connected devices')} <span class="chip" id="devN"></span></h4><div id="devList"></div>`,
       actions: [{ label: T('ปิด', 'Close'), cls: 'pri' }],
       onMount: m => {
-        const urls = { display: uD, remote: uR, mirror: uM, co: uC };
+        const urls = { display: uD, remote: uR, mirror: uM, co: uC }; const cb0 = $('#devCpCode', m); if (cb0) cb0.onclick = async () => { const ok = await copyText(Live.code); toast(ok ? T('คัดลอกรหัสแล้ว', 'Code copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); };
         $$('[data-qr]', m).forEach(d => { try { const c = qrCanvas(urls[d.dataset.qr], 300, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; d.appendChild(c); } catch (e) { } });
         $$('[data-cp]', m).forEach(b => b.onclick = async () => { const ok = await copyText(urls[b.dataset.cp]); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); });
         $$('[data-sh]', m).forEach(b => b.onclick = async () => { const u = urls[b.dataset.sh]; if (navigator.share) { try { await navigator.share({ title: CONFIG.appName, url: u }); } catch (e) { } } else { await copyText(u); toast(T('คัดลอกแล้ว', 'Copied'), 'ok', 1400); } });
@@ -5222,7 +5308,15 @@ function remoteTools(R, getSheet, body) {
     tm() { return `<div class="rt-big" id="rtTn">--:--</div><div class="pbar"><i id="rtTb" style="width:0"></i></div><div class="rt-row">${[1, 3, 5, 10].map(m => btn(`data-tm="${m}"`, m + ' ' + T('นาที', 'min'))).join('')}</div>
       <div class="rt-row"><input class="inp" id="rtTc" type="number" inputmode="decimal" min="0.5" max="180" step="0.5" placeholder="${T('กำหนดเอง (นาที)', 'Custom minutes')}">${btn('data-a="tgo"', '▶ ' + T('เริ่ม', 'Start'), 'pri')}</div>
       <div class="rt-row">${btn('data-a="tpause"', '⏯ ' + T('หยุด/ต่อ', 'Pause'))}${btn('data-tm="0"', '✕ ' + T('ยกเลิก', 'Clear'))}</div>`; },
-    pk() { return `<div class="rt-big sm" id="rtPn">—</div><div class="rt-row">${btn('data-a="pick"', '🎲 ' + T('สุ่มนักเรียน', 'Pick a student'), 'pri')}</div><div class="rt-row">${btn('data-a="pgrp"', '👥 ' + T('แสดงกลุ่ม', 'Groups'))}${btn('data-a="pclr"', '🧹 ' + T('ล้างจอ', 'Clear'))}${btn('data-a="prst"', '↺ ' + T('เริ่มสุ่มใหม่', 'Reset'))}</div><p class="tiny muted">${T('สุ่มจากห้องที่เลือกใน Studio (ข้ามคนที่ขาด/ลาเมื่อเปิดเช็คชื่ออยู่)', 'Picks from the class chosen in Studio')}</p>`; },
+    pk() {
+      const K = (R.st && R.st.pks) || null, src = K ? K.src : 'class', ex = K && K.ns && K.ns.length ? K.ns.join(', ') : '';
+      return `<div class="rt-big sm" id="rtPn">—</div><div class="rt-row">${btn('data-a="pick"', '🎲 ' + T('สุ่มนักเรียน', 'Pick a student'), 'pri')}</div>
+      <div class="rt-pt"><b>${K ? esc(K.label) : '—'}</b><span>${K ? T(`เหลือ ${K.left} จาก ${K.total} คน`, `${K.left} of ${K.total} left`) : ''}</span></div>
+      <div class="rt-row">${btn('data-ps="class"', '👥 ' + T('ห้อง', 'Class'), src === 'class' ? 'on' : '')}${btn('data-ps="num"', '🔢 ' + T('เลขที่', 'Number'), src === 'num' ? 'on' : '')}${btn('data-ps="quick"', '⚡ ' + T('ชื่อด่วน', 'Quick') + (K && K.ql ? ' (' + K.ql + ')' : ''), src === QUICK_ID ? 'on' : '')}</div>
+      ${src === 'num' ? `<div class="rt-row"><input class="inp" id="rtNf" type="number" inputmode="numeric" min="1" max="999" placeholder="${T('จากเลขที่', 'From')}" value="${K ? K.nf : 1}" style="flex:1;min-width:0"><input class="inp" id="rtNt" type="number" inputmode="numeric" min="1" max="999" placeholder="${T('ถึงเลขที่', 'To')}" value="${K ? K.nt : ''}" style="flex:1;min-width:0"><input class="inp" id="rtNs" placeholder="${T('ยกเว้น 3,7', 'Skip 3,7')}" value="${esc(ex)}" style="flex:1;min-width:0">${btn('data-a="pnum"', T('ใช้', 'Set'), 'pri')}</div>` : ''}
+      <div class="rt-row"><input class="inp" id="rtQa" maxlength="400" placeholder="⚡ ${T('พิมพ์ชื่อเพิ่ม (หลายชื่อคั่นด้วยจุลภาค)', 'Add names (comma separated)')}" style="flex:1;min-width:0">${btn('data-a="qadd"', '＋ ' + T('เพิ่ม', 'Add'), 'pri')}</div>
+      <div class="rt-row">${btn('data-a="pgrp"', '👥 ' + T('แสดงกลุ่ม', 'Groups'))}${btn('data-a="pclr"', '🧹 ' + T('ล้างจอ', 'Clear'))}${btn('data-a="prst"', '↺ ' + T('เริ่มสุ่มใหม่', 'Reset'))}</div>${K && K.ql ? `<div class="rt-row">${btn('data-a="qclr"', '🗑 ' + T('ล้างรายชื่อด่วน', 'Clear quick list'))}</div>` : ''}<p class="tiny muted">${T('แหล่งรายชื่อตั้งได้ทั้งที่นี่และที่ Studio หลัก (ข้ามคนที่ขาด/ลาเมื่อเปิดเช็คชื่ออยู่)', 'The pick source can be set here or on the main Studio')}</p>`;
+    },
     pl() { const p = w().poll; if (!p) return `<p class="small muted" style="margin:0 0 8px">${T('ถามด่วนแล้วให้นักเรียนตอบจากมือถือ เห็นผลสด', 'Ask a quick question; students answer on their phones')}</p><div class="rt-row">${btn('data-pl="mc"', 'A–D ' + T('เลือกตอบ', 'Choice'), 'pri')}${btn('data-pl="tf"', '✓✗ ' + T('ถูก/ผิด', 'True/False'), 'pri')}</div>`;
       const mx = Math.max(1, ...p.counts); return `<div class="rt-pt"><b>${T('ตอบแล้ว', 'Answered')} ${p.n}</b><span>${p.open ? T('กำลังรับคำตอบ', 'open') : T('ปิดรับแล้ว', 'closed')}</span></div>${p.labels.map((l, i) => `<div class="hp-r"><span class="hp-l">${esc(l)}</span><div class="hp-b"><i style="width:${p.counts[i] / mx * 100}%"></i></div><b>${p.counts[i]}</b></div>`).join('')}<div class="rt-row">${btn(`data-pl="close" ${p.open ? '' : 'disabled'}`, T('ปิดรับ', 'Close'))}${btn('data-pl="show"', p.show ? T('ซ่อนผลบนจอ', 'Hide') : T('โชว์บนจอฉาย', 'Show on screen'), p.show ? 'on' : '')}${btn('data-pl="end"', T('จบ', 'End'), 'bad')}</div>`; },
     at() {
@@ -5246,11 +5340,15 @@ function remoteTools(R, getSheet, body) {
     if ((b = q('[data-tm]'))) send({ c: 'timer', m: +b.dataset.tm });
     else if ((b = q('[data-pl]'))) send({ c: 'poll', k: b.dataset.pl });
     else if ((b = q('[data-lay]'))) send({ c: 'layout', v: b.dataset.lay });
+    else if ((b = q('[data-ps]'))) { const k = b.dataset.ps; if (k === 'num') { const f = $('#rtNf', body), t = $('#rtNt', body), K = R.st && R.st.pks; send({ c: 'psrc', k: 'num', f: f ? +f.value || 1 : (K ? K.nf : 1), to: t ? +t.value || 0 : 0, skip: K && K.ns ? K.ns : [] }); } else send({ c: 'psrc', k }); }
     else if ((b = q('[data-st]'))) { const row = b.closest('[data-sid]'); if (row) { const r = R.att && R.att.rows.find(x => x.id === row.dataset.sid); send({ c: 'att', a: 'set', sid: row.dataset.sid, st: r && r.st === b.dataset.st ? '' : b.dataset.st }); } }
     else if ((b = q('[data-a]'))) {
       const a = b.dataset.a;
       if (a === 'tgo') { const v = parseFloat($('#rtTc', body).value); if (v >= 0.25 && v <= 180) send({ c: 'timer', m: v }); else toast(T('กรอก 0.5–180 นาที', 'Enter 0.5–180'), 'err', 1600); }
       else if (a === 'tpause') send({ c: 'tpause' }); else if (['pick', 'pgrp', 'pclr', 'prst'].includes(a)) send({ c: a });
+      else if (a === 'pnum') send({ c: 'psrc', k: 'num', f: +$('#rtNf', body).value || 1, to: +$('#rtNt', body).value || 0, skip: ($('#rtNs', body).value.match(/\d+/g) || []).map(Number) });
+      else if (a === 'qadd') { const i = $('#rtQa', body), v = i.value.trim(); if (!v) return i.focus(); send({ c: 'qadd', text: v }); i.value = ''; toast(T('ส่งชื่อไปที่ Studio หลักแล้ว', 'Sent to the main Studio'), 'ok', 1500); }
+      else if (a === 'qclr') { if (cfm === 'q') { cfm = false; send({ c: 'psrc', k: 'qclr' }); } else { cfm = 'q'; toast(T('กดอีกครั้งเพื่อยืนยันล้างรายชื่อด่วน', 'Tap again to confirm'), 'ok', 2200); setTimeout(() => { if (cfm === 'q') cfm = false; }, 3500); } }
       else if (a === 'blank') send({ c: 'blank' }); else if (a === 'freeze') send({ c: 'freeze' }); else if (a === 'qr') send({ c: 'qr' });
       else if (a === 'msg') send({ c: 'msg', text: $('#rtMs', body).value }); else if (a === 'msgx') send({ c: 'msg', text: '' });
       else if (a === 'astart') { const id = $('#rtC', body).value; if (id) send({ c: 'att', a: 'start', classId: id, topic: $('#rtT', body).value, mode: $('#rtM', body).value }); }
@@ -5261,14 +5359,15 @@ function remoteTools(R, getSheet, body) {
       else if (a === 'sumok') { R.attSum = ''; render(true); }
     }
   };
+  body.onkeydown = e => { if (e.key === 'Enter' && e.target.id === 'rtQa') { e.preventDefault(); const b = $('[data-a="qadd"]', body); b && b.click(); } };
   body.oninput = e => { if (e.target.id === 'rtQ') { R.attQ = e.target.value; const pos = e.target.selectionStart; render(true); const i = $('#rtQ', body); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) { } } } };
   const live = () => { const t = w().timer, n = $('#rtTn', body); if (n) { if (!t) { n.textContent = '--:--'; n.className = 'rt-big'; const bb = $('#rtTb', body); if (bb) bb.style.width = '0'; } else { const l = t.paused ? t.left : (t.end - Date.now()) / 1000; n.textContent = fmt(l); n.className = 'rt-big' + (t.paused ? ' pause' : l <= 10 ? ' low' : ''); const bb = $('#rtTb', body); if (bb) bb.style.width = Math.max(0, Math.min(100, l / (t.total || 1) * 100)) + '%'; } } const p = $('#rtPn', body); if (p) p.textContent = w().pick ? w().pick.name : '—'; };
   setInterval(() => { const s = getSheet(); if (s && !s.classList.contains('hide')) live(); }, 300);
   function render(force) {
     const s = getSheet(); if (!s || s.classList.contains('hide')) return;
     $$('#rTabs [data-tab]', s).forEach(x => x.classList.toggle('on', x.dataset.tab === R.tab));
-    const W = w(), nsig = R.tab + '|' + cfm + '|' + (R.tab === 'pl' ? JSON.stringify(W.poll || null) : R.tab === 'at' ? JSON.stringify(R.att) + R.attSum + R.attQ : R.tab === 'sc' ? JSON.stringify([W.blank, W.qr, W.msg, R.st && R.st.fz, R.st && R.st.layout]) : '');
-    if (!force && nsig === sig) return; const act = document.activeElement; if (!force && act && body.contains(act) && /INPUT|SELECT|TEXTAREA/.test(act.tagName)) return;
+    const W = w(), nsig = R.tab + '|' + cfm + '|' + (R.tab === 'pl' ? JSON.stringify(W.poll || null) : R.tab === 'at' ? JSON.stringify(R.att) + R.attSum + R.attQ : R.tab === 'sc' ? JSON.stringify([W.blank, W.qr, W.msg, R.st && R.st.fz, R.st && R.st.layout]) : R.tab === 'pk' ? JSON.stringify(R.st && R.st.pks) : '');
+    if (!force && nsig === sig) return; const act = document.activeElement; if (!force && act && body.contains(act) && /INPUT|SELECT|TEXTAREA/.test(act.tagName) && (act.tagName !== 'INPUT' || act.value)) return;
     sig = nsig; body.innerHTML = (panes[R.tab] || panes.tm)(); live();
   }
   return { render };
@@ -6447,7 +6546,7 @@ function roomPanel(el, opts = {}) {
       <div style="max-width:460px;margin:8px auto;text-align:left"><label class="f">${T('ที่อยู่เว็บของแอป (ถ้ามี) เช่น https://ชื่อ.github.io/classroom/', 'Public URL of this app (optional)')}</label><input class="inp" id="pubUrl" value="${esc(DB.settings.publicUrl || '')}" placeholder="https://username.github.io/repo/"></div>
       <button class="btn pri" id="lvStart" style="margin-top:8px">${ic('wifi', 18)} ${T('เปิดห้องสด', 'Open room')}</button></div>`;
       $('#pubUrl', el).onchange = e => { DB.settings.publicUrl = e.target.value.trim(); save(); };
-      $('#lvStart', el).onclick = async e => { const b = e.currentTarget; b.disabled = true; b.textContent = T('กำลังเปิด…', 'Opening…'); const ok = await Live.start(); if (!ok) draw(); };
+      $('#lvStart', el).onclick = async e => { const b = e.currentTarget; b.disabled = true; b.textContent = T('กำลังเปิด…', 'Opening…'); const ok = await Live.start(); if (!ok) draw(); else if (opts.fromStudio) { if (Live.state.view === 'none') Live.setState({ view: 'board' }); opts.onBoard && opts.onBoard(); } };
       return;
     }
     const studs = Live.list(), hands = studs.filter(s => s.hand).sort((a, b) => a.handAt - b.handAt);
@@ -6466,7 +6565,7 @@ function roomPanel(el, opts = {}) {
         <div style="max-height:150px;overflow:auto;margin:8px 0;display:flex;gap:6px;flex-wrap:wrap">${studs.length ? studs.map(s => `<span class="chip ${s.hand ? 'pk' : ''}">${s.hand ? '✋ ' : ''}${esc(s.name)} <a data-kick="${s.id}" style="cursor:pointer;opacity:.5">✕</a></span>`).join('') : `<span class="muted small">${T('รอนักเรียนเข้าร่วม…', 'Waiting for students…')}</span>`}</div>
         ${hands.length ? `<div class="card flat" style="padding:10px;margin-bottom:8px"><b>✋ ${T('ลำดับยกมือ', 'Hand queue')}</b>${hands.map((s, i) => `<div class="row" style="margin-top:4px"><span class="chip pk">${i + 1}</span> ${esc(s.name)} <span class="sp"></span><button class="btn sm" data-lower="${s.id}">${T('เรียกแล้ว', 'Done')}</button></div>`).join('')}</div>` : ''}
         <label class="f" style="margin-top:6px">${T('สิ่งที่นักเรียน/จอแสดงผลเห็น', 'What viewers see')}</label>
-        <div class="tabs" id="vtabs">${[['none', T('เฉพาะคำถาม', 'Questions only')], ['board', T('กระดานสอน', 'Whiteboard')], ['screen', T('หน้าจอที่แชร์', 'Shared screen')]].map(v => `<button data-v="${v[0]}" class="${Live.state.view === v[0] ? 'on' : ''}">${v[1]}</button>`).join('')}</div>
+        <div class="tabs" id="vtabs">${[['none', T('เฉพาะคำถาม', 'Questions only')], ['board', T('สไลด์/กระดานสอน (สด)', 'Live slides / whiteboard')], ['screen', T('หน้าจอที่แชร์', 'Shared screen')]].map(v => `<button data-v="${v[0]}" class="${Live.state.view === v[0] ? 'on' : ''}">${v[1]}</button>`).join('')}</div>
         <div class="tiny muted" style="margin-top:4px">${T('"กระดานสอน" ส่งภาพจาก Teaching Studio ที่เปิดอยู่ · "หน้าจอที่แชร์" ต้องกดแชร์จอใน Studio ก่อน', '')}</div>
         ${Live.submissions.length ? `<div style="margin-top:10px"><b>${T('งานที่ส่งมา', 'Submissions')}</b> <span class="chip">${Live.submissions.length}</span><div style="display:flex;gap:8px;overflow:auto;margin-top:6px">${Live.submissions.slice(0, 20).map(s => `<a data-sub="${s.id}" style="flex:none;cursor:pointer;text-align:center"><img src="${s.file}" style="height:64px;border-radius:8px;border:1px solid var(--line)"><div class="tiny">${esc(s.name)}</div></a>`).join('')}</div></div>` : ''}
         <div class="row" style="margin-top:12px"><button class="btn sm danger" id="lvStop">${ic('stop', 14)} ${T('ปิดห้อง', 'Close room')}</button></div>
@@ -6594,6 +6693,7 @@ function bootStudent(code, role, nameParam) {
   }
   function shell() {
     app.innerHTML = `<div class="stu ${display ? 'display' : ''}">
+      ${display ? '' : '<div class="spill" id="sPill"></div><div class="spop hide" id="sPop"></div>'}
       <header><div style="flex:1;min-width:0"><div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${display ? 'DISPLAY' : '🎒 ' + esc(S.name)}</div><div class="tiny" style="color:#b9cbe6">${T('ห้อง', 'Room')} ${esc(code)} · <span id="st">…</span></div></div>
         <span class="chip pk" id="tot" ${display ? 'hide' : ''} style="${display ? 'display:none' : ''}">⭐ 0</span><button class="btn sm" id="leave" style="min-height:32px">${T('ออก', 'Leave')}</button></header>
       <div class="wrap" ${display ? 'style="max-width:1400px"' : ''}><div id="ck"></div><div class="view-box hide" id="vb"></div><div id="qa" style="margin-top:14px"></div>
@@ -6637,9 +6737,63 @@ function bootStudent(code, role, nameParam) {
     const vb = $('#vb'); if (!vb) return; const v = S.state.view;
     if (v === 'none') { vb.classList.add('hide'); vb.innerHTML = ''; return; }
     vb.classList.remove('hide');
-    if (v === 'board') { let im = $('img', vb); if (!im) { vb.innerHTML = `<span>${T('รอภาพกระดาน…', 'Waiting for board…')}</span><img alt="board">`; im = $('img', vb); im.style.display = 'none'; im.onload = () => { im.style.display = ''; const sp = $('span', vb); sp && (sp.style.display = 'none'); }; } if (S.board) im.src = S.board; }
+    if (v === 'board') {
+      const cv = ensureCv(); if (!vb.contains(S.stage)) { vb.innerHTML = `<span id="vbw">${T('รอภาพกระดาน…', 'Waiting for board…')}</span><img alt="board" style="display:none">`; vb.appendChild(S.stage); setTimeout(() => cv.resize(), 30); }
+      let im = $('img', vb); im.onload = () => { if (S.castGot) return; im.style.display = ''; const sp = $('#vbw', vb); sp && (sp.style.display = 'none'); };
+      S.stage.style.display = S.castGot ? '' : 'none';
+      if (S.castGot) { im.style.display = 'none'; const sp = $('#vbw', vb); sp && (sp.style.display = 'none'); } else if (S.board) im.src = S.board;
+    }
     else if (v === 'screen') { let vd = $('video', vb); if (!vd) { vb.innerHTML = `<span>${T('รอสัญญาณหน้าจอจากครู…', 'Waiting for screen…')}</span><video autoplay playsinline muted></video>`; vd = $('video', vb); } if (S.stream && vd.srcObject !== S.stream) { vd.srcObject = S.stream; vd.play().catch(() => { }); } }
     if (display && !document.fullscreenElement) { /* user can tap vb to go fullscreen */ vb.onclick = () => { (vb.requestFullscreen || vb.webkitRequestFullscreen || (() => { })).call(vb); }; }
+    if (!display && !$('.vfs', vb)) { const fb = document.createElement('button'); fb.className = 'vfs'; fb.setAttribute('aria-label', 'fullscreen'); fb.textContent = '⛶'; fb.onclick = e => { e.stopPropagation(); if (document.fullscreenElement) { document.exitFullscreen(); return; } const f = vb.requestFullscreen || vb.webkitRequestFullscreen; try { f && f.call(vb); } catch (x) { } }; vb.appendChild(fb); }
+  }
+  /* ---- สไลด์สดแบบเวกเตอร์ (ลายเส้น/เลเซอร์/ซูมตามครูแบบ real-time) — ใช้ตัววาดเดียวกับจอฉาย; ระหว่างรอหน้าแรกจะโชว์ภาพนิ่งแทน ---- */
+  const CAST_T = new Set(['doc', 'pg', 'd', 'ls', 'lh', 'le', 'vw', 'lz', 'lz0', 'img']);
+  function castSend(o) { const c = LiveClient.conn; if (c && c.open) { try { c.send(o); } catch (e) { } } }
+  function ensureCv() {
+    if (S.cv) return S.cv; S.stage = document.createElement('div'); S.stage.className = 'vstage'; const cv = S.cv = new CastView(S.stage);
+    cv.onFirst = () => { S.castGot = true; castSend({ t: 'cast', ok: true }); updView(); }; return cv;
+  }
+  /* ---- ป๊อปอัปบนมือถือนักเรียน: ถึงตาคุณแล้ว (สุ่มชื่อ) · จับเวลา · กลุ่มของฉัน · ข้อความจากครู — ขับด้วยสถานะ Hub.w ที่ครูส่งมาอยู่แล้ว ---- */
+  const P = { me: null, pickShown: '', pend: 0, grpHid: '', grpKey: '', tmDoneAt: 0, tmId: '', closeT: 0 };
+  const mineName = () => (S.mine && S.mine.name) || S.name || '';
+  const isMe = nm => { const a = normName(mineName()), b = normName(nm); return !!a && !!b && (a === b || (a.length >= 3 && (b.startsWith(a) || a.startsWith(b)))); };
+  const vib = pat => { try { navigator.vibrate && navigator.vibrate(pat); } catch (e) { } };
+  function popClose() { const pop = $('#sPop'); if (pop) { pop.classList.add('hide'); pop.innerHTML = ''; } clearTimeout(P.closeT); P.cur = ''; }
+  function popOpen(kind, html, autoMs) { const pop = $('#sPop'); if (!pop) return; pop.innerHTML = html; pop.classList.remove('hide'); P.cur = kind; clearTimeout(P.closeT); if (autoMs) P.closeT = setTimeout(() => { if (P.cur === kind) popClose(); }, autoMs); pop.onclick = e => { if (e.target === pop || e.target.closest('[data-pc]')) { if (kind === 'grp') P.grpHid = P.grpKey; popClose(); } }; }
+  function popMe(m) {
+    clearTimeout(P.pend); P.me = m; P.pickShown = m.gid + ':me'; try { Snd.win(); } catch (e) { } vib([250, 120, 250, 120, 400]);
+    popOpen('me', `<div class="pc me"><div class="pk-e">🎯</div><h2 style="margin:6px 0 0;color:var(--pink2)">${T('ถึงตาคุณแล้ว!', "It's your turn!")}</h2><div class="pk-name">${m.no != null ? esc(m.no) + '. ' : ''}${esc(m.name)}</div><p class="muted" style="margin:0 0 14px">${T('ครูเรียกคุณ — ตอบหรือยกมือได้เลย', 'The teacher picked you')}</p><button class="btn pri" data-pc style="width:100%;min-height:48px">${T('รับทราบ', 'OK')}</button></div>`, 20000);
+  }
+  function myGroup(w) { const g = (w.groups || []).find(x => (x.members || []).some(isMe)); return g || null; }
+  function popState() {
+    if (display) return; const w = (S.state && S.state.w) || {}, pill = $('#sPill'); if (!pill) return; const skew = S.skew || 0, parts = [];
+    /* 1) จับเวลา */
+    const t = w.timer;
+    if (t) {
+      const left = t.paused ? t.left : (t.end - (Date.now() + skew)) / 1000;
+      if (left <= 0 && (!P.tmDoneAt || P.tmId !== t.id)) { P.tmDoneAt = Date.now(); P.tmId = t.id; vib([300, 100, 300]); try { Snd.win(); } catch (e) { } }
+      if (left > 0) { P.tmDoneAt = 0; const s_ = Math.ceil(left); parts.push(`<div class="pl ${!t.paused && s_ <= 10 ? 'low' : ''}">⏱ ${fmtMS(left)}${t.paused ? ' ⏸' : ''}${t.label ? ' · ' + esc(t.label) : ''}</div>`); }
+      else if (Date.now() - P.tmDoneAt < 7000) parts.push(`<div class="pl done">⏰ ${T('หมดเวลา!', "Time's up!")}</div>`);
+    } else P.tmDoneAt = 0;
+    /* 2) กลุ่ม */
+    const gs = w.groups && w.groups.length ? w.groups : null;
+    if (gs) {
+      const key = gs.length + ':' + gs.map(g => g.name + (g.members || []).length).join('|'); P.grpKey = key; const mg = myGroup(w);
+      if (P.grpHid !== key && P.cur !== 'grp' && P.cur !== 'me' && P.shownGrp !== key) { P.shownGrp = key; popOpen('grp', `<div class="pc"><div class="pk-e">👥</div><h2 style="margin:6px 0">${T('กลุ่มของห้อง', 'Groups')}</h2>${mg ? `<p style="margin:0 0 6px;color:var(--pink2);font-weight:800">${T('คุณอยู่ที่', 'You are in')} ${esc(mg.name)}</p>` : ''}<div class="gg">${gs.map(g => `<div class="${g === mg || (mg && g.name === mg.name) ? 'me' : ''}"><b>${esc(g.name)}</b><span class="small">${(g.members || []).map(m => isMe(m) ? '<b style="display:inline;color:var(--pink2)">' + esc(m) + '</b>' : esc(m)).join(' · ')}</span></div>`).join('')}</div><button class="btn pri" data-pc style="width:100%;min-height:46px">${T('ปิด', 'Close')}</button></div>`); }
+      if (P.grpHid === key || P.cur !== 'grp') parts.push(`<button class="pl pk" data-gp>👥 ${mg ? esc(mg.name) : T('ดูกลุ่ม', 'Groups')}</button>`);
+    } else { P.grpHid = ''; P.shownGrp = ''; if (P.cur === 'grp') popClose(); }
+    /* 3) ข้อความจากครู */
+    if (w.msg) parts.push(`<div class="bn">📢 ${esc(w.msg)}</div>`);
+    const html = parts.join(''); if (pill._h !== html) { pill._h = html; pill.innerHTML = html; const gb = $('[data-gp]', pill); if (gb) gb.onclick = () => { P.shownGrp = ''; P.grpHid = ''; popState(); }; }
+    /* 4) สุ่มชื่อ: ระหว่างหมุน = การ์ดเล็ก, เมื่อได้ผล = ป๊อปอัป (ถ้าเป็นเรา ครูส่ง “picked” ตรงมาให้ → การ์ดชมพูเต็มจอ) */
+    const pk = w.pick;
+    if (!pk) { if (P.cur === 'pick') popClose(); P.pickShown = P.pickShown.endsWith(':me') ? P.pickShown : ''; return; }
+    if (!pk.done) { if (P.cur !== 'me') popOpen('pick', `<div class="pc"><div class="pk-e">🎯</div><div class="muted">${T('กำลังสุ่มชื่อ…', 'Picking…')}</div><div class="pk-name" style="opacity:.55">${esc(pk.name)}</div></div>`); return; }
+    if (P.pickShown === pk.gid + ':me' || P.pickShown === pk.gid + ':done') return;
+    if (P.me && P.me.gid === pk.gid) return;
+    P.pickShown = pk.gid + ':done'; clearTimeout(P.pend);
+    P.pend = setTimeout(() => { if (P.me && P.me.gid === pk.gid) return; popOpen('pick', `<div class="pc"><div class="pk-e">🎯</div><div class="muted">${T('ครูเรียก', 'The teacher picked')}</div><div class="pk-name">${esc(pk.name)}</div><button class="btn" data-pc style="width:100%">${T('ปิด', 'Close')}</button></div>`, 8000); }, 400);
   }
   function timerTick() {
     const e = $('#tm'); if (!e) return; const left = Math.max(0, Math.ceil((S.deadline - Date.now()) / 1000)); e.textContent = '⏱ ' + left + 's'; e.className = 'chip ' + (left <= 5 ? 'bad' : 'warn');
@@ -6716,9 +6870,9 @@ function bootStudent(code, role, nameParam) {
   function start() {
     shell(); LiveClient.ckInfo = ckLoad(); setStatus('connecting'); S.state = { view: 'none', status: 'idle' }; qKey = '';
     LiveClient.join(code, S.name, role, {
-      status: setStatus,
-      state: s => { S.state = s; updView(); renderQ(); renderCk(); },
-      msg: m => { if (m.t === 'ckr') { if (m.ok) { S.mine = { name: m.name, no: m.no, status: m.status, tc: m.tc }; LiveClient.ckInfo = { sid: m.sid, tok: m.tok, tc: m.tc }; try { localStorage.setItem(ckKey, JSON.stringify({ sid: m.sid, tok: m.tok, tc: m.tc })); } catch (e) { } S.name = m.name; if (!m.again) toast('✔ ' + T('เช็คชื่อแล้ว', 'Checked in') + ' — ' + m.name, 'ok', 3000); const hd = $('#app header div div'); if (hd) hd.textContent = '🎒 ' + m.name; renderCk(); } else toast(m.msg || T('เช็คชื่อไม่สำเร็จ', 'Failed'), 'err', 3800); } },
+      status: (st, info) => { setStatus(st, info); if (st === 'online' && !display) { castSend({ t: 'cast', on: true }); if (!S.popIv) S.popIv = setInterval(popState, 500); } },
+      state: s => { if (s && s.ts) S.skew = s.ts - Date.now(); S.state = s; updView(); renderQ(); renderCk(); popState(); },
+      msg: m => { if (CAST_T.has(m.t)) { ensureCv().onMsg(m); return; } if (m.t === 'picked') { popMe(m); return; } if (m.t === 'ckr') { if (m.ok) { S.mine = { name: m.name, no: m.no, status: m.status, tc: m.tc }; LiveClient.ckInfo = { sid: m.sid, tok: m.tok, tc: m.tc }; try { localStorage.setItem(ckKey, JSON.stringify({ sid: m.sid, tok: m.tok, tc: m.tc })); } catch (e) { } S.name = m.name; if (!m.again) toast('✔ ' + T('เช็คชื่อแล้ว', 'Checked in') + ' — ' + m.name, 'ok', 3000); const hd = $('#app header div div'); if (hd) hd.textContent = '🎒 ' + m.name; renderCk(); } else toast(m.msg || T('เช็คชื่อไม่สำเร็จ', 'Failed'), 'err', 3800); } },
       board: img => { S.board = img; updView(); },
       stream: st => { S.stream = st; updView(); },
       result: m => { if (m.final) { S.results.final = m; S.total = m.total; } else if (m.qid) { S.results[m.qid] = m; if (m.total !== undefined) S.total = m.total; if (m.limit) toast(T('ส่งคำตอบได้ครบจำนวนครั้งแล้ว', 'Attempt limit reached'), 'err'); if (m.late) toast(T('หมดเวลาแล้ว', 'Too late'), 'err'); } const t = $('#tot'); if (t) t.textContent = '⭐ ' + S.total; if (m.instant && m.correct !== null) toast(m.correct ? '✓ ' + T('ถูกต้อง', 'Correct') + ' +' + m.pts : '✗ ' + T('ยังไม่ถูก', 'Not quite'), m.correct ? 'ok' : 'err'); if (S.state.status !== 'open') { qKey = ''; renderQ(); } },
@@ -6904,6 +7058,7 @@ PAGES.dashboard = {
         <button id="aGroup">${ic('groups')} ${T('จัดกลุ่ม', 'Make groups')}</button>
       </div>
     </div>
+    <div class="card" style="margin-bottom:18px"><h3 style="margin:0 0 4px">🔑 ${T('เข้าร่วมด้วยรหัสห้อง', 'Join with a room code')} <span class="tiny muted" style="font-weight:500">${T('· นักเรียนเข้าห้องเรียน หรือครูเพิ่มอุปกรณ์การสอน (จอฉาย / iPad / เครื่องที่ 2 / มิเรอร์)', '· students, or extra teaching devices')}</span></h3>${Live.active ? `<div class="small" style="margin:2px 0 8px">${T('ห้องสดของเครื่องนี้', 'This device’s room')}: <b style="letter-spacing:.12em">${esc(Live.code)}</b></div>` : ''}<div id="jfHome"></div></div>
     <div class="grid g4" style="margin-bottom:18px">
       <div class="card stat"><div class="ico">${ic('book')}</div><div><b>${DB.classes.length}</b><span class="small muted">${T('ห้องเรียน', 'Classes')}</span></div></div>
       <div class="card stat pk"><div class="ico">${ic('users')}</div><div><b>${nStu}</b><span class="small muted">${T('นักเรียน', 'Students')}</span></div></div>
@@ -6916,6 +7071,7 @@ PAGES.dashboard = {
     </div>
     ${!DB.classes.length ? `<div class="card" style="margin-top:16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h3 style="margin:0">${T('เริ่มต้นใช้งาน', 'Getting started')}</h3><div class="small muted">${T('เพิ่มห้องเรียนและรายชื่อนักเรียนก่อน หรือโหลดข้อมูลตัวอย่างเพื่อลองใช้ทุกฟังก์ชัน', 'Add a class and students, or load sample data.')}</div></div><button class="btn" id="aClass">${T('เพิ่มห้องเรียน', 'Add class')}</button><button class="btn pri" id="aSeed">${T('โหลดข้อมูลตัวอย่าง', 'Load sample data')}</button></div>` : ''}
     <div class="tiny muted" style="text-align:center;margin:26px 0 4px">${esc(DB.settings.systemName)} · ${T('ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้ — สำรองได้ที่ ตั้งค่าระบบ', 'Data is stored in this browser — back up in Settings')}${DB.support.enabled ? ` · <a href="#/support" style="color:inherit">♡ ${T('สนับสนุนผู้พัฒนา', 'Support the developer')}</a>` : ''}</div>`;
+    joinForm($('#jfHome', el));
     $('#aStart', el).onclick = () => createLesson(T('สอนสด ', 'Live ') + fmtD(Date.now()));
     $('#aLesson', el).onclick = () => go('lessons'); $('#aQuiz', el).onclick = () => go('quiz'); $('#aRand', el).onclick = () => go('random'); $('#aGroup', el).onclick = () => go('groups');
     $$('[data-ol]', el).forEach(b => b.onclick = () => go('studio/' + b.dataset.ol));
@@ -7145,11 +7301,158 @@ function rosterFor(cc, { skipAbsent = true, group = '' } = {}) {
 
 /* แหล่งข้อมูลของวงล้อที่ 1: รายชื่อห้อง หรือ “รายการที่สร้างเอง” (หลายชุด) — ใช้ร่วมกับปุ่มสุ่มในวงกลมเมนูของ Studio */
 function wheelLists() { const w = DB.wheel; if (!Array.isArray(w.lists)) w.lists = []; return w.lists; }
-function wheelSrc(which) { const w = DB.wheel, k = which === 2 ? 'src2' : 'src1', d = which === 2 ? 'acts' : 'class'; if (w[k] !== d && !wheelLists().some(l => l.id === w[k])) w[k] = d; return w[k] || d; }
+function wheelSrc(which) { const w = DB.wheel, k = which === 2 ? 'src2' : 'src1', d = which === 2 ? 'acts' : 'class'; if (w[k] !== d && !(which === 1 && w[k] === 'num') && !wheelLists().some(l => l.id === w[k])) w[k] = d; return w[k] || d; }
 function wheelPool(cc, skipAbsent = true) {
-  const s = wheelSrc(1); if (s === 'class') return rosterFor(cc, { skipAbsent });
+  const s = wheelSrc(1); if (s === 'class') return rosterFor(cc, { skipAbsent }); if (s === 'num') return numPool(cc, skipAbsent);
   const l = wheelLists().find(x => x.id === s); return l ? l.items.map((n, i) => ({ id: 'i' + i + ':' + n, name: n, pseudo: true })) : [];
 }
+
+/* =====================================================================
+   แหล่งรายชื่อสำหรับ “สุ่มนักเรียน” (ใช้ร่วมกันทุกที่: หน้าสุ่ม · หน้าต่างสุ่มใน Studio · วงกลมเมนู · iPad รีโมท)
+   · class  = รายชื่อห้องที่เลือก            · num = สุ่มตามเลขที่ (กำหนดช่วงเลข/ยกเว้นเลขที่ได้)
+   · wl_quick = รายชื่อด่วน (พิมพ์/วางเพิ่มระหว่างสอน)   · อื่น ๆ = รายการที่สร้างเองไว้ในหน้าสุ่ม
+   ===================================================================== */
+const QUICK_ID = 'wl_quick';
+const isAbsentToday = (cc, sid) => { const rec = ((DB.attendance[cc.id] || {})[today()]) || {}; return ['a', 'l'].includes(rec[sid]); };
+function numCfg(cc) {
+  const w = DB.wheel, c = w.num = Object.assign({ from: 1, to: 0, skip: [], names: true }, w.num || {});
+  const maxNo = cc && cc.students.length ? Math.max(cc.students.length, ...cc.students.map(s => +s.no || 0)) : 0;
+  const from = clamp(parseInt(c.from) || 1, 1, 999); const given = parseInt(c.to) >= from; let to = given ? parseInt(c.to) : (maxNo >= from ? maxNo : Math.max(from, 40));
+  return { from, to: clamp(to, from, 999), auto: !given, skip: new Set((c.skip || []).map(Number).filter(Boolean)), names: c.names !== false };
+}
+function numPool(cc, skipAbsent = true) {
+  const n = numCfg(cc), out = [], byNo = new Map(); if (cc) cc.students.forEach(s => { if (s.no != null && !byNo.has(+s.no)) byNo.set(+s.no, s); });
+  for (let i = n.from; i <= n.to; i++) {
+    if (n.skip.has(i)) continue; const st = byNo.get(i);
+    if (st) { if (skipAbsent && isAbsentToday(cc, st.id)) continue; out.push(Object.assign({}, st, { no: i, plain: st.name, name: n.names ? i + '. ' + st.name : T('เลขที่ ', 'No. ') + i })); }
+    else out.push({ id: 'n' + i, no: i, name: T('เลขที่ ', 'No. ') + i, pseudo: true });
+  }
+  return out;
+}
+function pickSrcLabel(cc) {
+  const s = wheelSrc(1); if (s === 'class') return '👥 ' + (cc ? cc.name : T('ยังไม่มีห้อง', 'no class'));
+  if (s === 'num') { const n = numCfg(cc); return '🔢 ' + T('เลขที่ ', 'No. ') + n.from + '–' + n.to + (n.skip.size ? ' (−' + n.skip.size + ')' : ''); }
+  const l = wheelLists().find(x => x.id === s); return l ? (l.id === QUICK_ID ? '⚡ ' : '📝 ') + l.name + ' (' + l.items.length + ')' : '—';
+}
+function quickRoster() { const l = Quick.list(); return l ? l.items.map((n, i) => ({ id: 'q' + i + ':' + n, no: i + 1, name: n, pseudo: true })) : []; }
+const Quick = {
+  list(create) { let l = wheelLists().find(x => x.id === QUICK_ID); if (!l && create) { l = { id: QUICK_ID, name: T('รายชื่อด่วน', 'Quick list'), items: [] }; wheelLists().unshift(l); } return l || null; },
+  /* ข้อความ → รายชื่อ: แยกบรรทัด / จุลภาค / แท็บ · ตัดเลขลำดับหน้าชื่อ · ข้ามค่าที่เป็นตัวเลขล้วน (รหัส) */
+  parse(text) {
+    const out = [], seen = new Set();
+    String(text || '').split(/\r?\n/).forEach(line => {
+      line = line.trim().replace(/^\d+\s*[.)\-:,]\s*|^\d+\s+/, '');
+      line.split(/[,;，、\t]+/).forEach(p => { p = p.replace(/\s+/g, ' ').trim().slice(0, 60); if (!p || !/\D/.test(p) || seen.has(normName(p))) return; seen.add(normName(p)); out.push(p); });
+    });
+    return out;
+  },
+  /* เพิ่มชื่อเข้ารายชื่อด่วน + ใช้เป็นแหล่งสุ่มทันที — คืนค่า {add, dup} */
+  add(text) {
+    const names = Array.isArray(text) ? text : this.parse(text); if (!names.length) return { add: 0, dup: 0 };
+    const l = this.list(true), have = new Set(l.items.map(normName)); let add = 0;
+    names.forEach(x => { x = String(x).trim().slice(0, 60); if (!x || have.has(normName(x)) || l.items.length >= 500) return; l.items.push(x); have.add(normName(x)); add++; });
+    DB.wheel.src1 = QUICK_ID; save(); return { add, dup: names.length - add };
+  },
+  /* ตั้งช่วงเลขที่ (จาก–ถึง, ยกเว้น) แล้วใช้สุ่มตามเลขที่ */
+  setNum(o) { const c = DB.wheel.num = Object.assign({ from: 1, to: 0, skip: [], names: true }, DB.wheel.num || {}, o || {}); DB.wheel.src1 = 'num'; save(); return numCfg(curClass()); },
+  setSrc(v) { DB.wheel.src1 = v; save(); wheelSrc(1); },
+  /* ช่องพิมพ์ชื่อเร็ว: Enter = เพิ่ม · วางหลายบรรทัดแล้วเพิ่มทั้งหมดทันที (ช่อง input ปกติจะรวมบรรทัดเป็นบรรทัดเดียว จึงดักตอนวางเอง) */
+  bindInput(inp, after) {
+    const go = text => { const r = Quick.add(text); if (!r.add && !r.dup) { toast(T('ไม่พบชื่อที่เพิ่มได้', 'No names found'), 'err', 1600); return false; } inp.value = ''; toast(T(`เพิ่ม ${r.add} ชื่อ${r.dup ? ` (ซ้ำ ${r.dup})` : ''} · สุ่มจากรายชื่อด่วน`, `Added ${r.add}`), 'ok', 2200); after && after(r); return true; };
+    inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { e.preventDefault(); if (inp.value.trim()) go(inp.value); } });
+    inp.addEventListener('paste', e => { const t = (e.clipboardData || window.clipboardData).getData('text'); if (/[\r\n]/.test(String(t).trim())) { e.preventDefault(); go(t); } });
+    return go;
+  },
+  /* หน้าต่างตั้งค่ารายชื่อสำหรับสุ่ม — เลือกที่มา / เพิ่มชื่อด่วน / สุ่มตามเลขที่ */
+  open(onChange, tab) {
+    let cc = curClass(); const cur = wheelSrc(1); const S = { tab: tab || (cur === 'class' ? 'class' : cur === 'num' ? 'num' : cur === QUICK_ID ? 'quick' : 'list'), txt: '' };
+    const done = () => { try { onChange && onChange(); } catch (e) { console.warn(e); } };
+    const TABS = [['class', '👥', T('ห้องเรียน', 'Class')], ['num', '🔢', T('ตามเลขที่', 'By number')], ['quick', '⚡', T('ชื่อด่วน', 'Quick')], ['list', '📝', T('รายการของฉัน', 'My lists')]];
+    const m = modal({
+      title: '🎯 ' + T('รายชื่อสำหรับสุ่ม', 'Who to pick from'), wide: true,
+      body: `<div id="qkB"></div>`,
+      actions: [{ label: T('ปิด', 'Close') }, { label: T('ใช้แหล่งนี้', 'Use this source'), cls: 'pri', onClick: () => apply() }],
+      onMount: mm => { draw(mm); }
+    });
+    function lists() { return wheelLists().filter(l => l.id !== QUICK_ID); }
+    function apply() {
+      if (S.tab === 'class') { if (!cc) { toast(T('ยังไม่มีห้องเรียน — สร้างห้องก่อน หรือใช้แท็บ “ชื่อด่วน” / “ตามเลขที่”', 'No class yet'), 'err', 3600); return false; } DB.curClass = cc.id; Quick.setSrc('class'); }
+      else if (S.tab === 'num') { if (!readNum()) return false; }
+      else if (S.tab === 'quick') { if (S.txt.trim()) { const r = Quick.add(S.txt); S.txt = ''; if (r.add) toast(T(`เพิ่ม ${r.add} ชื่อ`, `Added ${r.add}`), 'ok', 1600); } const ql = Quick.list(); if (!ql || !ql.items.length) { toast(T('ยังไม่มีชื่อ — พิมพ์หรือวางชื่อก่อน', 'No names yet'), 'err', 2600); return false; } Quick.setSrc(QUICK_ID); }
+      else { const l = lists().find(x => x.id === S.listId) || lists()[0]; if (!l) { toast(T('ยังไม่มีรายการ — กด “สร้างรายการใหม่”', 'No list yet'), 'err', 3000); return false; } Quick.setSrc(l.id); }
+      done(); toast('🎯 ' + T('สุ่มจาก: ', 'Picking from: ') + pickSrcLabel(curClass()), 'ok', 2600);
+    }
+    function readNum() {
+      const mm = m.el, f = parseInt($('#qnF', mm).value) || 1, tv = $('#qnT', mm).value.trim(), t = tv === '' ? 0 : parseInt(tv) || 0;
+      if (t && t < f) { toast(T('เลขสุดท้ายต้องไม่น้อยกว่าเลขแรก', '“To” must be ≥ “From”'), 'err', 2800); return false; }
+      const skip = ($('#qnS', mm).value.match(/\d+/g) || []).map(Number).filter(x => x > 0 && x < 1000);
+      const c = Quick.setNum({ from: f, to: t, skip, names: $('#qnN', mm).checked }); if (!c || c.to < c.from) return false; if (cc) DB.curClass = cc.id; save(); return true;
+    }
+    function draw(mm) {
+      mm = mm || m.el; const box = $('#qkB', mm), ls = lists(); if (S.listId == null || !ls.some(l => l.id === S.listId)) S.listId = (ls[0] || {}).id;
+      let body = '';
+      if (S.tab === 'class') {
+        body = DB.classes.length ? `<label class="f">${T('เลือกห้องเรียน', 'Class')}</label><select class="sel" id="qkC">${DB.classes.map(c => `<option value="${c.id}" ${cc && c.id === cc.id ? 'selected' : ''}>${esc(c.name)}${c.subject ? ' · ' + esc(c.subject) : ''} (${c.students.length} ${T('คน', '')})</option>`).join('')}</select>
+          <p class="small muted" style="margin:8px 0">${T('สุ่มจากรายชื่อนักเรียนของห้องนี้ (ข้ามคนที่ขาด/ลาเมื่อเปิดเช็คชื่อ)', 'Picks from this class roster')}</p>
+          <div class="row"><button class="btn sm" id="qkAdd">${ic('plus', 14)} ${T('เพิ่มนักเรียนเข้าห้องนี้ (วางหลายคน)', 'Add students to this class')}</button><button class="btn sm" id="qkNew">${T('สร้างห้องใหม่', 'New class')}</button></div>`
+          : `<div class="empty" style="padding:18px">${T('ยังไม่มีห้องเรียน', 'No class yet')}</div><div class="row" style="justify-content:center"><button class="btn pri sm" id="qkNew">${T('สร้างห้อง + วางรายชื่อ', 'Create a class')}</button></div><p class="tiny muted" style="text-align:center">${T('หรือใช้แท็บ “ชื่อด่วน” พิมพ์ชื่อเพิ่มได้ทันทีโดยไม่ต้องสร้างห้อง', 'Or use the Quick tab')}</p>`;
+      } else if (S.tab === 'num') {
+        const n = numCfg(cc), raw = DB.wheel.num || {}, cnt = numPool(cc, true).length;
+        body = `<p class="small muted" style="margin-top:0">${T('สุ่มเฉพาะ “เลขที่” — ไม่ต้องมีรายชื่อ ถ้าห้องมีเลขที่นั้นจะแสดงชื่อให้ด้วย', 'Random by roll number; shows the name when the class has it')}</p>
+          <div class="row" style="gap:10px;align-items:flex-end"><div><label class="f">${T('ตั้งแต่เลขที่', 'From no.')}</label><input class="inp" id="qnF" type="number" inputmode="numeric" min="1" max="999" value="${n.from}" style="width:100px;text-align:center;font-size:1.2rem"></div>
+          <div><label class="f">${T('ถึงเลขที่', 'To no.')}</label><input class="inp" id="qnT" type="number" inputmode="numeric" min="1" max="999" value="${raw.to > 0 ? raw.to : ''}" placeholder="${n.to}" style="width:100px;text-align:center;font-size:1.2rem"></div>
+          ${cc && cc.students.length ? `<button class="btn sm" id="qnAll">${T('ทั้งห้อง', 'Whole class')} (${n.auto ? n.to : Math.max(cc.students.length, ...cc.students.map(s => +s.no || 0))})</button>` : ''}</div>
+          <label class="f" style="margin-top:10px">${T('ยกเว้นเลขที่ (คั่นด้วยจุลภาค เช่น 3, 7, 15)', 'Skip numbers')}</label><input class="inp" id="qnS" value="${esc((raw.skip || []).join(', '))}" placeholder="3, 7, 15">
+          <label class="row" style="gap:8px;margin-top:10px;cursor:pointer"><input type="checkbox" id="qnN" ${n.names ? 'checked' : ''}><span class="small">${T('แสดงชื่อนักเรียนด้วย (ถ้าห้องที่เลือกมีเลขที่นั้น)', 'Show the student name when known')}</span></label>
+          <p class="small" style="margin:10px 0 0" id="qnPv"></p>`;
+      } else if (S.tab === 'quick') {
+        const l = Quick.list(), items = l ? l.items : [];
+        body = `<p class="small muted" style="margin-top:0">${T('พิมพ์หรือวางชื่อได้เลย — ใช้ระหว่างสอนแบบรวดเร็ว ไม่ต้องสร้างห้อง (บรรทัดละ 1 ชื่อ หรือคั่นด้วยจุลภาค · วางจาก Excel ได้)', 'Type or paste names — one per line or comma-separated')}</p>
+          <textarea class="ta" id="qkT" style="min-height:90px" placeholder="สมชาย ใจดี&#10;สมหญิง รักเรียน, กิตติ แสนดี">${esc(S.txt)}</textarea>
+          <div class="row" style="margin-top:6px"><button class="btn pri sm" id="qkA">${ic('plus', 14)} ${T('เพิ่มชื่อ', 'Add')}</button><span class="tiny muted" id="qkPv"></span><span class="sp"></span>${cc ? `<label class="small row" style="gap:6px;cursor:pointer"><input type="checkbox" id="qkAlso"> ${T('เพิ่มเข้าห้อง', 'Also add to')} ${esc(cc.name)} ${T('ด้วย (ถาวร)', '(permanent)')}</label>` : ''}</div>
+          <div class="row" style="margin-top:12px"><b class="small">${T('รายชื่อด่วนตอนนี้', 'Quick list')} (${items.length})</b><span class="sp"></span>${items.length ? `<button class="btn sm danger" id="qkClr">${T('ล้างทั้งหมด', 'Clear')}</button>` : ''}</div>
+          <div id="qkChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;max-height:160px;overflow:auto">${items.length ? items.map((x, i) => `<span class="chip" style="gap:6px">${esc(x)} <a data-rm="${i}" style="cursor:pointer;font-weight:800" aria-label="remove">×</a></span>`).join('') : `<span class="muted small">${T('ยังไม่มีชื่อ', 'Empty')}</span>`}</div>`;
+      } else {
+        body = ls.length ? `<label class="f">${T('เลือกรายการ', 'Choose a list')}</label><select class="sel" id="qkL">${ls.map(l => `<option value="${esc(l.id)}" ${S.listId === l.id ? 'selected' : ''}>${esc(l.name)} (${l.items.length})</option>`).join('')}</select>
+          <div class="row" style="margin-top:10px"><button class="btn sm" id="qkLE">${ic('edit', 14)} ${T('แก้ไขรายการนี้', 'Edit')}</button><button class="btn sm" id="qkLN">${ic('plus', 14)} ${T('สร้างรายการใหม่', 'New list')}</button></div>`
+          : `<div class="empty" style="padding:18px">${T('ยังไม่มีรายการที่สร้างไว้', 'No lists yet')}</div><div class="row" style="justify-content:center"><button class="btn pri sm" id="qkLN">${ic('plus', 14)} ${T('สร้างรายการใหม่', 'New list')}</button></div>`;
+      }
+      box.innerHTML = `<div class="seg" id="qkTabs" style="margin-bottom:12px">${TABS.map(t => `<button data-t="${t[0]}" class="${S.tab === t[0] ? 'on' : ''}">${t[1]} ${t[2]}</button>`).join('')}</div>${body}
+        <div class="tiny muted" style="margin-top:12px">${T('ตอนนี้สุ่มจาก: ', 'Currently: ')}<b>${esc(pickSrcLabel(curClass()))}</b></div>`;
+      wire(mm);
+    }
+    function wire(mm) {
+      const box = $('#qkB', mm), q = s => $(s, box);
+      $$('#qkTabs [data-t]', box).forEach(b => b.onclick = () => { S.tab = b.dataset.t; draw(mm); });
+      if (S.tab === 'class') {
+        const sel = q('#qkC'); if (sel) sel.onchange = () => { cc = DB.classes.find(c => c.id === sel.value) || cc; draw(mm); };
+        const a = q('#qkAdd'); if (a) a.onclick = () => cc && bulkAdd(cc, () => { save(); done(); draw(mm); });
+        const nw = q('#qkNew'); if (nw) nw.onclick = () => classForm(null, k => { cc = k; done(); draw(mm); });
+      } else if (S.tab === 'num') {
+        const pv = () => { const f = parseInt(q('#qnF').value) || 1, tv = q('#qnT').value.trim(), cfg = numCfg(cc), t = tv === '' ? cfg.to : parseInt(tv) || cfg.to, sk = new Set((q('#qnS').value.match(/\d+/g) || []).map(Number)); let c = 0; for (let i = f; i <= t; i++) if (!sk.has(i)) c++; q('#qnPv').innerHTML = t < f ? `<span style="color:#c0392b">${T('เลขสุดท้ายต้องไม่น้อยกว่าเลขแรก', 'Invalid range')}</span>` : `✔ ${T('สุ่มจาก', 'Picks from')} <b>${c}</b> ${T('เลขที่', 'numbers')} (${f}–${t}${sk.size ? ', ' + T('ยกเว้น', 'skip') + ' ' + [...sk].join(',') : ''})`; };
+        ['#qnF', '#qnT', '#qnS'].forEach(s => q(s).oninput = pv); pv();
+        const all = q('#qnAll'); if (all) all.onclick = () => { q('#qnF').value = 1; q('#qnT').value = Math.max(cc.students.length, ...cc.students.map(s => +s.no || 0)); pv(); };
+      } else if (S.tab === 'quick') {
+        const t = q('#qkT'); t.oninput = () => { S.txt = t.value; const n = Quick.parse(t.value).length; q('#qkPv').textContent = n ? T(`พบ ${n} ชื่อ`, `${n} names`) : ''; }; t.oninput();
+        const add = () => {
+          const names = Quick.parse(t.value); if (!names.length) return toast(T('พิมพ์หรือวางชื่อก่อน', 'Type some names first'), 'err', 1800);
+          const r = Quick.add(names); let extra = 0;
+          if (cc && q('#qkAlso') && q('#qkAlso').checked) { const have = new Set(cc.students.map(s => normName(s.name))); let no = cc.students.reduce((a, s) => Math.max(a, +s.no || 0), 0); names.forEach(x => { if (have.has(normName(x))) return; cc.students.push({ id: uid('s_'), no: ++no, name: x, code: '', nick: '' }); have.add(normName(x)); extra++; }); save(); }
+          S.txt = ''; toast(T(`เพิ่ม ${r.add} ชื่อ${r.dup ? ` (ซ้ำ ${r.dup})` : ''}${extra ? ` · เข้าห้อง ${extra} คน` : ''} — สุ่มจากรายชื่อด่วนแล้ว`, `Added ${r.add}`), 'ok', 2600); done(); draw(mm); setTimeout(() => { const x = $('#qkT', mm); x && x.focus(); }, 30);
+        };
+        q('#qkA').onclick = add; t.onkeydown = e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); add(); } };
+        const clr = q('#qkClr'); if (clr) clr.onclick = async () => { if (await confirmBox(T('ล้างรายชื่อด่วนทั้งหมด?', 'Clear the quick list?'))) { const l = Quick.list(); if (l) l.items = []; save(); Hub.picked.clear(); done(); draw(mm); } };
+        $$('[data-rm]', box).forEach(a => a.onclick = () => { const l = Quick.list(); if (l) { l.items.splice(+a.dataset.rm, 1); save(); done(); draw(mm); } });
+        setTimeout(() => t.focus(), 40);
+      } else {
+        const sel = q('#qkL'); if (sel) sel.onchange = () => { S.listId = sel.value; };
+        const e = q('#qkLE'); if (e) e.onclick = async () => { const l = lists().find(x => x.id === S.listId); if (!l) return; const r = await listModal({ title: T('แก้ไขรายการ — ', 'Edit list — ') + l.name, name: l.name, items: l.items, del: true }); if (!r) return; if (r.del) DB.wheel.lists = wheelLists().filter(x => x.id !== l.id); else { l.name = r.name; l.items = r.items; } save(); done(); draw(mm); };
+        const n = q('#qkLN'); if (n) n.onclick = async () => { const r = await listModal({ title: T('สร้างรายการใหม่', 'New list'), name: '', items: [], hint: T('พิมพ์/วางชื่อ บรรทัดละ 1 รายการ หรืออัปโหลด CSV/Excel', 'One item per line, or upload a file') }); if (!r || !r.items) return; const l = { id: uid('wl_'), name: r.name, items: r.items }; wheelLists().push(l); S.listId = l.id; save(); done(); draw(mm); };
+      }
+    }
+    return m;
+  }
+};
 function wheelItems2() { const s = wheelSrc(2); if (s === 'acts') return DB.wheel.acts.slice(); const l = wheelLists().find(x => x.id === s); return l ? l.items.slice() : []; }
 
 PAGES.random = {
@@ -7162,7 +7465,9 @@ PAGES.random = {
     <div class="grid g2" style="margin-bottom:16px">
       <div class="card"><div class="row"><h3 style="margin:0">${ic('users', 18)} ${T('วงล้อที่ 1', 'Wheel 1')}</h3><select class="sel" id="src1" style="width:auto;max-width:230px"></select><span class="sp"></span><span class="chip" id="w1n"></span></div>
         <div style="margin:10px 0"><div class="wheel-wrap"><div class="ptr"></div><canvas id="w1"></canvas></div></div><div class="result-big" id="r1">—</div>
-        <div class="row" style="justify-content:center"><button class="btn pri" id="s1">${ic('wheel', 16)} ${T('หมุน', 'Spin')}</button><button class="btn sm" id="m1">${ic('edit', 14)} ${T('เพิ่ม/แก้ไขรายการ', 'Add / edit')}</button><button class="btn sm" id="i1">${ic('up', 14)} ${T('อัปโหลด CSV/Excel', 'Upload')}</button><button class="btn sm" id="t1">${ic('down', 14)} ${T('เทมเพลต', 'Template')}</button><button class="btn sm" id="rs1">${T('รีเซ็ตรอบ', 'Reset round')}</button></div><input type="file" id="f1" accept=".csv,.tsv,.txt,.xlsx,.xls" class="hide"></div>
+        <div class="row" style="justify-content:center"><button class="btn pri" id="s1">${ic('wheel', 16)} ${T('หมุน', 'Spin')}</button><button class="btn sm" id="m1">${ic('edit', 14)} ${T('เพิ่ม/แก้ไขรายการ', 'Add / edit')}</button><button class="btn sm" id="i1">${ic('up', 14)} ${T('อัปโหลด CSV/Excel', 'Upload')}</button><button class="btn sm" id="t1">${ic('down', 14)} ${T('เทมเพลต', 'Template')}</button><button class="btn sm" id="rs1">${T('รีเซ็ตรอบ', 'Reset round')}</button></div>
+        <div class="row" style="margin-top:10px;gap:6px"><input class="inp" id="q1" placeholder="⚡ ${T('พิมพ์ชื่อเพิ่มด่วน แล้วกด Enter (วางหลายชื่อได้)', 'Quick add: type a name, Enter')}" style="flex:1;min-width:150px"><button class="btn sm pri" id="q1b">${ic('plus', 14)} ${T('เพิ่ม', 'Add')}</button><button class="btn sm" id="q1s" title="${T('ตั้งค่ารายชื่อสำหรับสุ่ม', 'Pick-from settings')}">⚙ ${T('แหล่งรายชื่อ', 'Source')}</button></div>
+        <input type="file" id="f1" accept=".csv,.tsv,.txt,.xlsx,.xls" class="hide"></div>
       <div class="card"><div class="row"><h3 style="margin:0">${ic('dice', 18)} ${T('วงล้อที่ 2', 'Wheel 2')}</h3><select class="sel" id="src2" style="width:auto;max-width:230px"></select><span class="sp"></span><span class="chip" id="w2n"></span></div>
         <div style="margin:10px 0"><div class="wheel-wrap"><div class="ptr"></div><canvas id="w2"></canvas></div></div><div class="result-big" id="r2">—</div>
         <div class="row" style="justify-content:center"><button class="btn pri" id="s2">${ic('wheel', 16)} ${T('หมุน', 'Spin')}</button><button class="btn sm" id="e2">${ic('edit', 14)} ${T('เพิ่ม/แก้ไขรายการ', 'Add / edit')}</button><button class="btn sm" id="i2">${ic('up', 14)} ${T('อัปโหลด CSV/Excel', 'Upload')}</button><button class="btn sm" id="t2">${ic('down', 14)} ${T('เทมเพลต', 'Template')}</button></div><input type="file" id="f2" accept=".csv,.tsv,.txt,.xlsx,.xls" class="hide"></div>
@@ -7174,7 +7479,8 @@ PAGES.random = {
     function pool() { return wheelPool(cc, skip); }
     function srcOpts() {
       const s1 = wheelSrc(1), s2 = wheelSrc(2), ls = wheelLists();
-      $('#src1', el).innerHTML = `<option value="class" ${s1 === 'class' ? 'selected' : ''}>👥 ${esc(T('รายชื่อห้อง', 'Class roster'))}${cc ? ' · ' + esc(cc.name) : ''}</option>${ls.map(l => `<option value="${esc(l.id)}" ${s1 === l.id ? 'selected' : ''}>📝 ${esc(l.name)} (${l.items.length})</option>`).join('')}<option value="__new">➕ ${esc(T('สร้างรายการใหม่…', 'New list…'))}</option>`;
+      $('#src1', el).innerHTML = `<option value="class" ${s1 === 'class' ? 'selected' : ''}>👥 ${esc(T('รายชื่อห้อง', 'Class roster'))}${cc ? ' · ' + esc(cc.name) : ''}</option><option value="num" ${s1 === 'num' ? 'selected' : ''}>🔢 ${esc(T('สุ่มตามเลขที่', 'By roll number'))} (${numCfg(cc).from}–${numCfg(cc).to})</option>${ls.map(l => `<option value="${esc(l.id)}" ${s1 === l.id ? 'selected' : ''}>${l.id === QUICK_ID ? '⚡' : '📝'} ${esc(l.name)} (${l.items.length})</option>`).join('')}<option value="__quick">⚡ ${esc(T('เพิ่มชื่อด่วน…', 'Quick add names…'))}</option><option value="__new">➕ ${esc(T('สร้างรายการใหม่…', 'New list…'))}</option>`;
+      const s1b = wheelSrc(1), mb = $('#m1', el); if (mb) mb.innerHTML = s1b === 'num' ? `${ic('edit', 14)} ${T('ตั้งช่วงเลขที่', 'Set numbers')}` : s1b === QUICK_ID ? `${ic('edit', 14)} ${T('เพิ่ม/แก้ไขชื่อด่วน', 'Edit quick names')}` : `${ic('edit', 14)} ${T('เพิ่ม/แก้ไขรายการ', 'Add / edit')}`;
       $('#src2', el).innerHTML = `<option value="acts" ${s2 === 'acts' ? 'selected' : ''}>🎲 ${esc(T('โจทย์/กิจกรรมมาตรฐาน', 'Default tasks'))} (${DB.wheel.acts.length})</option>${ls.map(l => `<option value="${esc(l.id)}" ${s2 === l.id ? 'selected' : ''}>📝 ${esc(l.name)} (${l.items.length})</option>`).join('')}<option value="__new">➕ ${esc(T('สร้างรายการใหม่…', 'New list…'))}</option>`;
     }
     function refresh() {
@@ -7204,10 +7510,13 @@ PAGES.random = {
       if (r.del) { DB.wheel.lists = wheelLists().filter(x => x.id !== l.id); } else { l.name = r.name; l.items = r.items; } save(); picked.clear(); refresh();
     }
     function curList(which) { const s = wheelSrc(which); return wheelLists().find(x => x.id === s) || null; }
-    $('#src1', el).onchange = async e => { const v = e.target.value; if (v === '__new') { if (!await newList(1)) refresh(); return; } DB.wheel.src1 = v; save(); picked.clear(); $('#r1', el).textContent = '—'; refresh(); };
+    $('#src1', el).onchange = async e => { const v = e.target.value; if (v === '__new') { if (!await newList(1)) refresh(); return; } if (v === '__quick') { Quick.open(() => { picked.clear(); $('#r1', el).textContent = '—'; refresh(); }, 'quick'); refresh(); return; } DB.wheel.src1 = v; save(); picked.clear(); $('#r1', el).textContent = '—'; refresh(); };
     $('#src2', el).onchange = async e => { const v = e.target.value; if (v === '__new') { if (!await newList(2)) refresh(); return; } DB.wheel.src2 = v; save(); $('#r2', el).textContent = '—'; refresh(); };
     /* วงล้อที่ 1 — เพิ่ม/แก้ไข: ห้องเรียน → เพิ่มนักเรียนหลายคน ; รายการเอง → แก้ไขรายการ */
-    $('#m1', el).onclick = async () => { const l = curList(1); if (l) return editList(l); if (!cc) { toast(T('ยังไม่มีห้อง — สร้างห้องก่อน หรือเลือก “สร้างรายการใหม่”', 'No class yet'), 'err', 3600); return; } bulkAdd(cc, () => { save(); refresh(); }); };
+    $('#m1', el).onclick = async () => { const s1 = wheelSrc(1); if (s1 === 'num' || s1 === QUICK_ID) return Quick.open(() => { picked.clear(); refresh(); }, s1 === 'num' ? 'num' : 'quick'); const l = curList(1); if (l) return editList(l); if (!cc) { toast(T('ยังไม่มีห้อง — สร้างห้องก่อน หรือเลือก “สร้างรายการใหม่”', 'No class yet'), 'err', 3600); return; } bulkAdd(cc, () => { save(); refresh(); }); };
+    const quickAdd = Quick.bindInput($('#q1', el), () => { picked.clear(); $('#r1', el).textContent = '—'; refresh(); $('#q1', el).focus(); });
+    $('#q1b', el).onclick = () => { const i = $('#q1', el); if (i.value.trim()) quickAdd(i.value); else i.focus(); };
+    $('#q1s', el).onclick = () => Quick.open(() => { picked.clear(); $('#r1', el).textContent = '—'; refresh(); });
     $('#t1', el).onclick = () => downloadTemplate(curList(1) ? 'list' : 'roster');
     $('#i1', el).onclick = () => $('#f1', el).click();
     $('#f1', el).onchange = async e => {
@@ -7263,11 +7572,11 @@ function makeGroups(students, o) {
 }
 PAGES.groups = {
   render(el) {
-    let cc = curClass(); let groups = []; const opt = { mode: 'k', k: 4, size: 4, keep: [], sep: [], fixed: {}, skip: true };
+    let cc = curClass(); let groups = []; const opt = { mode: 'k', k: 4, size: 4, keep: [], sep: [], fixed: {}, skip: true, src: DB.classes.length ? 'class' : 'quick' };
     const draw = () => {
-      cc = curClass(); const list = rosterFor(cc, { skipAbsent: opt.skip });
+      cc = curClass(); if (!DB.classes.length) opt.src = 'quick'; const list = opt.src === 'quick' ? quickRoster() : rosterFor(cc, { skipAbsent: opt.skip });
       el.innerHTML = `
-      <div class="row" style="margin-bottom:14px"><h2 style="margin:0">${T('จัดกลุ่มอัจฉริยะ', 'Smart Group Maker')}</h2>${classPicker()}<span class="sp"></span><span class="chip">${list.length} ${T('คน', 'students')}</span></div>
+      <div class="row" style="margin-bottom:14px"><h2 style="margin:0">${T('จัดกลุ่มอัจฉริยะ', 'Smart Group Maker')}</h2>${DB.classes.length ? `<select class="sel" id="gSrc" style="width:auto"><option value="class" ${opt.src === 'class' ? 'selected' : ''}>👥 ${T('รายชื่อห้อง', 'Class roster')}</option><option value="quick" ${opt.src === 'quick' ? 'selected' : ''}>⚡ ${T('รายชื่อด่วน', 'Quick list')} (${quickRoster().length})</option></select>` : ''}${opt.src === 'quick' ? `<input class="inp" id="gQa" placeholder="⚡ ${T('พิมพ์ชื่อเพิ่ม + Enter (วางหลายชื่อได้)', 'Add a name + Enter')}" style="max-width:260px">` : classPicker()}<span class="sp"></span><span class="chip">${list.length} ${T('คน', 'students')}</span></div>
       <div class="grid g2" style="align-items:start;margin-bottom:16px">
         <div class="card"><h3>${T('ตั้งค่าการจัดกลุ่ม', 'Settings')}</h3>
           <label class="f" style="margin-top:0">${T('รูปแบบ', 'Mode')}</label><select class="sel" id="gMode"><option value="k" ${opt.mode === 'k' ? 'selected' : ''}>Random Groups — ${T('สุ่มตามจำนวนกลุ่ม', 'by number of groups')}</option><option value="size" ${opt.mode === 'size' ? 'selected' : ''}>Equal Groups — ${T('สุ่มตามจำนวนคนต่อกลุ่ม', 'by group size')}</option><option value="balanced" ${opt.mode === 'balanced' ? 'selected' : ''}>Balanced — ${T('คละตามคะแนนสะสม (XP)', 'balance by XP')}</option><option value="manual" ${opt.mode === 'manual' ? 'selected' : ''}>Manual — ${T('จัดเอง', 'manual')}</option></select>
@@ -7285,6 +7594,8 @@ PAGES.groups = {
       ${DB.groupsSaved.filter(g => !cc || g.classId === cc.id).length ? `<div class="card flat" style="margin-bottom:16px"><b>${T('ชุดกลุ่มที่บันทึกไว้', 'Saved sets')}</b><div class="row" style="margin-top:6px">${DB.groupsSaved.filter(g => !cc || g.classId === cc.id).map(g => `<span class="chip"><a data-load="${g.id}" style="cursor:pointer">${esc(g.name)}</a> <a data-delg="${g.id}" style="cursor:pointer;opacity:.5">✕</a></span>`).join('')}</div></div>` : ''}
       <div id="gOut"></div>`;
       const cs = $('#clsSel', el); if (cs) cs.onchange = () => { DB.curClass = cs.value; save(); groups = []; draw(); };
+      const gs = $('#gSrc', el); if (gs) gs.onchange = () => { opt.src = gs.value; groups = []; draw(); };
+      const gq = $('#gQa', el); if (gq) { Quick.bindInput(gq, () => { groups = []; draw(); const n = $('#gQa', el); n && n.focus(); }); }
       $('#gMode', el).onchange = e => { opt.mode = e.target.value; draw(); }; $('#gN', el).onchange = e => { const v = clamp(+e.target.value || 1, 1, 40); opt.mode === 'size' ? opt.size = v : opt.k = v; };
       $('#gSk', el).onchange = e => { opt.skip = e.target.checked; draw(); };
       $('#gGo', el).onclick = () => { if (!list.length) return toast(T('ไม่มีรายชื่อ', 'No students'), 'err'); if (opt.mode === 'manual') { const k = clamp(+$('#gN', el).value || 2, 1, 40); groups = Array.from({ length: k }, (_, i) => ({ name: `กลุ่ม ${i + 1}`, color: GROUP_COLORS[i % GROUP_COLORS.length], members: [], roles: {} })); groups.unassigned = list.slice(); } else { groups = makeGroups(list, { mode: opt.mode, k: +$('#gN', el).value || opt.k, size: opt.size, keep: opt.keep, sep: opt.sep, fixed: opt.fixed }); if (groups.warn) toast(T('บางเงื่อนไขขัดแย้งกัน จึงจัดตามที่ทำได้', 'Some constraints conflicted'), 'err', 4000); } out(); $('#gSave', el).disabled = false; };
@@ -7296,7 +7607,7 @@ PAGES.groups = {
       $$('[data-delg]', el).forEach(a => a.onclick = () => { DB.groupsSaved = DB.groupsSaved.filter(x => x.id !== a.dataset.delg); save(); draw(); });
       if (groups.length) out();
     };
-    const nm = id => { const s = cc && cc.students.find(x => x.id === id); return s ? s.name : '?'; };
+    const nm = id => { const s = (cc && cc.students.find(x => x.id === id)) || quickRoster().find(x => x.id === id); return s ? s.name : '?'; };
     function out() {
       const box = $('#gOut', el);
       box.innerHTML = `<div class="row" style="margin-bottom:8px"><h3 style="margin:0">${T('ผลการจัดกลุ่ม', 'Result')}</h3><span class="sp"></span><button class="btn sm" id="gLead">${T('สุ่มหัวหน้ากลุ่ม', 'Random leaders')}</button><button class="btn sm" id="gDuty">${T('มอบหน้าที่แบบสุ่ม', 'Assign duties')}</button><button class="btn sm" id="gCsv">${ic('down', 14)} CSV</button></div>
