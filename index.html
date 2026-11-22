@@ -373,6 +373,37 @@ body.dsp-body{background:#000;overflow:hidden}
 .mir-card{width:min(520px,100%);text-align:center}.mir-card video{width:100%;max-height:44vh;background:#000;border-radius:16px;object-fit:contain;margin-bottom:10px}
 .mir-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 
+/* ---------- นำเสนอ 2 เครื่อง ---------- */
+#dStage:not(.hide){display:flex}.dpane{position:relative;flex:1;min-width:0;min-height:0}.dpane.hide{display:none}#dStage.two{gap:6px;background:#2a3b5c}
+.dpn{position:absolute;inset:0;display:grid;place-content:center;color:#9db0cc;font-size:clamp(1rem,2vw,1.6rem);z-index:1}.dpn.hide{display:none}
+.cobox-w{flex:1;min-height:0;display:flex}.cobox{position:relative;flex:1;min-height:120px;background:#0b1220;border-radius:10px;overflow:hidden}
+.cop{background:#fff6f8;border:1.5px solid var(--pink);border-radius:12px;padding:10px 12px;color:var(--navy)}.cop.hide,.cos.hide{display:none}
+.co-seg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.co-seg .btn{height:auto;padding:12px 8px;line-height:1.3}
+
+/* ---------- SCREEN MIRRORING ---------- */
+.mirui .mu-conn{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.mu-start{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.mu-qrbox{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}.mu-qr{width:190px;flex:none;background:#fff;padding:6px;border:1px solid var(--line);border-radius:12px}.mu-info{flex:1;min-width:230px}
+.mu-code{font-size:2.2rem;font-weight:800;letter-spacing:.18em;color:var(--navy);line-height:1.1;margin-bottom:6px}
+.mirui.compact .mu-qr{width:120px}.mirui.compact .mu-code{font-size:1.5rem}.mirui.compact .mu-conn{padding:10px;margin-bottom:10px}
+.mu-tools{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--navy)}
+.mu-sz button{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;font-weight:700;color:var(--navy);cursor:pointer;margin-left:4px}.mu-sz button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.mu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--mu-min,340px),1fr));gap:12px}
+.mu-tile{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.mu-h{display:flex;align-items:center;gap:8px;padding:8px 10px;color:var(--navy);min-width:0}.mu-h b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mu-v{position:relative;background:#0b1220;aspect-ratio:16/10;display:grid;place-items:center}.mu-v video{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+.mu-v:fullscreen{aspect-ratio:auto}.mu-ph{position:absolute;inset:0;display:grid;place-content:center;text-align:center;color:#9db0cc;padding:12px;font-size:.9rem}.mu-ph.hide,.mu-a .hide{display:none}
+.mu-a{display:flex;gap:6px;flex-wrap:wrap;padding:8px}.mu-a button{min-height:36px;padding:4px 10px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;color:var(--navy);cursor:pointer;font-family:inherit}.mu-a button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.mu-a button:disabled{opacity:.4}.mu-a button[data-a=kick]:hover{background:#fde8ec}
+.mu-none{text-align:center;padding:28px 10px;font-size:2rem;color:var(--navy)}.mu-none b{font-size:1.05rem}
+.mg-t{width:100%;border-collapse:collapse;font-size:.9rem}.mg-t th,.mg-t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}.mg-t th{color:var(--navy)}
+.win .mirui .mu-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.mir-logo{font-weight:800;letter-spacing:.16em;font-size:1.5rem;color:#F2B8C6}.mir-sub{color:#b9cbe6;font-size:.9rem;margin-top:4px}
+.mir-name{max-width:340px;margin:0 auto 10px;text-align:center;background:#0f2442;color:#fff;border-color:#2a4a7a}
+.mir-vw{position:relative;margin-bottom:10px}.mir-vw video{width:100%;max-height:42vh;min-height:120px;background:#000;border-radius:16px;object-fit:contain;display:block;margin:0}.mir-ph{position:absolute;inset:0;display:grid;place-content:center;color:#7f93b3;font-size:.9rem}.mir-ph.hide{display:none}
+.mir-q{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:12px;color:#b9cbe6;font-size:.85rem}.mir-q button{border:1.5px solid #2a4a7a;background:transparent;color:#dcebfa;border-radius:999px;padding:5px 12px;cursor:pointer;font-family:inherit}.mir-q button.on{background:#F2B8C6;color:#142B4A;border-color:#F2B8C6;font-weight:700}
+
+.mu-h .chip{white-space:nowrap;flex:none}
+
 </style>
 </head>
 <body>
@@ -2981,6 +3012,7 @@ const NAV = [
   ['classes', 'users', 'ห้องเรียน', 'Classes'],
   ['quiz', 'quiz', 'แบบทดสอบ', 'Quiz'],
   ['live', 'wifi', 'ห้องสด (Live)', 'Live Room'],
+  ['mirror', 'screen', 'SCREEN MIRRORING', 'SCREEN MIRRORING'],
   ['random', 'wheel', 'สุ่มนักเรียน', 'Random Wheel'],
   ['groups', 'groups', 'จัดกลุ่ม', 'Group Maker'],
   ['camera', 'camera', 'กล้อง Spotlight', 'Camera Spotlight'],
@@ -3372,26 +3404,28 @@ const Live = {
   },
   stop() {
     this.broadcast({ t: 'closed' });
-    this.stopStream(); if (typeof Mirror !== 'undefined') Mirror.clear();
+    this.stopStream(); if (typeof Mirror !== 'undefined') Mirror.clear(); if (typeof CoHost !== 'undefined') CoHost.clear();
     try { this.peer && this.peer.destroy(); } catch (e) { }
     this.peer = null; this.active = false; this.students.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.emit();
   },
   _onConn(conn) {
     conn.on('data', msg => { try { this._handle(conn, msg); } catch (e) { console.error(e); } });
-    conn.on('close', () => { const s = this.students.get(conn.peer); if (s) { this.students.delete(conn.peer); if (s.role === 'mirror' && typeof Mirror !== 'undefined') Mirror.remove(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
+    conn.on('close', () => { const s = this.students.get(conn.peer); if (s) { this.students.delete(conn.peer); if (s.role === 'mirror' && typeof Mirror !== 'undefined') Mirror.remove(conn.peer); if (s.role === 'co' && typeof CoHost !== 'undefined') CoHost.remove(conn.peer); if (s.role === 'student') toast(`${s.name} ${T('ออกจากห้อง', 'left')}`, 'ok', 1800); this.emit(); } });
     conn.on('error', () => { });
   },
   _handle(conn, m) {
     if (!m || typeof m !== 'object') return;
     if (m.t === 'hello') {
-      let name = String(m.name || '').trim().slice(0, 40) || 'Guest', role = ['display', 'remote', 'mirror'].includes(m.role) ? m.role : 'student'; const dev = String(m.dev || '').slice(0, 30);
+      let name = String(m.name || '').trim().slice(0, 40) || 'Guest', role = ['display', 'remote', 'mirror', 'co'].includes(m.role) ? m.role : 'student'; const dev = String(m.dev || '').slice(0, 30);
       if (role === 'student') { const names = new Set([...this.students.values()].filter(s => s.role === 'student').map(s => s.name)); let n = name, i = 2; while (names.has(n)) n = name + ' (' + (i++) + ')'; name = n; }
-      const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, conn, joined: Date.now(), hand: false, handAt: 0 };
-      if (role !== 'student') { const same = [...this.students.values()].filter(x => x.role !== 'student' && x.dev === dev).length; s.label = (dev || (role === 'display' ? 'Display' : 'Remote')) + (same ? ' ' + (same + 1) : ''); s.name = s.label; }
+      const custom = role === 'mirror' ? String(m.name || '').trim().slice(0, 30) : '', base = (custom && custom !== 'Mirror') ? custom : (dev || (role === 'display' ? 'Display' : role === 'co' ? 'Device 2' : 'Remote'));
+      const s = { id: conn.peer, name: role === 'student' ? name : (dev || 'Device'), role, dev, base, conn, joined: Date.now(), hand: false, handAt: 0 };
+      if (role !== 'student') { const same = [...this.students.values()].filter(x => x.role !== 'student' && x.base === base).length; s.label = base + (same ? ' ' + (same + 1) : ''); s.name = s.label; }
       this.students.set(conn.peer, s);
       conn.send({ t: 'welcome', name: s.name, state: this.state, board: this.lastBoard });
       if (this.stream) this._call(s);
-      if (role === 'display' || role === 'remote') { s.imgs = new Set(); if (typeof Cast !== 'undefined') Cast.onJoin(s); }
+      if (role === 'display' || role === 'remote') { s.imgs = new Set(); if (typeof Cast !== 'undefined') Cast.onJoin(s); if (role === 'display' && typeof CoHost !== 'undefined') CoHost.onDisplayJoin(s); }
+      if (role === 'co') CoHost.onJoin(s);
       if (role === 'student') toast(`${s.name} ${T('เข้าห้องแล้ว', 'joined')}`, 'ok', 1800);
       this.emit(); return;
     }
@@ -3407,7 +3441,7 @@ const Live = {
   setState(patch) { this.state = Object.assign({}, this.state, patch); this.broadcast({ t: 'state', s: this.state }); this.emit(); },
   sendBoard(img) { this.lastBoard = img; this.students.forEach(s => { if (s.role === 'student' && s.conn.open) { try { s.conn.send({ t: 'board', img }); } catch (e) { } } }); },
   _call(s) {
-    if (!this.stream || !this.peer || s.role === 'mirror' || s.role === 'remote') return;
+    if (!this.stream || !this.peer || s.role === 'mirror' || s.role === 'remote' || s.role === 'co') return;
     try { const c = this.peer.call(s.id, this.stream); this.calls.set(s.id, c); c.on('close', () => this.calls.delete(s.id)); } catch (e) { console.warn(e); }
   },
   shareStream(stream) { this.stopStream(true); this.stream = stream; this.students.forEach(s => this._call(s)); this.setState({ view: 'screen' }); },
@@ -3788,8 +3822,9 @@ const Cast = {
   },
   detach() { cancelAnimationFrame(this.raf); this.raf = 0; this.board = null; this.frozen = false; },
   reset() { this.page = null; this.docSig = ''; this.ls = { id: null, n: 0 }; this.lh = ''; this.vw = ''; this.lzT = 0; this.lzOn = false; },
-  disp() { return Live.active ? [...Live.list('display'), ...Live.list('remote')] : []; },
-  tell(msg, targets) { (targets || this.disp()).forEach(s => Live.send(s.id, msg)); this.stats.msgs++; },
+  disp() { if (typeof Co !== 'undefined' && Co.on()) return [Co.target]; return Live.active ? [...Live.list('display'), ...Live.list('remote')] : []; },
+  out(s, msg) { if (s.co) Co.send(msg); else Live.send(s.id, msg); },
+  tell(msg, targets) { (targets || this.disp()).forEach(s => this.out(s, msg)); this.stats.msgs++; },
   enq(fn) { this.q = this.q.then(fn).catch(e => console.warn('cast', e)); },
   setFrozen(on) {
     this.frozen = !!on;
@@ -3802,7 +3837,7 @@ const Cast = {
       for (const id of ids) {
         if (!id || s.imgs.has(id)) continue; s.imgs.add(id);
         const data = await IDB.get('imgs', id); if (!data) continue;
-        Live.send(s.id, { t: 'img', id, data });
+        this.out(s, { t: 'img', id, data });
       }
     }
   },
@@ -3825,7 +3860,7 @@ const Cast = {
   onJoin(s) {
     s.imgs = new Set();
     this.enq(async () => {
-      const b = this.board; if (!b || !b.doc || !Live.students.has(s.id)) return; const T_ = [s];
+      const b = this.board; if (!b || !b.doc || (!s.co && !Live.students.has(s.id))) return; const T_ = [s];
       await this.sendDoc(T_); await this.sendPage(b.page.id, T_); this.sendView(T_);
       this.enq(() => this.prefetch(T_));
     });
@@ -3900,6 +3935,11 @@ const Hub = {
         { id: 'freeze', e: '❄', label: 'หยุดภาพ', act: () => { this.setFrozen(!this.frozen); this.close(); }, active: () => this.frozen },
         { id: 'qr', e: '▦', label: 'QR เข้าห้อง', act: async () => { if (!this.w.qr) { if (!await this.room()) return; this.w = Object.assign({}, this.w, { qr: Live.joinUrl('join') }); } else this.w = Object.assign({}, this.w, { qr: null }); this.push(); this.close(); }, active: () => !!this.w.qr },
         { id: 'msg', e: '💬', label: 'ข้อความ', act: async () => { this.close(); if (this.w.msg) { this.w = Object.assign({}, this.w, { msg: null }); this.push(); return; } const t = await askText(T('ข้อความขึ้นจอฉาย', 'Message on screen'), '', { placeholder: T('เช่น เงียบสักครู่ / เก็บของ / พักเบรก 5 นาที', 'e.g. Quiet please') }); if (t) { this.w = Object.assign({}, this.w, { msg: t.slice(0, 80) }); this.push(); this.hint(); } }, active: () => !!this.w.msg },
+        { id: 'src', e: '👥', label: 'แหล่งภาพ', sub: [
+          { id: 'src_a', e: '🖥', label: 'Studio หลัก', act: () => { CoHost.setSrc('A'); this.close(); }, active: () => CoHost.src() === 'A' },
+          { id: 'src_b', e: '📱', label: 'เครื่องที่ 2', act: () => { CoHost.setSrc('B'); this.close(); }, active: () => CoHost.src() === 'B', dis: () => !(CoHost.e && CoHost.e.ok) },
+          { id: 'src_ab', e: '◧', label: 'แบ่งจอ', act: () => { CoHost.setSrc('ab'); this.close(); }, active: () => CoHost.src() === 'ab', dis: () => !(CoHost.e && CoHost.e.ok) },
+          { id: 'src_ba', e: '⇄', label: 'สลับข้าง', act: () => { CoHost.setSrc('ba'); this.close(); }, active: () => CoHost.src() === 'ba', dis: () => !(CoHost.e && CoHost.e.ok) }] },
         { id: 'link', e: '🔗', label: 'อุปกรณ์', act: () => { this.close(); Devices.open(); } }] },
       { id: 'timer', e: '⏱', label: 'จับเวลา', win: 'timer', sub: [mins(1), mins(3), mins(5), mins(10),
         { id: 'tmx', e: '✎', label: 'กำหนดเอง', act: async () => { this.close(); const v = await askText(T('จับเวลา (นาที)', 'Minutes'), '2'); const n = parseFloat(v); if (n > 0 && n <= 180) this.timer(Math.round(n * 60)); } },
@@ -3933,7 +3973,8 @@ const Hub = {
         { id: 'w_screen', e: '📽', label: 'คุมจอฉาย', act: () => { this.openWin('screen'); this.close(); }, active: () => Win.has('t_screen') },
         { id: 'w_pages', e: '📄', label: 'หน้า', act: () => { Win.pages(); this.close(); }, active: () => Win.has('pages') },
         { id: 'w_style', e: '🎨', label: 'เครื่องมือเขียน', act: () => { Win.style(); this.close(); }, active: () => Win.has('style') },
-        { id: 'w_dev', e: '📲', label: 'อุปกรณ์/มิเรอร์', act: () => { this.close(); Devices.open(); } }] },
+        { id: 'w_mir', e: '📲', label: 'Screen Mirror', act: () => { this.close(); Win.mirrors(); } },
+        { id: 'w_dev', e: '🔗', label: 'อุปกรณ์', act: () => { this.close(); Devices.open(); } }] },
       { id: 'cfg', ico: 'settings', label: 'ปรับแต่ง', fixed: true, act: () => { this.close(); this.config(); } }
     ];
   },
@@ -4111,7 +4152,7 @@ const Win = {
   mount(stage) {
     this.unmount(); this.stage = stage; const l = this.layer = document.createElement('div'); l.className = 'winlayer'; stage.appendChild(l);
     this.iv = setInterval(() => this.tick(), 500); this.ro = new ResizeObserver(() => this.clampAll()); this.ro.observe(stage);
-    if (typeof Mirror !== 'undefined') Mirror.restore();
+    if (typeof Mirror !== 'undefined') Mirror.restore(); if (typeof CoHost !== 'undefined') CoHost.restore();
   },
   unmount() { clearInterval(this.iv); this.ro && this.ro.disconnect(); this.map.forEach(w => { try { w.spec.onClose && w.spec.onClose(true); } catch (e) { } }); this.map.clear(); this.layer && this.layer.remove(); this.layer = null; },
   tick() { this.map.forEach(w => { if (!w.min && w.spec.update) { try { w.spec.update(w.body, w); } catch (e) { console.warn(e); } } }); },
@@ -4189,6 +4230,7 @@ const Win = {
       update(b) { const cat = Hub.visible(Hub.defs()).find(c => c.id === catId); if (!cat) return; const items = flat(cat.sub); const sig = items.map(x => x.id + (x.active && x.active() ? 1 : 0) + (x.dis && x.dis() ? 1 : 0)).join(); if (b._sig === sig) return; b._sig = sig; $('.wtiles', b).innerHTML = items.map(x => `<button class="wtile ${x.active && x.active() ? 'on' : ''} ${x.dis && x.dis() ? 'dis' : ''}" data-id="${x.id}"><span>${x.ico ? ic(x.ico, 22) : esc(x.e)}</span><b>${esc(x.label)}</b></button>`).join(''); }
     });
   },
+  mirrors() { return this.toggle('mirrors', { title: '📲 SCREEN MIRRORING', w: 580, h: 480, build(b) { MirrorUI.mount(b, { compact: true }); } }); },
   pages() {
     return this.toggle('pages', {
       title: '📄 ' + T('หน้า', 'Pages'), w: 300, h: 320,
@@ -4239,6 +4281,8 @@ const Devices = {
   id(v) { v = String(v || ''); return /^[\w-]{3,40}$/.test(v) ? v : uid('o_'); },
   relay(from, msg) { if (Cast.frozen) return; Cast.tell(msg, Cast.disp().filter(x => x !== from)); },
   onMsg(s, m) {
+    if (s.role === 'co') return CoHost.onMsg(s, m);
+    if (s.role === 'mirror') { if (m.t === 'name' && typeof m.v === 'string') { const v = m.v.trim().slice(0, 30); if (v) { s.label = s.name = s.base = v; Live.emit(); } } return; }
     if (s.role !== 'remote') return; const b = Cast.board; if (!b || !b.doc) return; const pg = b.page;
     switch (m.t) {
       case 'rls': {
@@ -4271,19 +4315,19 @@ const Devices = {
   ident(s) { Live.send(s.id, { t: 'ident', text: s.label || s.name }); },
   async rename(s) { const v = await askText(T('ชื่อเครื่อง', 'Device name'), s.label || s.name); if (v && v.trim()) { s.label = v.trim().slice(0, 30); Live.send(s.id, { t: 'label', text: s.label }); Live.emit(); } },
   kick(s) { Live.send(s.id, { t: 'kick' }); setTimeout(() => { try { s.conn.close(); } catch (e) { } Live.students.delete(s.id); Live.emit(); }, 250); },
-  list() { return [...Live.students.values()].filter(x => x.role === 'display' || x.role === 'remote' || x.role === 'mirror'); },
+  list() { return [...Live.students.values()].filter(x => x.role === 'display' || x.role === 'remote' || x.role === 'mirror' || x.role === 'co'); },
   /* ---------- หน้าต่างจัดการ ---------- */
   async open() {
-    if (!await Hub.room()) return; const uD = Live.joinUrl('display'), uR = Live.joinUrl('remote'), uM = Live.joinUrl('mirror');
+    if (!await Hub.room()) return; const uD = Live.joinUrl('display'), uR = Live.joinUrl('remote'), uM = Live.joinUrl('mirror'), uC = Live.joinUrl('co');
     const card = (k, ico, title, desc, url) => `<div class="dev-card"><div class="dev-h"><span class="dev-ico">${ico}</span><div><b>${title}</b><div class="tiny muted">${desc}</div></div></div><div class="dev-qr" data-qr="${k}"></div><input class="inp" readonly value="${esc(url)}" onclick="this.select()" style="font-size:.78rem;text-align:center"><div class="row" style="margin-top:8px;justify-content:center"><button class="btn sm" data-cp="${k}">${ic('copy', 14)} ${T('คัดลอก', 'Copy')}</button><button class="btn sm" data-sh="${k}">${ic('up', 14)} ${T('ส่งลิงก์', 'Share')}</button></div></div>`;
     modal({
       title: T('เชื่อมอุปกรณ์', 'Connect devices'), wide: true,
       body: `<p class="small muted" style="margin-top:0">${T('เปิดลิงก์ หรือสแกน QR บนอุปกรณ์ที่จะเชื่อม (รหัสห้อง', 'Open the link or scan the QR on the device (room code')} <b style="letter-spacing:.12em">${esc(Live.code)}</b>)</p>
-        <div class="dev-grid">${card('display', '🖥', T('จอฉาย', 'Display'), T('Mac / Windows / ทีวี ที่ต่อโปรเจกเตอร์', 'Computer or TV on the projector'), uD)}${card('remote', '✏️', T('รีโมทปากกา', 'Pen remote'), T('iPad / แท็บเล็ต เขียนลงสไลด์ของเครื่องนี้', 'iPad / tablet to write on these slides'), uR)}${card('mirror', '📲', T('มิเรอร์อุปกรณ์', 'Mirror device'), T('ส่งหน้าจอ (คอม/Android) หรือกล้อง (iPad) มาเป็นหน้าต่างสดใน Studio', 'Screen or camera as a live window'), uM)}</div><p class="tiny muted" style="margin:8px 0 0">${T('💡 iPad/iPhone: เว็บจับ “หน้าจอ” ไม่ได้ (ข้อจำกัดของ iOS) — ใช้ “กล้อง” เป็นกล้องเอกสาร หรือ AirPlay ไป Mac แล้วกดแชร์จอ/หน้าต่างนั้นในปุ่ม “แชร์จอ”', 'iOS cannot capture the screen from the web — use the camera, or AirPlay to a Mac and share that window.')}</p>
+        <div class="dev-grid">${card('display', '🖥', T('จอฉาย', 'Display'), T('Mac / Windows / ทีวี ที่ต่อโปรเจกเตอร์', 'Computer or TV on the projector'), uD)}${card('remote', '✏️', T('รีโมทปากกา', 'Pen remote'), T('iPad / แท็บเล็ต เขียนลงสไลด์ของเครื่องนี้', 'iPad / tablet to write on these slides'), uR)}${card('co', '👥', T('เครื่องนำเสนอที่ 2', '2nd presenter'), T('iPad เปิด Studio ของตัวเอง (สไลด์แยกอิสระ) แล้วขึ้นจอฉาย/แบ่งจอร่วมกับเครื่องนี้', 'A second Studio on iPad, shown or split on the projector'), uC)}${card('mirror', '📲', T('มิเรอร์อุปกรณ์', 'Mirror device'), T('ส่งหน้าจอ (คอม/Android) หรือกล้อง (iPad) มาเป็นหน้าต่างสดใน Studio', 'Screen or camera as a live window'), uM)}</div><p class="tiny muted" style="margin:8px 0 0">${T('💡 iPad/iPhone: เว็บจับ “หน้าจอ” ไม่ได้ (ข้อจำกัดของ iOS) — ใช้ “กล้อง” เป็นกล้องเอกสาร หรือ AirPlay ไป Mac แล้วกดแชร์จอ/หน้าต่างนั้นในปุ่ม “แชร์จอ”', 'iOS cannot capture the screen from the web — use the camera, or AirPlay to a Mac and share that window.')}</p>
         <h4 style="margin:16px 0 8px">${T('อุปกรณ์ที่เชื่อมอยู่', 'Connected devices')} <span class="chip" id="devN"></span></h4><div id="devList"></div>`,
       actions: [{ label: T('ปิด', 'Close'), cls: 'pri' }],
       onMount: m => {
-        const urls = { display: uD, remote: uR, mirror: uM };
+        const urls = { display: uD, remote: uR, mirror: uM, co: uC };
         $$('[data-qr]', m).forEach(d => { try { const c = qrCanvas(urls[d.dataset.qr], 300, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; d.appendChild(c); } catch (e) { } });
         $$('[data-cp]', m).forEach(b => b.onclick = async () => { const ok = await copyText(urls[b.dataset.cp]); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); });
         $$('[data-sh]', m).forEach(b => b.onclick = async () => { const u = urls[b.dataset.sh]; if (navigator.share) { try { await navigator.share({ title: CONFIG.appName, url: u }); } catch (e) { } } else { await copyText(u); toast(T('คัดลอกแล้ว', 'Copied'), 'ok', 1400); } });
@@ -4291,9 +4335,9 @@ const Devices = {
         const MODES = [['auto', 'ตามครู'], ['slide', 'สไลด์'], ['screen', 'หน้าจอแชร์'], ['blank', 'จอดำ']];
         const draw = () => {
           const ds = this.list(); N.textContent = ds.length;
-          L.innerHTML = ds.length ? ds.map(s => `<div class="dev-row" data-id="${esc(s.id)}"><span class="dev-ico">${ICON[s.dev] || '🖥'}</span><div style="flex:1;min-width:0"><b>${esc(s.label || s.name)}</b> <span class="chip ${s.role === 'display' ? '' : 'pk'}">${s.role === 'display' ? T('จอฉาย', 'Display') : s.role === 'mirror' ? T('มิเรอร์', 'Mirror') : T('รีโมทปากกา', 'Pen remote')}</span><div class="tiny muted">${esc(s.dev || '')} · ${T('เชื่อมเมื่อ', 'since')} ${new Date(s.joined).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>${s.role === 'display' ? `<div class="seg" style="margin-top:6px">${MODES.map(x => `<button data-m="${x[0]}" class="${(s.mode || 'auto') === x[0] ? 'on' : ''}">${T(x[1], x[0])}</button>`).join('')}</div>` : ''}</div><div class="dev-act">${s.role === 'mirror' ? `<button class="btn sm" data-a="mwin">${T('เปิดหน้าต่าง', 'Window')}</button><button class="btn sm ${Mirror.sending(s.id) ? 'pri' : ''}" data-a="msend">${Mirror.sending(s.id) ? T('หยุดส่งจอฉาย', 'Stop') : T('ส่งขึ้นจอฉาย', 'To display')}</button>` : `<button class="btn sm" data-a="ident">${T('ระบุเครื่อง', 'Identify')}</button>`}<button class="btn sm" data-a="rename">${ic('edit', 14)}</button><button class="btn sm danger" data-a="kick">${ic('x', 14)}</button></div></div>`).join('') : `<div class="empty" style="padding:18px">${T('ยังไม่มีอุปกรณ์ — สแกน QR ด้านบนเพื่อเชื่อม', 'No device yet')}</div>`;
+          L.innerHTML = ds.length ? ds.map(s => `<div class="dev-row" data-id="${esc(s.id)}"><span class="dev-ico">${ICON[s.dev] || '🖥'}</span><div style="flex:1;min-width:0"><b>${esc(s.label || s.name)}</b> <span class="chip ${s.role === 'display' ? '' : 'pk'}">${s.role === 'display' ? T('จอฉาย', 'Display') : s.role === 'mirror' ? T('มิเรอร์', 'Mirror') : s.role === 'co' ? T('เครื่องที่ 2', 'Device 2') : T('รีโมทปากกา', 'Pen remote')}</span><div class="tiny muted">${esc(s.dev || '')} · ${T('เชื่อมเมื่อ', 'since')} ${new Date(s.joined).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}</div>${s.role === 'display' ? `<div class="seg" style="margin-top:6px">${MODES.map(x => `<button data-m="${x[0]}" class="${(s.mode || 'auto') === x[0] ? 'on' : ''}">${T(x[1], x[0])}</button>`).join('')}</div>` : ''}</div><div class="dev-act">${s.role === 'co' ? (s.pending ? `<button class="btn sm pri" data-a="callow">${T('อนุญาต', 'Allow')}</button>` : `<button class="btn sm" data-a="cwin">${T('เปิดหน้าต่าง', 'Window')}</button><button class="btn sm ${CoHost.src() === 'B' ? 'pri' : ''}" data-a="csrc">${CoHost.src() === 'B' ? T('กลับไป Studio หลัก', 'Back') : T('ฉายเครื่องนี้', 'Project it')}</button>`) : s.role === 'mirror' ? `<button class="btn sm" data-a="mwin">${T('เปิดหน้าต่าง', 'Window')}</button><button class="btn sm ${Mirror.sending(s.id) ? 'pri' : ''}" data-a="msend">${Mirror.sending(s.id) ? T('หยุดส่งจอฉาย', 'Stop') : T('ส่งขึ้นจอฉาย', 'To display')}</button>` : `<button class="btn sm" data-a="ident">${T('ระบุเครื่อง', 'Identify')}</button>`}<button class="btn sm" data-a="rename">${ic('edit', 14)}</button><button class="btn sm danger" data-a="kick">${ic('x', 14)}</button></div></div>`).join('') : `<div class="empty" style="padding:18px">${T('ยังไม่มีอุปกรณ์ — สแกน QR ด้านบนเพื่อเชื่อม', 'No device yet')}</div>`;
         };
-        L.onclick = e => { const row = e.target.closest('.dev-row'); if (!row) return; const s = Live.students.get(row.dataset.id); if (!s) return; const mb = e.target.closest('[data-m]'), ab = e.target.closest('[data-a]'); if (mb) this.setMode(s, mb.dataset.m); else if (ab) { const a = ab.dataset.a; if (a === 'ident') this.ident(s); else if (a === 'mwin') Mirror.win(s.id); else if (a === 'msend') Mirror.toDisplay(s.id); else if (a === 'rename') this.rename(s); else if (a === 'kick') this.kick(s); } };
+        L.onclick = e => { const row = e.target.closest('.dev-row'); if (!row) return; const s = Live.students.get(row.dataset.id); if (!s) return; const mb = e.target.closest('[data-m]'), ab = e.target.closest('[data-a]'); if (mb) this.setMode(s, mb.dataset.m); else if (ab) { const a = ab.dataset.a; if (a === 'ident') this.ident(s); else if (a === 'mwin') Mirror.win(s.id); else if (a === 'cwin') CoHost.win(); else if (a === 'callow') CoHost.approve(); else if (a === 'csrc') CoHost.setSrc(CoHost.src() === 'B' ? 'A' : 'B'); else if (a === 'msend') Mirror.toDisplay(s.id); else if (a === 'rename') this.rename(s); else if (a === 'kick') this.kick(s); } };
         draw(); const un = Live.sub(() => { if (!document.body.contains(m)) { un(); return; } draw(); });
       }
     });
@@ -4358,33 +4402,59 @@ function bootRemote(code) {
 }
 
 /* =====================================================================
-   Mirror (ฝั่งครู) — รับภาพสดจากอุปกรณ์ แล้วแสดงเป็นหน้าต่างลอยใน Studio
+   Mirror (ฝั่งครู) — รับภาพสดจากอุปกรณ์ (WebRTC) เก็บเป็นสตรีม แล้วให้หน้า SCREEN MIRRORING
+   และหน้าต่างใน Studio ใช้ร่วมกัน · มีทั้งอุปกรณ์ระยะไกล (?mirror=) และ "หน้าต่างบนคอมนี้" (AirPlay/USB)
    ===================================================================== */
 const Mirror = {
-  map: new Map(),
-  label(pid) { const s = Live.students.get(pid); return s ? (s.label || s.name) : 'Mirror'; },
+  map: new Map(), recs: new Map(), ln: 0,
+  label(pid) { const m = this.map.get(pid); if (m && m.label) return m.label; const s = Live.students.get(pid); return s ? (s.label || s.name) : 'Mirror'; },
   sending(pid) { const m = this.map.get(pid); return !!(m && Live.stream && Live.stream === m.stream); },
   add(pid, stream, call) {
     const old = this.map.get(pid); if (old && old.stream !== stream && Live.stream === old.stream) Live.stopStream(true);
-    this.map.set(pid, { stream, call }); this.win(pid); Live.emit(); toast('📲 ' + this.label(pid) + ' ' + T('ส่งภาพมิเรอร์แล้ว', 'is mirroring'), 'ok', 2200);
+    this.map.set(pid, { stream, call }); if (!Win.has('mirrors')) this.win(pid); Live.emit(); toast('📲 ' + this.label(pid) + ' ' + T('ส่งภาพมิเรอร์แล้ว', 'is mirroring'), 'ok', 2200);
   },
-  remove(pid) { const m = this.map.get(pid); if (!m) return; this.map.delete(pid); if (Live.stream === m.stream) Live.stopStream(); try { Win.close('m_' + pid); } catch (e) { } Live.emit(); },
+  /* จับหน้าต่าง/จอบนคอมเครื่องนี้ — ใช้กับ iPad ที่ AirPlay หรือเสียบ USB (QuickTime) เข้ามาที่คอม */
+  async addLocal() {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) return toast(T('เบราว์เซอร์นี้จับหน้าจอไม่ได้ — ใช้ Chrome/Edge/Firefox บนคอมพิวเตอร์', 'Screen capture is not supported here'), 'err', 4500);
+    try {
+      const st = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 30 } }, audio: false }); const id = 'local_' + (++this.ln);
+      try { st.getVideoTracks()[0].contentHint = 'detail'; } catch (e) { }
+      this.map.set(id, { stream: st, local: true, label: T('หน้าต่างบนคอมนี้', 'This computer') + ' ' + this.ln }); st.getVideoTracks()[0].addEventListener('ended', () => this.remove(id)); Live.emit();
+    } catch (e) { if (e.name !== 'NotAllowedError') toast(T('จับหน้าจอไม่สำเร็จ: ', 'Capture failed: ') + e.message, 'err', 3500); }
+  },
+  remove(pid) { const m = this.map.get(pid); if (!m) return; this.map.delete(pid); try { const r = this.recs.get(pid); r && r.state !== 'inactive' && r.stop(); } catch (e) { } if (Live.stream === m.stream) Live.stopStream(); if (m.local) m.stream.getTracks().forEach(t => t.stop()); try { Win.close('m_' + pid); } catch (e) { } Live.emit(); },
   clear() { [...this.map.keys()].forEach(k => this.remove(k)); },
-  restore() { this.map.forEach((_, pid) => this.win(pid)); },
-  toDisplay(pid) { const m = this.map.get(pid); if (!m) return toast(T('อุปกรณ์นี้ยังไม่ได้ส่งภาพ', 'No video yet'), 'err', 2200); if (this.sending(pid)) Live.stopStream(); else Live.shareStream(m.stream); Live.emit(); },
-  async snap(pid) {
-    const v = document.querySelector(`[data-win="m_${pid}"] video`), A = Hub.api; if (!v || !v.videoWidth || !A) return toast(T('ยังไม่มีภาพ', 'No frame'), 'err', 1800);
-    const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+  restore() { },
+  async toDisplay(pid) {
+    const m = this.map.get(pid); if (!m) return toast(T('อุปกรณ์นี้ยังไม่ได้ส่งภาพ', 'No video yet'), 'err', 2200);
+    if (this.sending(pid)) Live.stopStream(); else { if (!await Hub.room()) return; Live.shareStream(m.stream); } Live.emit();
+  },
+  vid(pid, v) { return v || document.querySelector(`[data-win="m_${pid}"] video`); },
+  frame(pid, v) { v = this.vid(pid, v); if (!v || !v.videoWidth) { toast(T('ยังไม่มีภาพ', 'No frame yet'), 'err', 1800); return null; } const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0); return c; },
+  stamp() { const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()); },
+  save(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800); },
+  download(pid, v) { const c = this.frame(pid, v); if (!c) return; c.toBlob(b => { if (b) { this.save(b, 'mirror-' + this.stamp() + '.png'); toast(T('บันทึกภาพหน้าจอแล้ว', 'Saved'), 'ok', 1600); } }, 'image/png'); },
+  async snap(pid, v) {
+    const c = this.frame(pid, v), A = Hub.api; if (!c) return; if (!A) return toast(T('เปิด Teaching Studio ก่อนจึงวางลงสไลด์ได้', 'Open the Studio first'), 'err', 2600);
     const id = await IMGS.add(c.toDataURL('image/jpeg', .88)); await A.board.addImage(id, c.width, c.height); toast(T('วางภาพลงสไลด์แล้ว (ย้าย/ย่อขยายได้)', 'Placed on the slide'), 'ok', 2200);
+  },
+  toggleRec(pid) {
+    const m = this.map.get(pid); if (!m) return; const cur = this.recs.get(pid); if (cur) { try { cur.stop(); } catch (e) { } return; }
+    if (!window.MediaRecorder) return toast(T('เบราว์เซอร์นี้บันทึกวิดีโอไม่ได้', 'Recording is not supported'), 'err', 3000);
+    const mt = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t)); const ch = [];
+    const rc = new MediaRecorder(m.stream, mt ? { mimeType: mt, videoBitsPerSecond: 4e6 } : {}); const name = this.label(pid).replace(/[^\w฀-๿-]+/g, '_');
+    rc.ondataavailable = e => { if (e.data && e.data.size) ch.push(e.data); };
+    rc.onstop = () => { this.recs.delete(pid); if (ch.length) { const b = new Blob(ch, { type: rc.mimeType || 'video/webm' }); this.save(b, 'mirror-' + name + '-' + this.stamp() + (/mp4/.test(rc.mimeType) ? '.mp4' : '.webm')); toast(T('บันทึกวิดีโอแล้ว', 'Recording saved'), 'ok', 2200); } Live.emit(); };
+    rc.start(1000); this.recs.set(pid, rc); toast('⏺ ' + T('เริ่มบันทึกวิดีโอ', 'Recording'), 'ok', 1500); Live.emit();
   },
   win(pid) {
     const m = this.map.get(pid); if (!m || !Win.layer) return; const M = this;
     return Win.open('m_' + pid, {
-      title: '📲 ' + this.label(pid), w: 380, h: 300,
+      title: '📲 ' + esc(this.label(pid)), w: 380, h: 300,
       build(b, w) {
         b.innerHTML = `<div class="wm"><video autoplay playsinline muted></video><div class="wm-bar"><button data-a="send"></button><button data-a="snap">📸 ${T('วางบนสไลด์', 'To slide')}</button><button data-a="fit">⛶</button></div></div>`;
         const v = $('video', b); v.srcObject = m.stream; v.play().catch(() => { });
-        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; if (a.dataset.a === 'send') M.toDisplay(pid); else if (a.dataset.a === 'snap') M.snap(pid); else { const W = Win.stage.clientWidth, H = Win.stage.clientHeight; w.W = Math.min(W - 16, 900); w.H = Math.min(H - 16, w.W * .62 + 70); w.x = (W - w.W) / 2; w.y = 8; Win.place(w); Win.persist(w); } };
+        b.onclick = e => { const a = e.target.closest('[data-a]'); if (!a) return; if (a.dataset.a === 'send') M.toDisplay(pid); else if (a.dataset.a === 'snap') M.snap(pid, v); else { const W = Win.stage.clientWidth, H = Win.stage.clientHeight; w.W = Math.min(W - 16, 900); w.H = Math.min(H - 16, w.W * .62 + 70); w.x = (W - w.W) / 2; w.y = 8; Win.place(w); Win.persist(w); } };
       },
       update(b) { const s = $('[data-a=send]', b); if (s) s.textContent = M.sending(pid) ? '⏹ ' + T('หยุดส่งจอฉาย', 'Stop') : '📤 ' + T('ส่งขึ้นจอฉาย', 'To display'); s.classList.toggle('on', M.sending(pid)); }
     });
@@ -4392,28 +4462,260 @@ const Mirror = {
 };
 
 /* =====================================================================
-   bootMirror — หน้าส่งภาพ (อุปกรณ์ต้นทาง) เปิดด้วย ?mirror=รหัส
+   bootMirror — หน้าส่งภาพ (อุปกรณ์ต้นทาง: iPad / แท็บเล็ต / สมาร์ตโฟน / คอม) เปิดด้วย ?mirror=รหัส
    ===================================================================== */
 function bootMirror(code) {
-  const app = $('#app'); app.className = ''; app.style.cssText = 'display:block;height:100%;overflow:auto'; document.title = 'Mirror · ' + CONFIG.appName; document.body.classList.add('dsp-body');
-  const canScr = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia), canCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-  app.innerHTML = `<div class="mir"><div class="mir-card"><div class="dlogo" style="font-size:1.6rem">MIRROR</div><span class="chip warn" id="mSt">…</span>
-    <p class="small" style="color:#b9cbe6;margin:10px 0">${T('เลือกสิ่งที่จะส่งไปเป็นหน้าต่างสดใน Teaching Studio ของครู', 'Pick what to send to the teacher’s Studio')}</p>
-    <video id="mV" autoplay playsinline muted></video>
+  const app = $('#app'); app.className = ''; app.style.cssText = 'display:block;height:100%;overflow:auto'; document.title = 'Screen Mirroring · ' + CONFIG.appName; document.body.classList.add('dsp-body');
+  const md = navigator.mediaDevices, ua = navigator.userAgent || '', isIOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const canScr = !!(md && md.getDisplayMedia), canCam = !!(md && md.getUserMedia); const saved = (() => { try { return localStorage.getItem('sic.mname') || ''; } catch (e) { return ''; } })();
+  const Q = { low: { w: 854, h: 480, fps: 15, br: 1.2e6 }, mid: { w: 1280, h: 720, fps: 24, br: 3e6 }, high: { w: 1920, h: 1080, fps: 30, br: 6e6 } };
+  app.innerHTML = `<div class="mir"><div class="mir-card">
+    <div class="mir-logo">SCREEN MIRRORING</div><div class="mir-sub">${T('สะท้อนหน้าจอไปที่คอมพิวเตอร์ของครูแบบเรียลไทม์ · ไม่ต้องติดตั้งโปรแกรม', 'Mirror this device to the teacher’s computer in real time · no install')}</div>
+    <div style="margin:10px 0"><span class="chip warn" id="mSt">…</span></div>
+    <input class="inp mir-name" id="mName" maxlength="30" placeholder="${T('ชื่อเครื่อง (เช่น iPad ครูสมชาย)', 'Device name')}" value="${esc(saved)}">
+    <div class="mir-vw"><video id="mV" autoplay playsinline muted></video><div class="mir-ph" id="mPh">${T('ยังไม่ได้เลือกภาพที่จะส่ง', 'Nothing is being sent yet')}</div></div>
     <div class="mir-btns"><button class="btn pri" id="mScr" ${canScr ? '' : 'disabled'}>🖥 ${T('แชร์หน้าจอ', 'Share screen')}</button><button class="btn pri" id="mCamB" ${canCam ? '' : 'disabled'}>📷 ${T('กล้องหลัง', 'Rear camera')}</button><button class="btn" id="mCamF" ${canCam ? '' : 'disabled'}>🤳 ${T('กล้องหน้า', 'Front camera')}</button><button class="btn danger" id="mStop" disabled>⏹ ${T('หยุดส่ง', 'Stop')}</button></div>
-    <p class="tiny" style="color:#b9cbe6" id="mNote">${canScr ? '' : T('อุปกรณ์/เบราว์เซอร์นี้ (เช่น iPad, iPhone) จับ “หน้าจอ” จากเว็บไม่ได้ — ใช้กล้องเป็นกล้องเอกสารได้ หรือใช้ AirPlay ไปยัง Mac แล้วให้ครูแชร์หน้าต่างนั้น', 'This browser cannot capture the screen — use the camera.')}</p></div></div>`;
-  let stream = null, call = null; const st = s => { const e = $('#mSt'); if (e) { e.textContent = s; } };
-  const stop = () => { try { call && call.close(); } catch (e) { } call = null; if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; $('#mV').srcObject = null; $('#mStop').disabled = true; if (LiveClient.status === 'online') st(T('เชื่อมต่อแล้ว — ยังไม่ได้ส่งภาพ', 'connected')); };
-  const place = () => { if (!stream || !LiveClient.peer || LiveClient.status !== 'online') return; try { call && call.close(); } catch (e) { } call = LiveClient.peer.call('sicl-' + code, stream); st(T('กำลังส่งภาพสดไปยังครู', 'Streaming to the teacher')); };
-  const start = async getter => { try { stop(); stream = await getter(); $('#mV').srcObject = stream; $('#mStop').disabled = false; stream.getVideoTracks()[0].addEventListener('ended', stop); place(); } catch (e) { toast(T('เริ่มส่งภาพไม่สำเร็จ: ', 'Failed: ') + (e.name === 'NotAllowedError' ? T('ไม่ได้รับอนุญาต', 'permission denied') : e.message), 'err', 4000); } };
-  const gm = m => navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: m }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-  $('#mScr').onclick = () => start(() => navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15, max: 24 } }, audio: false }));
-  $('#mCamB').onclick = () => start(() => gm('environment')); $('#mCamF').onclick = () => start(() => gm('user')); $('#mStop').onclick = stop;
-  LiveClient.join(code, 'Mirror', 'mirror', {
-    status: (s, info) => { if (s === 'online') { stream ? place() : st(T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); } else st({ connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }[s] || s); if (s === 'closed') stop(); },
+    <div class="mir-q" id="mQ"><span>${T('คุณภาพ', 'Quality')}</span><button data-q="low">${T('ประหยัด 480p', 'Save 480p')}</button><button data-q="mid" class="on">${T('สมดุล 720p', 'Balanced 720p')}</button><button data-q="high">${T('คมชัด 1080p', 'Sharp 1080p')}</button></div>
+    <p class="tiny" style="color:#b9cbe6;margin-top:12px" id="mNote"></p></div></div>`;
+  const note = $('#mNote');
+  note.innerHTML = isIOS ? T('📱 iPad/iPhone: ระบบ iOS ไม่อนุญาตให้เว็บจับ “หน้าจอ” ได้ — เลือก “กล้อง” เพื่อส่งภาพกระดาษ/สมุด/จอ หรือให้ครูใช้ AirPlay ไปยังคอม แล้วกด “จับหน้าต่างบนคอมนี้” ในหน้า SCREEN MIRRORING', 'iOS does not let web pages capture the screen. Use the camera, or AirPlay to the computer.')
+    : canScr ? T('💡 เปิดแอปนี้ค้างไว้ระหว่างส่งภาพ และอย่าล็อกหน้าจอ', 'Keep this page open while mirroring.') : T('เบราว์เซอร์นี้จับหน้าจอไม่ได้ — ใช้กล้องแทน', 'This browser cannot capture the screen — use the camera.');
+  let stream = null, call = null, q = 'mid', wl = null; const st = s => { const e = $('#mSt'); if (e) e.textContent = s; };
+  const wake = async () => { try { if (navigator.wakeLock) wl = await navigator.wakeLock.request('screen'); } catch (e) { } };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && stream) wake(); });
+  const applyQ = async () => {
+    if (!stream) return; const t = stream.getVideoTracks()[0], c = Q[q]; if (!t) return;
+    try { await t.applyConstraints({ width: { ideal: c.w, max: c.w }, height: { ideal: c.h, max: c.h }, frameRate: { ideal: c.fps, max: c.fps } }); } catch (e) { }
+    try { const snd = call && call.peerConnection && call.peerConnection.getSenders().find(x => x.track && x.track.kind === 'video'); if (snd) { const p = snd.getParameters(); if (!p.encodings || !p.encodings.length) p.encodings = [{}]; p.encodings[0].maxBitrate = c.br; await snd.setParameters(p); } } catch (e) { }
+  };
+  const stop = () => { try { call && call.close(); } catch (e) { } call = null; if (stream) stream.getTracks().forEach(t => t.stop()); stream = null; try { wl && wl.release(); } catch (e) { } wl = null; $('#mV').srcObject = null; $('#mPh').classList.remove('hide'); $('#mStop').disabled = true; if (LiveClient.status === 'online') st('● ' + T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); };
+  const place = () => { if (!stream || !LiveClient.peer || LiveClient.status !== 'online') return; try { call && call.close(); } catch (e) { } call = LiveClient.peer.call('sicl-' + code, stream); st('🔴 ' + T('กำลังส่งภาพสดไปยังครู', 'Streaming to the teacher')); setTimeout(applyQ, 700); };
+  const start = async (getter, hint) => {
+    try { stop(); stream = await getter(); const t = stream.getVideoTracks()[0]; try { t.contentHint = hint; } catch (e) { } $('#mV').srcObject = stream; $('#mPh').classList.add('hide'); $('#mStop').disabled = false; t.addEventListener('ended', stop); wake(); place(); }
+    catch (e) { toast(T('เริ่มส่งภาพไม่สำเร็จ: ', 'Failed: ') + (e.name === 'NotAllowedError' ? T('ไม่ได้รับอนุญาต', 'permission denied') : e.message), 'err', 4000); }
+  };
+  const gm = m => md.getUserMedia({ video: { facingMode: { ideal: m }, width: { ideal: Q[q].w }, height: { ideal: Q[q].h }, frameRate: { ideal: Q[q].fps } }, audio: false });
+  $('#mScr').onclick = () => start(() => md.getDisplayMedia({ video: { frameRate: { ideal: Q[q].fps, max: 30 } }, audio: false }), 'detail');
+  $('#mCamB').onclick = () => start(() => gm('environment'), 'motion'); $('#mCamF').onclick = () => start(() => gm('user'), 'motion'); $('#mStop').onclick = stop;
+  $$('#mQ [data-q]').forEach(b => b.onclick = () => { q = b.dataset.q; $$('#mQ [data-q]').forEach(x => x.classList.toggle('on', x === b)); applyQ(); });
+  const sendName = () => { const v = $('#mName').value.trim().slice(0, 30); try { localStorage.setItem('sic.mname', v); } catch (e) { } if (v) LiveClient.send && LiveClient.conn && LiveClient.conn.open && LiveClient.conn.send({ t: 'name', v }); };
+  $('#mName').onchange = sendName; $('#mName').onkeydown = e => { if (e.key === 'Enter') { e.target.blur(); } };
+  $('#mV').onclick = () => { const v = $('#mV'); try { (v.requestFullscreen || v.webkitRequestFullscreen || (() => { })).call(v); } catch (e) { } };
+  LiveClient.join(code, saved || 'Mirror', 'mirror', {
+    status: (s, info) => { if (s === 'online') { stream ? place() : st('● ' + T('เชื่อมต่อแล้ว — เลือกสิ่งที่จะส่ง', 'connected')); } else st({ connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('ห้องปิดแล้ว / ถูกตัดการเชื่อมต่อ', 'closed'), error: info || 'error' }[s] || s); if (s === 'closed') stop(); },
     state: () => { }, stream: () => { }, msg: m => { if (m.t === 'label') st(m.text); }
   });
 }
+
+/* =====================================================================
+   นำเสนอ 2 เครื่อง — iPad (เครื่องที่ 2) เปิด Teaching Studio ของตัวเอง (สไลด์/กระดานแยกอิสระ)
+   แล้วเชื่อมกับ Studio หลัก: ครูเห็นหน้าจอเขียนของ iPad แบบสดเป็นหน้าต่างลอย
+   และเลือกให้จอฉายแสดง  A = Studio หลัก | B = เครื่องที่ 2 | ab / ba = แบ่งจอ 2 ฝั่ง
+   ส่งเป็น "ข้อมูลเวกเตอร์" (ไม่ใช่วิดีโอ) → คม ลื่น กินเน็ตน้อย
+   ===================================================================== */
+
+/* ---------- ฝั่งเครื่องที่ 2 (iPad) ---------- */
+const Co = {
+  code: null, status: 'idle', info: '', src: 'A', listeners: new Set(), target: { id: 'host', co: true, imgs: new Set() },
+  on() { return this.status === 'online'; },
+  sub(f) { this.listeners.add(f); return () => this.listeners.delete(f); },
+  emit() { this.listeners.forEach(f => { try { f(); } catch (e) { } }); },
+  connect(code) {
+    if (this.code) { try { LiveClient.leave(); } catch (e) { } }
+    this.code = code; this.status = 'connecting'; this.info = ''; this.emit(); try { sessionStorage.setItem('sic.co', code); } catch (e) { }
+    LiveClient.join(code, 'Co', 'co', {
+      status: (s, info) => {
+        this.status = s; this.info = info || '';
+        if (s === 'online') { this.target.imgs = new Set(); Cast.reset(); toast('🔗 ' + T('เชื่อมกับ Studio หลักแล้ว — รอครูกดอนุญาต', 'Linked to the main Studio — waiting for approval'), 'ok', 3200); }
+        if (s === 'closed') { try { sessionStorage.removeItem('sic.co'); } catch (e) { } }
+        this.emit();
+      },
+      state: st => { this.src = (st && st.src) || 'A'; this.emit(); }, stream: () => { }, msg: () => { }
+    });
+  },
+  disconnect() { try { LiveClient.leave(); } catch (e) { } this.status = 'idle'; this.code = null; try { sessionStorage.removeItem('sic.co'); } catch (e) { } this.emit(); },
+  send(m) { const c = LiveClient.conn; if (c && c.open) { try { c.send(m); } catch (e) { } } },
+  setSrc(v) { this.send({ t: 'src', v }); },
+  /* หน้าต่างควบคุมบน iPad */
+  openPanel() {
+    const SRC = [['A', '🖥', T('Studio หลัก', 'Main')], ['B', '📱', T('เครื่องนี้', 'This device')], ['ab', '◧', T('แบ่งจอ', 'Split')], ['ba', '⇄', T('แบ่งจอ (สลับข้าง)', 'Split (swapped)')]];
+    const m = modal({
+      title: '🔗 ' + T('เชื่อมกับ Studio หลัก (นำเสนอ 2 เครื่อง)', 'Link to the main Studio'),
+      body: `<div id="coB"></div>`, actions: [{ label: T('ปิด', 'Close'), cls: 'pri' }],
+      onMount: mm => {
+        const box = $('#coB', mm); let un = null;
+        const draw = () => {
+          if (!document.body.contains(mm)) { un && un(); return; }
+          if (!this.on()) {
+            const st = { connecting: T('กำลังเชื่อมต่อ…', 'connecting…'), reconnecting: T('กำลังเชื่อมต่อใหม่…', 'reconnecting…'), closed: T('Studio หลักปิดห้องแล้ว', 'closed'), error: this.info || 'error', idle: '' }[this.status] || '';
+            box.innerHTML = `<p class="small muted" style="margin-top:0">${T('ที่ Studio หลักกด “เชื่อมอุปกรณ์” → การ์ด “เครื่องนำเสนอที่ 2” แล้วสแกน QR หรือกรอกรหัส 6 หลักที่นี่ — เครื่องนี้จะยังใช้สไลด์/กระดานของตัวเองได้อิสระ', 'On the main Studio open Devices → “Second presenter”, scan the QR or enter its 6-digit code.')}</p>
+              <div class="row" style="gap:8px"><input class="inp" id="coCode" inputmode="numeric" maxlength="6" placeholder="${T('รหัส 6 หลัก', '6-digit code')}" value="${esc(this.code || '')}" style="max-width:180px;font-size:1.3rem;letter-spacing:.2em;text-align:center"><button class="btn pri" id="coGo">${T('เชื่อมต่อ', 'Connect')}</button></div>${st ? `<p class="small" style="margin:10px 0 0"><span class="chip ${this.status === 'error' || this.status === 'closed' ? 'bad' : 'warn'}">${esc(st)}</span></p>` : ''}`;
+            const go = () => { const v = ($('#coCode', box).value || '').replace(/\D/g, ''); if (v.length !== 6) return toast(T('กรอกรหัส 6 หลัก', 'Enter 6 digits'), 'err', 1800); this.connect(v); };
+            $('#coGo', box).onclick = go; $('#coCode', box).onkeydown = e => { if (e.key === 'Enter') go(); };
+          } else {
+            box.innerHTML = `<p style="margin-top:0"><span class="chip ok">● ${T('เชื่อมแล้ว · รหัส', 'Linked · code')} ${esc(this.code)}</span></p>
+              <p class="small muted">${T('เลือกสิ่งที่ให้จอฉายแสดง (ครูที่ Studio หลักสลับได้เช่นกัน)', 'Choose what the projector shows')}</p>
+              <div class="co-seg">${SRC.map(([k, e, l]) => `<button class="btn ${this.src === k ? 'pri' : ''}" data-s="${k}"><span style="font-size:1.4rem">${e}</span><br>${l}</button>`).join('')}</div>
+              <p class="tiny muted" style="margin:12px 0 0">${T('ทุกอย่างที่เขียน/เปลี่ยนหน้า/ซูม/เลเซอร์ใน Studio ของเครื่องนี้ จะขึ้นให้ครูเห็นสดและฉายได้ทันที · จับเวลา/สุ่ม/ถามด่วน ให้สั่งที่ Studio หลัก', 'Everything you draw here is mirrored live. Timers/pick/poll run on the main Studio.')}</p>
+              <p style="margin:12px 0 0"><button class="btn danger sm" id="coOff">${T('ตัดการเชื่อมต่อ', 'Disconnect')}</button></p>`;
+            $$('[data-s]', box).forEach(b => b.onclick = () => this.setSrc(b.dataset.s)); $('#coOff', box).onclick = () => this.disconnect();
+          }
+        };
+        draw(); un = this.sub(() => { if (!document.body.contains(mm)) { un(); return; } const a = document.activeElement; if (a && a.id === 'coCode') return; draw(); });
+      }
+    });
+  }
+};
+
+/* ---------- ฝั่ง Studio หลัก ---------- */
+const CoHost = {
+  e: null,
+  allow: new Set(['doc', 'pg', 'd', 'ls', 'lh', 'le', 'vw', 'lz', 'lz0', 'img']),
+  src() { return (Live.state && Live.state.src) || 'A'; },
+  label() { return this.e ? (this.e.s.label || this.e.s.name) : ''; },
+  onJoin(s) {
+    if (this.e && this.e.s !== s) { const o = this.e.s; this.drop(); Devices.kick(o); }     // รองรับเครื่องที่ 2 เพียง 1 เครื่อง (ตัวล่าสุดแทนตัวเดิม)
+    const box = document.createElement('div'); box.className = 'cobox';
+    const e = this.e = { s, ok: false, box, view: new CastView(box), imgs: new Map() };
+    s.pending = true; toast('📱 ' + (s.label || s.name) + ' ' + T('ขอเชื่อมเป็นเครื่องนำเสนอที่ 2', 'wants to be the 2nd presenter'), 'ok', 3500); this.win(); Live.emit();
+  },
+  approve() { const e = this.e; if (!e) return; e.ok = true; e.s.pending = false; Live.send(e.s.id, { t: 'label', text: 'ok' }); Live.list('display').forEach(d => this.onDisplayJoin(d)); Live.emit(); },
+  deny() { const e = this.e; if (!e) return; const s = e.s; this.drop(); Devices.kick(s); },
+  drop() { const e = this.e; if (!e) return; this.e = null; try { Win.close('co'); } catch (x) { } try { e.view.destroy(); } catch (x) { } if (this.src() !== 'A' && Live.active) Live.setState({ src: 'A' }); Live.emit(); },
+  remove(pid) { if (this.e && this.e.s.id === pid) { const l = this.label(); this.drop(); toast('📱 ' + l + ' ' + T('ตัดการเชื่อมต่อ', 'disconnected'), 'ok', 2200); } },
+  clear() { const e = this.e; this.e = null; if (e) { try { e.view.destroy(); } catch (x) { } } },
+  restore() { if (this.e) this.win(); },
+  setSrc(v) {
+    if (!['A', 'B', 'ab', 'ba'].includes(v)) return; if (v !== 'A' && !(this.e && this.e.ok)) return toast(T('ยังไม่มีเครื่องที่ 2 ที่ได้รับอนุญาต', 'No approved 2nd device'), 'err', 2200);
+    Live.setState({ src: v });
+  },
+  sendImg(d, id) { const e = this.e; if (!e) return; if (!d.coImgs) d.coImgs = new Set(); if (d.coImgs.has(id)) return; const data = e.imgs.get(id); if (!data) return; d.coImgs.add(id); Live.send(d.id, { t: 'img', id, data, src: 'B' }); },
+  onMsg(s, m) {
+    const e = this.e; if (!e || e.s !== s) return;
+    if (m.t === 'src') { if (e.ok) this.setSrc(m.v); return; }
+    if (!e.ok || !this.allow.has(m.t)) return;
+    try {
+      if (m.t === 'img') {
+        if (typeof m.id !== 'string' || !/^[\w-]{1,60}$/.test(m.id) || typeof m.data !== 'string' || m.data.length > 9e6 || !/^data:image\//.test(m.data)) return;
+        e.imgs.set(m.id, m.data); Live.list('display').forEach(d => this.sendImg(d, m.id)); e.view.onMsg({ t: 'img', id: m.id, data: m.data }); return;
+      }
+      if (m.t === 'doc' && !(Array.isArray(m.pages) && m.pages.length <= 500)) return;
+      if (m.t === 'pg' && !(Array.isArray(m.objs) && m.objs.length <= 20000)) return;
+      e.view.onMsg(m);
+    } catch (x) { console.warn('co', x); return; }
+    Live.list('display').forEach(d => Live.send(d.id, Object.assign({}, m, { src: 'B' })));
+  },
+  /* จอฉายเพิ่งเข้าห้อง → ส่งสถานะปัจจุบันของเครื่องที่ 2 ให้ (ใช้โมเดลที่หน้าต่างเก็บไว้แล้ว ไม่ต้องขอซ้ำ) */
+  onDisplayJoin(d) {
+    const e = this.e; if (!e || !e.ok) return; const v = e.view; d.coImgs = new Set(); const out = m => Live.send(d.id, Object.assign(m, { src: 'B' }));
+    for (const id of e.imgs.keys()) this.sendImg(d, id);
+    if (v.pages.size) { out({ t: 'doc', pages: [...v.pages.values()] }); if (v.pid) out({ t: 'pg', pid: v.pid, objs: v.objs }); out({ t: 'vw', z: v.vw ? v.vw.z : null, cx: v.vw ? v.vw.cx : 0, cy: v.vw ? v.vw.cy : 0 }); }
+  },
+  win() {
+    if (!this.e || !Win.layer) return; const H = this;
+    return Win.open('co', {
+      title: '📱 ' + T('เครื่องที่ 2', 'Device 2') + ' · ' + esc(this.label()), w: 460, h: 360,
+      build(b, w) {
+        b.innerHTML = `<div class="wm"><div class="cop"><b>${T('ขอเชื่อมเป็นเครื่องนำเสนอที่ 2', 'Wants to be the 2nd presenter')}</b><p class="small" style="margin:6px 0">${T('จะส่งสไลด์/ลายเส้นของเครื่องนั้นมาที่นี่ และขึ้นจอฉายได้', 'It can send its slides to this Studio and the projector.')}</p><div class="wm-bar"><button class="on" data-a="allow">✔ ${T('อนุญาต', 'Allow')}</button><button data-a="deny">✖ ${T('ปฏิเสธ', 'Deny')}</button></div></div>
+          <div class="cobox-w"></div><div class="wm-bar cos"><button data-s="A">🖥 ${T('Studio หลัก', 'Main')}</button><button data-s="B">📱 ${T('เครื่องที่ 2', 'Device 2')}</button><button data-s="ab">◧ ${T('แบ่งจอ', 'Split')}</button><button data-s="ba">⇄</button></div></div>`;
+        if (H.e) $('.cobox-w', b).appendChild(H.e.box);
+        b.onclick = ev => { const a = ev.target.closest('[data-a]'), s = ev.target.closest('[data-s]'); if (a) { a.dataset.a === 'allow' ? H.approve() : H.deny(); } else if (s) H.setSrc(s.dataset.s); };
+      },
+      update(b) { const e = H.e; if (!e) return; $('.cop', b).classList.toggle('hide', e.ok); $('.cos', b).classList.toggle('hide', !e.ok); $$('[data-s]', b).forEach(x => x.classList.toggle('on', H.src() === x.dataset.s)); const tt = $('.win-t', b.closest('.win')); if (tt) tt.textContent = '📱 ' + T('เครื่องที่ 2', 'Device 2') + ' · ' + H.label(); }
+    });
+  }
+};
+
+/* =====================================================================
+   SCREEN MIRRORING — เมนูเฉพาะ (หน้า #/mirror) + หน้าต่างใน Teaching Studio
+   อุปกรณ์ (iPad / แท็บเล็ต / สมาร์ตโฟน / คอม) เปิดลิงก์หรือสแกน QR → ส่งหน้าจอ/กล้องสด ๆ มายังคอมพิวเตอร์ครู
+   ไม่ต้องติดตั้งโปรแกรม (WebRTC peer-to-peer) · ครูเต็มจอ / ส่งขึ้นจอฉาย / ถ่ายภาพ / บันทึกวิดีโอได้
+   ===================================================================== */
+const MirrorUI = {
+  guide() {
+    const Y = '<b style="color:#1a8a4a">✔</b>', N = '<b style="color:#c0213f">✖</b>';
+    modal({
+      title: T('วิธีเชื่อมต่อ ตามชนิดอุปกรณ์', 'How to connect each device'), wide: true,
+      body: `<table class="mg-t"><thead><tr><th>${T('อุปกรณ์ / เบราว์เซอร์', 'Device')}</th><th>${T('ส่งหน้าจอ', 'Screen')}</th><th>${T('ส่งกล้อง', 'Camera')}</th><th>${T('หมายเหตุ', 'Notes')}</th></tr></thead><tbody>
+        <tr><td><b>Android</b> (Chrome)</td><td>${Y}</td><td>${Y}</td><td>${T('เลือก “แชร์หน้าจอ” → เริ่มเลย', 'Tap “Share screen”')}</td></tr>
+        <tr><td><b>iPad / iPhone</b> (Safari)</td><td>${N}</td><td>${Y}</td><td>${T('iOS ไม่อนุญาตให้เว็บจับหน้าจอ → ใช้กล้องเป็นกล้องเอกสาร หรือใช้วิธี AirPlay/USB ด้านล่าง', 'iOS blocks web screen capture → use camera or AirPlay/USB')}</td></tr>
+        <tr><td><b>Windows / Mac / Chromebook</b></td><td>${Y}</td><td>${Y}</td><td>${T('เลือกทั้งจอ / หน้าต่าง / แท็บ', 'Pick screen / window / tab')}</td></tr></tbody></table>
+        <h4 style="margin:16px 0 6px">${T('อยากให้เห็นหน้าจอ iPad/iPhone จริง ๆ', 'To show the real iPad/iPhone screen')}</h4>
+        <ol class="small" style="margin:0 0 6px 18px;line-height:1.7">
+          <li><b>AirPlay → Mac</b>: ${T('Mac (macOS 12+) เปิด Settings → General → AirDrop & Handoff → “AirPlay Receiver” แล้วที่ iPad เปิด Control Center → Screen Mirroring → เลือกชื่อ Mac', 'Enable AirPlay Receiver on the Mac, then mirror from the iPad’s Control Center')}</li>
+          <li><b>USB → Mac</b>: ${T('เสียบสาย USB แล้วเปิด QuickTime Player → File → New Movie Recording → เลือก iPad ที่ปุ่มลูกศรข้างปุ่มบันทึก', 'Plug in USB, QuickTime → New Movie Recording → choose the iPad')}</li>
+          <li><b>Windows</b>: ${T('ใช้โปรแกรมรับ AirPlay/มิเรอร์ที่ติดตั้งในเครื่อง (เช่น AirServer, LonelyScreen)', 'Use an AirPlay receiver app')}</li>
+          <li>${T('จากนั้นกดปุ่ม', 'Then press')} <b>🖥 ${T('จับหน้าต่างบนคอมนี้', 'Capture a window on this computer')}</b> ${T('ในหน้านี้ แล้วเลือกหน้าต่าง AirPlay/QuickTime — ภาพ iPad จะขึ้นเป็นกล่องเดียวกับเครื่องอื่น', 'and pick that window — it appears like any other device')}</li></ol>
+        <p class="tiny muted" style="margin:8px 0 0">${T('ภาพส่งตรงระหว่างอุปกรณ์ (peer-to-peer) ใช้เครือข่ายเดียวกันหรือคนละเครือข่ายก็ได้ ถ้าเครือข่ายโรงเรียนบล็อก WebRTC ให้ลองใช้ฮอตสปอตมือถือ', 'Video flows directly between devices. If the school network blocks WebRTC, try a mobile hotspot.')}</p>`,
+      actions: [{ label: T('ปิด', 'Close'), cls: 'pri' }]
+    });
+  },
+  mount(el, o = {}) {
+    const compact = !!o.compact; el.classList.add('mirui'); if (compact) el.classList.add('compact');
+    el.innerHTML = `<div class="mu-conn" data-conn></div><div class="mu-tools" data-tools><b>${T('อุปกรณ์ที่เชื่อมอยู่', 'Connected devices')} <span class="chip" data-n>0</span></b><span style="flex:1"></span>
+      <span class="mu-sz ${compact ? 'hide' : ''}">${[['s', T('เล็ก', 'S')], ['m', T('กลาง', 'M')], ['l', T('ใหญ่', 'L')]].map(([k, l]) => `<button data-sz="${k}">${l}</button>`).join('')}</span></div>
+      <div class="mu-grid" data-grid></div><div class="mu-empty" data-empty></div>`;
+    const conn = $('[data-conn]', el), grid = $('[data-grid]', el), empty = $('[data-empty]', el), nEl = $('[data-n]', el), tiles = new Map(); let sig = '', dead = false, iv = 0;
+    const setSz = k => { DB.settings.muSize = k; save(); grid.style.setProperty('--mu-min', { s: '230px', m: '340px', l: '520px' }[k]); $$('[data-sz]', el).forEach(b => b.classList.toggle('on', b.dataset.sz === k)); };
+    $$('[data-sz]', el).forEach(b => b.onclick = () => setSz(b.dataset.sz)); setSz(compact ? 's' : (DB.settings.muSize || 'm'));
+    const drawConn = () => {
+      const url = Live.active ? Live.joinUrl('mirror') : '', s2 = (Live.active ? 1 : 0) + url; if (s2 === sig) return; sig = s2;
+      const local = `<button class="btn" data-a="local">🖥 ${T('จับหน้าต่างบนคอมนี้ (AirPlay / USB)', 'Capture a window on this computer')}</button>`;
+      if (!Live.active) { conn.innerHTML = `<div class="mu-start"><div><b>${T('เริ่มรับภาพจากอุปกรณ์อื่น', 'Start receiving from other devices')}</b><div class="small muted">${T('กดเริ่มเพื่อสร้างรหัส/QR ให้ iPad แท็บเล็ต หรือมือถือเชื่อมเข้ามา', 'Create a code/QR for iPads, tablets and phones')}</div></div><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn pri" data-a="start">▶ ${T('เริ่มรับการเชื่อมต่อ', 'Start')}</button>${local}<button class="btn ghost" data-a="guide">${T('คำแนะนำ', 'Guide')}</button></div></div>`; return; }
+      conn.innerHTML = `<div class="mu-qrbox"><div class="mu-qr" data-qr></div><div class="mu-info"><div class="tiny muted">${T('รหัสห้อง', 'Room code')}</div><div class="mu-code">${esc(Live.code)}</div>
+        <input class="inp" readonly value="${esc(url)}" onclick="this.select()"><div class="row" style="gap:6px;margin-top:6px;flex-wrap:wrap"><button class="btn sm" data-a="copy">${T('คัดลอกลิงก์', 'Copy link')}</button><button class="btn sm" data-a="share">${T('แชร์', 'Share')}</button><button class="btn sm ghost" data-a="guide">${T('คำแนะนำ', 'Guide')}</button></div>
+        <p class="small" style="margin:8px 0 0">${T('บนอุปกรณ์: สแกน QR หรือเปิดลิงก์ → กด “แชร์หน้าจอ” หรือ “กล้อง” (ไม่ต้องติดตั้งแอป)', 'On the device: scan or open the link → Share screen / Camera')}</p><div style="margin-top:8px">${local}</div></div></div>`;
+      try { const c = qrCanvas(url, 300, 'M', 2); c.style.width = '100%'; c.style.height = 'auto'; $('[data-qr]', conn).appendChild(c); } catch (e) { }
+    };
+    conn.onclick = async e => { const a = e.target.closest('[data-a]'); if (!a) return; const k = a.dataset.a;
+      if (k === 'start') { await Live.start(); Live.emit(); } else if (k === 'local') Mirror.addLocal(); else if (k === 'guide') this.guide();
+      else if (k === 'copy') { const ok = await copyText(Live.joinUrl('mirror')); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); }
+      else if (k === 'share') { const u = Live.joinUrl('mirror'); if (navigator.share) { try { await navigator.share({ title: 'Screen Mirroring', url: u }); } catch (x) { } } else { await copyText(u); toast(T('คัดลอกแล้ว', 'Copied'), 'ok', 1400); } } };
+    const mkTile = id => {
+      const d = document.createElement('div'); d.className = 'mu-tile'; d.dataset.id = id;
+      d.innerHTML = `<div class="mu-h"><b data-nm></b><span class="chip" data-st></span><span class="tiny muted" data-stat style="margin-left:auto"></span></div>
+        <div class="mu-v"><video autoplay playsinline muted></video><div class="mu-ph">${T('รอเลือกภาพบนอุปกรณ์…', 'Waiting for the device to pick a source…')}</div></div>
+        <div class="mu-a"><button data-a="full" title="${T('เต็มจอ', 'Fullscreen')}">⛶</button><button data-a="send">📤 ${T('ขึ้นจอฉาย', 'To display')}</button><button data-a="png" title="${T('บันทึกภาพ', 'Save image')}">📸</button><button data-a="slide" class="slide-only">🖼 ${T('วางสไลด์', 'To slide')}</button><button data-a="rec">⏺ ${T('บันทึก', 'Rec')}</button><button data-a="win" class="win-only" title="${T('หน้าต่างลอย', 'Floating window')}">⧉</button><button data-a="name" title="${T('เปลี่ยนชื่อ', 'Rename')}">✎</button><button data-a="kick" title="${T('ตัดการเชื่อมต่อ', 'Disconnect')}">✕</button></div>`;
+      return d;
+    };
+    const upd = () => {
+      if (dead || !document.body.contains(el)) { dead = true; clearInterval(iv); un(); return; }
+      drawConn();
+      const ids = [...Live.list('mirror').map(s => s.id), ...[...Mirror.map.entries()].filter(([, m]) => m.local).map(([k]) => k)];
+      tiles.forEach((t, id) => { if (!ids.includes(id)) { t.remove(); tiles.delete(id); } });
+      ids.forEach(id => {
+        let t = tiles.get(id); if (!t) { t = mkTile(id); tiles.set(id, t); grid.appendChild(t); }
+        const m = Mirror.map.get(id), v = $('video', t), live = !!(m && m.stream), sending = Mirror.sending(id), rec = Mirror.recs.has(id), isLocal = !!(m && m.local);
+        $('[data-nm]', t).textContent = (isLocal ? '🖥 ' : '📲 ') + Mirror.label(id); const c = $('[data-st]', t); c.textContent = live ? (sending ? '📤 ' + T('ขึ้นจอฉายอยู่', 'On display') : '● ' + T('สตรีมสด', 'Live')) : T('รอเลือกภาพ', 'Waiting'); c.className = 'chip ' + (live ? 'ok' : 'warn');
+        if (live && v.srcObject !== m.stream) { v.srcObject = m.stream; v.play().catch(() => { }); } if (!live && v.srcObject) v.srcObject = null; $('.mu-ph', t).classList.toggle('hide', live);
+        const sb = $('[data-a=send]', t); sb.classList.toggle('on', sending); sb.lastChild.textContent = ' ' + (sending ? T('หยุดฉาย', 'Stop') : T('ขึ้นจอฉาย', 'To display')); const rb = $('[data-a=rec]', t); rb.classList.toggle('on', rec); rb.lastChild.textContent = ' ' + (rec ? T('หยุดบันทึก', 'Stop rec') : T('บันทึก', 'Rec'));
+        ['send', 'png', 'rec', 'full'].forEach(k => $(`[data-a=${k}]`, t).disabled = !live); $('.slide-only', t).classList.toggle('hide', !Hub.api); $('.win-only', t).classList.toggle('hide', !Win.layer); $('[data-a=name]', t).classList.toggle('hide', isLocal); $('[data-a=kick]', t).title = isLocal ? T('หยุดจับภาพ', 'Stop') : T('ตัดการเชื่อมต่อ', 'Disconnect');
+      });
+      nEl.textContent = ids.length; empty.innerHTML = ids.length ? '' : `<div class="mu-none">📲<br><b>${T('ยังไม่มีอุปกรณ์ส่งภาพ', 'No devices yet')}</b><div class="small muted">${Live.active ? T('สแกน QR ด้วย iPad / แท็บเล็ต / มือถือ แล้วกดเลือกสิ่งที่จะส่ง', 'Scan the QR with a device and pick what to send') : T('กด “เริ่มรับการเชื่อมต่อ” ก่อน', 'Press Start first')}</div></div>`;
+    };
+    grid.onclick = e => {
+      const a = e.target.closest('[data-a]'), t = e.target.closest('.mu-tile'); if (!t) return; const id = t.dataset.id, v = $('video', t);
+      if (!a) return; const k = a.dataset.a, s = Live.students.get(id);
+      if (k === 'full') { const box = $('.mu-v', t); try { (box.requestFullscreen || box.webkitRequestFullscreen).call(box); } catch (x) { } }
+      else if (k === 'send') Mirror.toDisplay(id); else if (k === 'png') Mirror.download(id, v); else if (k === 'slide') Mirror.snap(id, v); else if (k === 'rec') Mirror.toggleRec(id); else if (k === 'win') Mirror.win(id);
+      else if (k === 'name') { if (s) Devices.rename(s); }
+      else if (k === 'kick') { if (Mirror.map.get(id) && Mirror.map.get(id).local) Mirror.remove(id); else if (s) Devices.kick(s); }
+    };
+    grid.ondblclick = e => { const b = e.target.closest('.mu-v'); if (b) { try { (b.requestFullscreen || b.webkitRequestFullscreen).call(b); } catch (x) { } } };
+    let last = new Map();
+    iv = setInterval(() => { tiles.forEach((t, id) => { const v = $('video', t), st = $('[data-stat]', t); if (!v.videoWidth) { st.textContent = ''; return; } let fps = ''; try { const q = v.getVideoPlaybackQuality(), p = last.get(id); if (p) fps = ' · ' + Math.round((q.totalVideoFrames - p) ) + ' fps'; last.set(id, q.totalVideoFrames); } catch (e) { } st.textContent = v.videoWidth + '×' + v.videoHeight + fps; }); }, 1000);
+    const un = Live.sub(upd); upd();
+    return () => { dead = true; clearInterval(iv); un(); };
+  }
+};
+
+PAGES.mirror = {
+  render(el) {
+    el.innerHTML = `<div class="row" style="margin-bottom:6px;gap:10px;flex-wrap:wrap"><h2 style="margin:0">📲 SCREEN MIRRORING</h2><span class="chip">${T('เรียลไทม์ · ไม่ต้องติดตั้งโปรแกรม', 'Real-time · no install')}</span></div>
+      <p class="muted small" style="margin:0 0 14px">${T('สะท้อนหน้าจอ iPad / แท็บเล็ต / สมาร์ตโฟน มายังคอมพิวเตอร์ผ่านเว็บ — เปิดลิงก์หรือสแกน QR บนอุปกรณ์แล้วเลือก “แชร์หน้าจอ” หรือ “กล้อง” ได้เลย ส่งขึ้นโปรเจกเตอร์ ถ่ายภาพ หรือบันทึกวิดีโอได้', 'Mirror iPads, tablets and phones to this computer through the browser.')}</p><div id="muRoot"></div>`;
+    const un = MirrorUI.mount($('#muRoot', el), {}); return () => un();
+  }
+};
 
 /* =====================================================================
    Teaching Studio — รายการบทเรียน + พื้นที่สอน (กระดาน/PDF/แชร์จอ/ห้องสด)
@@ -4484,7 +4786,9 @@ PAGES.studio = {
           <button class="btn sm" id="bExport">${ic('down', 16)}<span class="hide-m"> ${T('ส่งออก', 'Export')}</span></button>
           <button class="btn sm" id="bShare">${ic('screen', 16)}<span class="hide-m" id="shareLbl"> ${T('แชร์จอ', 'Share')}</span></button>
           <button class="btn sm" id="bRoom">${ic('qr', 16)}<span class="hide-m"> ${T('ห้องสด/QR', 'Room/QR')}</span></button>
+          <button class="btn sm" id="bMir" title="SCREEN MIRRORING">${ic('screen', 16)}<span class="hide-m"> Screen Mirroring</span><span class="chip hide" id="mirN" style="margin-left:4px"></span></button>
           <button class="btn sm" id="bDev">${ic('screen', 16)}<span class="hide-m"> ${T('เชื่อมอุปกรณ์', 'Devices')}</span></button>
+          <button class="btn sm" id="bCo" title="${T('นำเสนอ 2 เครื่อง: เชื่อมกับ Studio หลัก', 'Link to main Studio')}">${ic('qr', 16)}<span class="hide-m" id="coLbl"> ${T('เชื่อม Studio หลัก', 'Link main')}</span></button>
           <button class="btn sm" id="bHub" title="Q">${ic('sparkle', 16)}<span class="hide-m"> ${T('เมนูด่วน', 'Quick menu')}</span></button>
           <button class="btn sm pri" id="bFull">${ic('full', 16)}<span class="hide-m"> ${T('เต็มจอ', 'Present')}</span></button>
         </div>
@@ -4585,7 +4889,9 @@ PAGES.studio = {
       $s('#bMedia').onclick = openMedia;
       $s('#pPrev').onclick = () => gotoPage(doc.cur - 1); $s('#pNext').onclick = () => gotoPage(doc.cur + 1);
       $s('#bPages').onclick = pageMenu; $s('#bImport').onclick = importMenu; $s('#bExport').onclick = exportMenu;
-      $s('#bHub').onclick = () => { if (!Hub.cfg().show) Hub.setShown(true); Hub.open ? Hub.close() : (Hub.open = true, Hub.path = [], Hub.tempPos = null, Hub.draw()); }; $s('#bDev').onclick = () => Devices.open(); $s('#bShare').onclick = shareMenu; $s('#bRoom').onclick = () => modal({ title: T('ห้องสด / QR เข้าร่วม', 'Live room / QR'), wide: true, body: (() => { const d = document.createElement('div'); roomPanel(d, { fromStudio: true, onBoard: scheduleBc }); return d; })(), actions: [{ label: T('ปิด', 'Close') }] });
+      $s('#bHub').onclick = () => { if (!Hub.cfg().show) Hub.setShown(true); Hub.open ? Hub.close() : (Hub.open = true, Hub.path = [], Hub.tempPos = null, Hub.draw()); }; $s('#bDev').onclick = () => Devices.open(); $s('#bCo').onclick = () => Co.openPanel(); $s('#bMir').onclick = () => Win.mirrors();
+      const updMir = () => { const e = $s('#mirN'); if (!e) return; const n = Mirror.map.size; e.textContent = n; e.classList.toggle('hide', !n); }; const unMir = Live.sub(updMir); updMir();
+      const updCo = () => { const l = $s('#coLbl'), b = $s('#bCo'); if (!l) return; const on = Co.on(); l.textContent = ' ' + (on ? T('เชื่อมแล้ว · ', 'Linked · ') + (Co.src === 'B' || Co.src === 'ab' || Co.src === 'ba' ? T('ฉายเครื่องนี้', 'projecting') : T('รอ', 'idle')) : Co.status === 'connecting' || Co.status === 'reconnecting' ? T('กำลังเชื่อม…', 'linking…') : T('เชื่อม Studio หลัก', 'Link main')); b.classList.toggle('pri', on); }; const unCo = Co.sub(updCo); updCo(); $s('#bShare').onclick = shareMenu; $s('#bRoom').onclick = () => modal({ title: T('ห้องสด / QR เข้าร่วม', 'Live room / QR'), wide: true, body: (() => { const d = document.createElement('div'); roomPanel(d, { fromStudio: true, onBoard: scheduleBc }); return d; })(), actions: [{ label: T('ปิด', 'Close') }] });
       $s('#bFull').onclick = togglePresent; $s('#bExit').onclick = togglePresent;
       $s('#selbar').onclick = e => { const b = e.target.closest('[data-s]'); if (!b) return; const a = b.dataset.s; if (a === 'del') board.deleteSel(); else if (a === 'dup') board.dupSel(); else if (a === 'big') board.scaleSel(1.2); else if (a === 'small') board.scaleSel(1 / 1.2); else board.clearSel(); };
       keyH = e => {
@@ -4800,7 +5106,7 @@ PAGES.studio = {
       shareMode = 'off'; if (Live.active) Live.stopStream(); updLive();
     }
     return () => {
-      alive = false; Win.unmount(); Hub.unmount(); Cast.detach(); clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
+      alive = false; Win.unmount(); Hub.unmount(); Cast.detach(); try { unCo(); unMir(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
       if (keyH) document.removeEventListener('keydown', keyH); if (fsH) document.removeEventListener('fullscreenchange', fsH);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
       if (doc) { doc.updated = Date.now(); IDB.put('lessons', doc).catch(() => { }); const i = DB.lessons.findIndex(x => x.id === doc.id); if (i >= 0) { DB.lessons[i] = lessonMeta(doc); save(); } }
@@ -5388,7 +5694,7 @@ class CastView {
 function bootDisplay(code) {
   const app = $('#app'); app.className = ''; app.style.cssText = 'display:block;height:100%;overflow:hidden'; document.title = 'Display · ' + CONFIG.appName; document.body.classList.add('dsp-body');
   app.innerHTML = `<div class="dsp" id="dsp">
-    <div class="dmain" id="dMain"><div class="dstage" id="dStage"></div><video id="dVid" class="hide" autoplay playsinline muted></video>
+    <div class="dmain" id="dMain"><div class="dstage" id="dStage"><div class="dpane" id="dPA"></div><div class="dpane hide" id="dPB"><div class="dpn" id="dPBn">${T('รอเครื่องนำเสนอที่ 2…', 'Waiting for device 2…')}</div></div></div><video id="dVid" class="hide" autoplay playsinline muted></video>
       <div class="dwait" id="dWait"><div class="dlogo">SMART INTERACTIVE CLASSROOM</div><div id="dWaitTx">${T('กำลังเชื่อมต่อ…', 'Connecting…')}</div></div></div>
     <aside class="dside" id="dSide"></aside>
     <div class="dfloat" id="dFloat"></div>
@@ -5396,7 +5702,7 @@ function bootDisplay(code) {
     <div class="dblank hide" id="dBlank"></div>
     <div class="dhud" id="dHud"><span class="chip" id="dSt">…</span><button class="btn sm" id="dFs">${ic('full', 16)} ${T('เต็มจอ', 'Fullscreen')}</button></div></div>`;
   const dsp = $('#dsp'); const S = { state: { view: 'none', status: 'idle' }, stream: null, deadline: 0, dlFor: null, mode: 'auto' };
-  const view = new CastView($('#dStage')); window.__cast = view; view.onFirst = () => { $('#dWait').classList.add('hide'); };
+  const view = new CastView($('#dPA')), viewB = new CastView($('#dPB')); window.__cast = view; window.__castB = viewB; view.onFirst = () => { $('#dWait').classList.add('hide'); }; viewB.onFirst = () => { $('#dWait').classList.add('hide'); $('#dPBn').classList.add('hide'); };
   let tmr = 0, qrKey = '';
   const fs = () => { const f = dsp.requestFullscreen || dsp.webkitRequestFullscreen; try { f && f.call(dsp); } catch (e) { } };
   $('#dFs').onclick = fs; document.addEventListener('dblclick', fs);
@@ -5446,7 +5752,9 @@ function bootDisplay(code) {
     setTimeout(() => view.resize(), 30);
   }
   let lastLayout = '';
-  function onState(s) { S.state = s; if (s.status !== 'open') S.dlFor = null; renderWidgets(); renderQuiz(); updView(); if (s.layout !== lastLayout) { lastLayout = s.layout; setTimeout(() => view.resize(), 60); } }
+  function applySrc() { const src = S.state.src || 'A', two = src === 'ab' || src === 'ba'; $('#dPA').classList.toggle('hide', src === 'B'); $('#dPB').classList.toggle('hide', src === 'A'); $('#dStage').classList.toggle('two', two); $('#dPA').style.order = src === 'ba' ? 2 : 1; $('#dPB').style.order = src === 'ba' ? 1 : 2; setTimeout(() => { view.resize(); viewB.resize(); }, 40); }
+  let lastSrc = '';
+  function onState(s) { S.state = s; if ((s.src || 'A') !== lastSrc) { lastSrc = s.src || 'A'; applySrc(); } if (s.status !== 'open') S.dlFor = null; renderWidgets(); renderQuiz(); updView(); if (s.layout !== lastLayout) { lastLayout = s.layout; setTimeout(() => view.resize(), 60); } }
 
   LiveClient.join(code, 'Display', 'display', {
     status: (s, info) => {
@@ -5456,7 +5764,7 @@ function bootDisplay(code) {
       if (s === 'closed') { $('#dWait').classList.remove('hide'); }
     },
     state: onState, stream: st => { S.stream = st; updView(); },
-    msg: m => { if (m.t === 'dmode') { S.mode = m.mode || 'auto'; renderWidgets(); updView(); } else if (m.t === 'ident') { const e = $('#dBlank'); const prev = e.innerHTML, was = e.classList.contains('hide'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); e.style.background = '#142B4A'; setTimeout(() => { e.style.background = ''; renderWidgets(); }, 3000); } else if (m.t === 'label') { $('#dSt').textContent = m.text; } else view.onMsg(m); }
+    msg: m => { if (m.t === 'dmode') { S.mode = m.mode || 'auto'; renderWidgets(); updView(); } else if (m.t === 'ident') { const e = $('#dBlank'); const prev = e.innerHTML, was = e.classList.contains('hide'); e.innerHTML = `<div>${esc(m.text || '')}</div>`; e.classList.remove('hide'); e.style.background = '#142B4A'; setTimeout(() => { e.style.background = ''; renderWidgets(); }, 3000); } else if (m.t === 'label') { $('#dSt').textContent = m.text; } else (m.src === 'B' ? viewB : view).onMsg(m); }
   });
 }
 
@@ -6111,6 +6419,7 @@ const DEFAULT_TERMS = 'ใช้งานเพื่อการเรียน
   const mr = qp.get('mirror'); if (mr && /^\d{6}$/.test(mr)) return bootMirror(mr);
   const rm = qp.get('remote'); if (rm && /^\d{6}$/.test(rm)) return bootRemote(rm);
   buildShell(); window.addEventListener('hashchange', route); route();
+  { let c = qp.get('co'); if (!(c && /^\d{6}$/.test(c))) { try { c = sessionStorage.getItem('sic.co'); } catch (e) { c = null; } } if (c && /^\d{6}$/.test(c)) { Co.connect(c); if (qp.get('co')) { history.replaceState(null, '', location.pathname + location.hash); setTimeout(() => toast('🔗 ' + T('เชื่อมกับ Studio หลักแล้ว — เปิดบทเรียน → Teaching Studio เพื่อเริ่มนำเสนอ', 'Linked — open a lesson in Teaching Studio'), 'ok', 5000), 600); } } }
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => { });
 })();
 
