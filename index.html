@@ -3334,6 +3334,59 @@ function listModal({ title, items = [], name, del = false, hint = '' }) {
 const askList = (title, items, hint) => listModal({ title, items, hint }).then(r => r && r.items ? r.items : null);
 
 /* =====================================================================
+   Lock — ล็อกหน้า “ตั้งค่าระบบ” ด้วยรหัสผ่าน
+   - รหัสเริ่มต้นฝากไว้ในรูป “ค่าแฮชเค็ม” (PBKDF2-SHA256 150,000 รอบ) ไม่เก็บเป็นข้อความตรงๆ · เปลี่ยนรหัสเองได้ที่แท็บ “ความปลอดภัย”
+   - รหัสที่ตั้งเองเก็บเป็นแฮชเค็มเช่นกัน (ไม่มีทางย้อนกลับเป็นรหัสเดิม) · ตั้งรหัสใหม่ทุกครั้งจะได้ “รหัสกู้คืน” แสดงครั้งเดียว
+   - ปลดล็อกค้างไว้ตามเวลาที่ตั้ง (ค่าเริ่มต้น 10 นาที) แล้วล็อกเองอัตโนมัติ · ใส่ผิด 5 ครั้งต้องรอ
+   หมายเหตุ: เป็นการกันคนทั่วไปที่หยิบเครื่องครูมาแตะ ไม่ใช่การเข้ารหัสตัวข้อมูลในเบราว์เซอร์
+   ===================================================================== */
+const Lock = {
+  DEF: { s: 'AKmNopcmN/kpfAuQZAf9SQ==', h: '/+w8tGuvmTKrv2FfpuxpULSCFYOifVMCVQ/ItvEFXEI=', i: 150000 },
+  until: 0, fails: 0, blockUntil: 0,
+  supported() { return !!(window.crypto && crypto.subtle && window.isSecureContext !== false); },
+  rec() { return DB.settings.lock || this.DEF; },
+  isDefault() { return !DB.settings.lock; },
+  mins() { const m = DB.settings.lockMin; return m === 0 || m > 0 ? +m : 10; },
+  ok() { return !this.supported() || Date.now() < this.until; },
+  touch() { if (Date.now() < this.until && this.until !== Infinity) { const m = this.mins(); this.until = m ? Date.now() + m * 60000 : Infinity; } },
+  lock() { this.until = 0; },
+  b64(u8) { let s = ''; u8.forEach(x => s += String.fromCharCode(x)); return btoa(s); },
+  unb64(s) { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; },
+  async derive(pw, salt, iter) {
+    const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(String(pw).normalize('NFKC')), 'PBKDF2', false, ['deriveBits']);
+    return new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, k, 256));
+  },
+  same(a, b) { if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; },
+  async check(pw, r) { r = r || this.rec(); try { return this.same(await this.derive(pw, this.unb64(r.s), r.i), this.unb64(r.h)); } catch (e) { return false; } },
+  /* ปลดล็อก → { ok, wait } */
+  async unlock(pw) {
+    const now = Date.now(); if (now < this.blockUntil) return { ok: false, wait: Math.ceil((this.blockUntil - now) / 1000) };
+    if (await this.check(pw)) { this.fails = 0; const m = this.mins(); this.until = m ? Date.now() + m * 60000 : Infinity; try { logEvent('lock', 'unlock'); } catch (e) { } return { ok: true }; }
+    this.fails++; try { logEvent('lock', 'wrong password #' + this.fails); } catch (e) { }
+    if (this.fails >= 5) { const w = Math.min(600, 30 * Math.pow(2, Math.floor(this.fails / 5) - 1)); this.blockUntil = Date.now() + w * 1000; return { ok: false, wait: w }; }
+    return { ok: false, left: 5 - this.fails };
+  },
+  async hashNew(pw) { const salt = crypto.getRandomValues(new Uint8Array(16)), i = 150000; return { s: this.b64(salt), h: this.b64(await this.derive(pw, salt, i)), i }; },
+  genCode() { const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', b = crypto.getRandomValues(new Uint8Array(16)); let s = ''; for (let i = 0; i < 16; i++) { s += A[b[i] % A.length]; if (i % 4 === 3 && i < 15) s += '-'; } return s; },
+  normCode: c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''),
+  /* ตั้งรหัสใหม่ → คืนรหัสกู้คืน (แสดงครั้งเดียว) */
+  async setPass(pw) {
+    const rec = await this.hashNew(pw), code = this.genCode(); rec.rc = await this.hashNew(this.normCode(code)); DB.settings.lock = rec; saveNow(); try { logEvent('lock', 'password changed'); } catch (e) { } return code;
+  },
+  async resetByCode(code, pw) {
+    const r = DB.settings.lock; if (!r || !r.rc) return false; if (!await this.check(this.normCode(code), r.rc)) return false; return this.setPass(pw);
+  },
+  policy(pw) { return String(pw || '').length >= 6 ? '' : T('รหัสผ่านอย่างน้อย 6 ตัวอักษร (แนะนำ 8 ขึ้นไป ผสมตัวอักษร+ตัวเลข)', 'At least 6 characters (8+ recommended)'); },
+  showCode(code) {
+    return new Promise(res => modal({
+      title: '🔑 ' + T('รหัสกู้คืน (แสดงครั้งเดียว)', 'Recovery code (shown once)'), noClose: true,
+      body: `<p class="small" style="margin-top:0">${T('จดหรือบันทึกรหัสนี้ไว้ในที่ปลอดภัย — ใช้ตั้งรหัสผ่านใหม่เมื่อลืมรหัส และจะไม่แสดงอีก', 'Keep this code safe — it lets you reset a forgotten password. It will not be shown again.')}</p><div class="result-big" style="font-size:1.7rem;letter-spacing:.08em;background:var(--lblue);border-radius:14px;padding:14px;user-select:all">${esc(code)}</div>`,
+      actions: [{ label: T('คัดลอก', 'Copy'), keep: true, onClick: async () => { const ok = await copyText(code); toast(ok ? T('คัดลอกแล้ว', 'Copied') : T('คัดลอกไม่สำเร็จ', 'Failed'), ok ? 'ok' : 'err', 1400); } }, { label: T('บันทึกรหัสแล้ว', 'I saved it'), cls: 'pri', onClick: () => res(true) }]
+    }));
+  }
+};
+
+/* =====================================================================
    PromptPay (EMVCo / Thai QR Payment) + หน้า "สนับสนุนผู้พัฒนา"
    ===================================================================== */
 function crc16(str) {
@@ -7450,10 +7503,31 @@ PAGES.ai = {
 /* ---------- Settings ---------- */
 PAGES.settings = {
   render(el) {
-    let tab = 'general';
+    let tab = 'general', lkIv = 0;
+    /* หน้าล็อก: ต้องใส่รหัสก่อนเข้าตั้งค่าระบบ */
+    const gate = () => {
+      el.innerHTML = `<div class="card" style="max-width:420px;margin:40px auto;text-align:center"><div style="font-size:2.4rem">🔒</div><h2 style="margin:6px 0">${T('ตั้งค่าระบบ', 'System settings')}</h2><p class="small muted" style="margin-top:0">${T('กรอกรหัสผ่านเพื่อเข้าตั้งค่าระบบ', 'Enter the password to continue')}</p>
+        <input class="inp" id="lkPw" type="password" autocomplete="current-password" placeholder="${T('รหัสผ่าน', 'Password')}" style="text-align:center;font-size:1.1rem"><div class="small" id="lkMsg" style="min-height:1.4em;margin:8px 0;color:var(--bad)"></div>
+        <button class="btn pri" id="lkGo" style="width:100%">${T('ปลดล็อก', 'Unlock')}</button><div style="margin-top:12px"><button class="btn sm ghost" id="lkForgot">${T('ลืมรหัสผ่าน?', 'Forgot password?')}</button></div></div>`;
+      const pw = $('#lkPw', el), msg = $('#lkMsg', el); let busy = false; setTimeout(() => pw.focus(), 40);
+      const go = async () => { if (busy) return; busy = true; $('#lkGo', el).disabled = true; msg.textContent = ''; const r = await Lock.unlock(pw.value); busy = false; $('#lkGo', el).disabled = false; if (r.ok) { frame(); return; } pw.value = ''; pw.focus(); msg.textContent = r.wait ? T(`ใส่ผิดหลายครั้ง — รอ ${r.wait} วินาที`, `Too many attempts — wait ${r.wait}s`) : T(`รหัสผ่านไม่ถูกต้อง (เหลือ ${r.left} ครั้ง)`, 'Wrong password'); };
+      $('#lkGo', el).onclick = go; pw.onkeydown = e => { if (e.key === 'Enter') go(); };
+      $('#lkForgot', el).onclick = forgot;
+    };
+    function forgot() {
+      const hasRc = !!(DB.settings.lock && DB.settings.lock.rc);
+      modal({
+        title: T('ลืมรหัสผ่าน', 'Forgot password'),
+        body: Lock.isDefault() ? `<p>${T('ตอนนี้ยังใช้รหัสเริ่มต้นของระบบอยู่ — ติดต่อผู้ติดตั้งระบบเพื่อขอรหัสเริ่มต้น', 'The default password is still in use — ask whoever installed the app.')}</p>`
+          : hasRc ? `<p class="small" style="margin-top:0">${T('กรอกรหัสกู้คืน (ได้ตอนตั้งรหัสผ่าน) แล้วตั้งรหัสใหม่', 'Enter your recovery code and choose a new password')}</p><label class="f">${T('รหัสกู้คืน', 'Recovery code')}</label><input class="inp" id="fgC" placeholder="XXXX-XXXX-XXXX-XXXX" style="letter-spacing:.06em"><label class="f">${T('รหัสผ่านใหม่', 'New password')}</label><input class="inp" id="fgP" type="password" autocomplete="new-password"><label class="f">${T('ยืนยันรหัสผ่านใหม่', 'Confirm')}</label><input class="inp" id="fgP2" type="password" autocomplete="new-password">`
+          : `<p>${T('ไม่พบรหัสกู้คืนในเครื่องนี้', 'No recovery code on this device')}</p>`,
+        actions: [{ label: T('ปิด', 'Close') }, ...(!Lock.isDefault() && hasRc ? [{ label: T('ตั้งรหัสใหม่', 'Reset'), cls: 'pri', onClick: async () => { const p1 = $('#fgP').value, e = Lock.policy(p1); if (e) { toast(e, 'err', 3200); return false; } if (p1 !== $('#fgP2').value) { toast(T('รหัสผ่านทั้งสองช่องไม่ตรงกัน', 'Passwords do not match'), 'err'); return false; } const code = await Lock.resetByCode($('#fgC').value, p1); if (!code) { toast(T('รหัสกู้คืนไม่ถูกต้อง', 'Invalid recovery code'), 'err', 3000); return false; } setTimeout(async () => { await Lock.showCode(code); toast(T('ตั้งรหัสผ่านใหม่แล้ว — ปลดล็อกด้วยรหัสใหม่', 'Password reset'), 'ok', 3200); }, 60); } }] : [])]
+      });
+    }
     const frame = () => {
-      el.innerHTML = `<div class="row" style="margin-bottom:14px"><h2 style="margin:0">${T('ตั้งค่าระบบ', 'System settings')}</h2></div><div class="tabs" id="stt" style="margin-bottom:14px">${[['general', T('ทั่วไป', 'General')], ['support', 'Developer Support'], ['data', T('ข้อมูล/สำรอง', 'Data & backup')], ['privacy', 'Privacy'], ['logs', 'Logs']].map(t => `<button data-t="${t[0]}" class="${tab === t[0] ? 'on' : ''}">${t[1]}</button>`).join('')}</div><div id="stb"></div>`;
-      $$('#stt [data-t]', el).forEach(b => b.onclick = () => { tab = b.dataset.t; frame(); }); const b = $('#stb', el); ({ general, support: supportAdmin, data, privacy, logs })[tab](b);
+      if (!Lock.ok()) return gate(); Lock.touch();
+      el.innerHTML = `<div class="row" style="margin-bottom:14px"><h2 style="margin:0">${T('ตั้งค่าระบบ', 'System settings')}</h2><span class="sp"></span>${Lock.supported() ? `<button class="btn sm" id="lkNow">🔒 ${T('ล็อกเดี๋ยวนี้', 'Lock now')}</button>` : ''}</div>${Lock.supported() && Lock.isDefault() ? `<div class="card" style="border-color:var(--pink2);background:#fff8fa;margin-bottom:14px;padding:10px 14px"><span class="small">⚠ ${T('ยังใช้รหัสผ่านเริ่มต้นอยู่ — ควรเปลี่ยนที่แท็บ “ความปลอดภัย”', 'Still using the default password — change it in the Security tab')}</span></div>` : ''}<div class="tabs" id="stt" style="margin-bottom:14px">${[['general', T('ทั่วไป', 'General')], ['support', 'Developer Support'], ['data', T('ข้อมูล/สำรอง', 'Data & backup')], ['privacy', 'Privacy'], ['logs', 'Logs'], ['security', T('ความปลอดภัย', 'Security')]].map(t => `<button data-t="${t[0]}" class="${tab === t[0] ? 'on' : ''}">${t[1]}</button>`).join('')}</div><div id="stb"></div>`;
+      $$('#stt [data-t]', el).forEach(b => b.onclick = () => { tab = b.dataset.t; frame(); }); const b = $('#stb', el); ({ general, support: supportAdmin, data, privacy, logs, security })[tab](b); const ln = $('#lkNow', el); if (ln) ln.onclick = () => { Lock.lock(); gate(); };
     };
     function general(b) {
       const S = DB.settings;
@@ -7483,7 +7557,26 @@ PAGES.settings = {
       b.innerHTML = `<div class="card"><div class="row"><h3 style="margin:0">System Logs <span class="chip">${L.length}</span></h3><span class="sp"></span><button class="btn sm" id="lg">${ic('down', 14)} CSV</button><button class="btn sm danger" id="lc">${T('ล้าง', 'Clear')}</button></div><div class="tw" style="margin-top:8px;max-height:420px;overflow:auto"><table class="t"><thead><tr><th>${T('เวลา', 'Time')}</th><th>${T('เหตุการณ์', 'Event')}</th><th>${T('รายละเอียด', 'Detail')}</th></tr></thead><tbody>${L.map(x => `<tr><td>${fmtDT(x.ts)}</td><td>${esc(x.a)}</td><td>${esc(x.d)}</td></tr>`).join('') || `<tr><td colspan="3" class="muted" style="text-align:center;padding:20px">—</td></tr>`}</tbody></table></div></div>`;
       $('#lg', b).onclick = () => downloadBlob('system-logs.csv', toCSV([['time', 'event', 'detail'], ...L.map(x => [new Date(x.ts).toISOString(), x.a, x.d])]), 'text/csv'); $('#lc', b).onclick = () => { DB.logs = []; save(); logs(b); };
     }
+    function security(b) {
+      const sup = Lock.supported(), mins = Lock.mins();
+      b.innerHTML = `<div class="card" style="max-width:560px"><h3 style="margin-top:0">🔐 ${T('รหัสผ่านตั้งค่าระบบ', 'Settings password')} <span class="chip ${Lock.isDefault() ? 'warn' : 'ok'}">${Lock.isDefault() ? T('รหัสเริ่มต้น', 'Default') : T('ตั้งรหัสเองแล้ว', 'Custom')}</span></h3>
+        ${sup ? `<label class="f">${T('รหัสผ่านปัจจุบัน', 'Current password')}</label><input class="inp" id="scO" type="password" autocomplete="current-password"><label class="f">${T('รหัสผ่านใหม่', 'New password')}</label><input class="inp" id="scN" type="password" autocomplete="new-password"><label class="f">${T('ยืนยันรหัสผ่านใหม่', 'Confirm new password')}</label><input class="inp" id="scN2" type="password" autocomplete="new-password">
+        <div class="row" style="margin-top:12px"><button class="btn pri" id="scGo">${ic('save', 16)} ${T('เปลี่ยนรหัสผ่าน', 'Change password')}</button></div>
+        <label class="f" style="margin-top:16px">${T('ล็อกอัตโนมัติเมื่อไม่ได้ใช้งาน', 'Auto-lock after idle')}</label><select class="sel" id="scM" style="width:auto">${[[1, '1'], [5, '5'], [10, '10'], [30, '30'], [60, '60'], [0, T('ไม่ล็อกอัตโนมัติ (จนกว่าจะรีเฟรช)', 'Never (until reload)')]].map(x => `<option value="${x[0]}" ${mins === x[0] ? 'selected' : ''}>${x[0] === 0 ? x[1] : x[1] + ' ' + T('นาที', 'min')}</option>`).join('')}</select>
+        <p class="tiny muted" style="margin:14px 0 0">${T('รหัสผ่านเก็บเป็นค่าแฮชเค็ม (PBKDF2-SHA256) ไม่เก็บเป็นข้อความ · เป็นการล็อกหน้าตั้งค่าเพื่อกันการกดโดยไม่ตั้งใจ ไม่ใช่การเข้ารหัสตัวข้อมูลในเบราว์เซอร์ · ถ้าสำรองข้อมูลแล้วกู้คืน รหัสผ่านจะกลับไปเป็นของไฟล์สำรองนั้น', 'Stored as a salted PBKDF2-SHA256 hash. This locks the settings page; it does not encrypt data stored in the browser.')}</p>` : `<p class="small">${T('เบราว์เซอร์/โหมดนี้ไม่รองรับการเข้ารหัส (ต้องเปิดผ่าน https หรือ localhost) — ล็อกหน้าตั้งค่าไม่ทำงาน', 'This browser/context lacks WebCrypto (use https) — the lock is disabled')}</p>`}</div>`;
+      if (!sup) return;
+      $('#scM', b).onchange = e => { DB.settings.lockMin = +e.target.value; save(); Lock.touch(); toast(T('บันทึกแล้ว', 'Saved')); };
+      $('#scGo', b).onclick = async () => {
+        const btn = $('#scGo', b), o = $('#scO', b).value, n = $('#scN', b).value, n2 = $('#scN2', b).value; const e = Lock.policy(n);
+        if (e) return toast(e, 'err', 3200); if (n !== n2) return toast(T('รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน', 'Passwords do not match'), 'err'); if (n === o) return toast(T('รหัสใหม่ต้องต่างจากรหัสเดิม', 'Choose a different password'), 'err');
+        btn.disabled = true; if (!await Lock.check(o)) { btn.disabled = false; return toast(T('รหัสผ่านปัจจุบันไม่ถูกต้อง', 'Current password is wrong'), 'err', 3000); }
+        const code = await Lock.setPass(n); btn.disabled = false; await Lock.showCode(code); toast(T('เปลี่ยนรหัสผ่านแล้ว', 'Password changed'), 'ok', 2600); frame();
+      };
+    }
+    if (Lock.supported()) lkIv = setInterval(() => { if (!document.body.contains(el)) { clearInterval(lkIv); return; } if (!Lock.ok() && !$('#lkPw', el)) gate(); }, 4000);
+    el.addEventListener('pointerdown', () => Lock.touch(), true); el.addEventListener('keydown', () => Lock.touch(), true);
     frame();
+    return () => clearInterval(lkIv);
   }
 };
 const DEFAULT_PRIVACY = 'แอปนี้เก็บข้อมูลห้องเรียน แบบทดสอบ และคะแนน ไว้ในเบราว์เซอร์ของอุปกรณ์ที่ใช้งานเท่านั้น ไม่มีการอัปโหลดไปยังเซิร์ฟเวอร์ของผู้พัฒนา\n\nห้องสด (Live Room) ใช้การเชื่อมต่อ WebRTC ระหว่างอุปกรณ์ โดยใช้เซิร์ฟเวอร์สาธารณะของ PeerJS เพื่อจับคู่การเชื่อมต่อเท่านั้น\n\nกล้อง: ขออนุญาตทุกครั้ง ประมวลผลในเครื่อง ไม่บันทึกภาพ ไม่ใช้การจดจำใบหน้าเพื่อระบุตัวตน\n\nครูควรแจ้งนักเรียน/ผู้ปกครองและเก็บข้อมูลเท่าที่จำเป็น ตามกฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA)';
