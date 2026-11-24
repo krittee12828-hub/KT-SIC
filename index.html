@@ -228,6 +228,11 @@ table.t td{padding:9px 10px;border-bottom:1px solid #eef2f8;vertical-align:middl
 .jroles{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:8px}.jr{flex-direction:column;gap:2px;min-height:62px;padding:8px 6px;font-size:.86rem;justify-content:center}.jr .jri{font-size:1.4rem;line-height:1}
 .dev-code{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border:1.5px dashed var(--line);border-radius:14px;padding:10px 14px;margin-bottom:12px;background:#f8fafd}.dev-codev{font-size:1.8rem;font-weight:800;letter-spacing:.14em;color:var(--navy);line-height:1.1}
 .view-box .vstage{position:absolute;inset:0;z-index:1}.view-box .vfs{position:absolute;right:8px;bottom:8px;z-index:4;width:38px;height:38px;border-radius:10px;border:0;background:rgba(10,20,40,.6);color:#fff;font-size:1.1rem;cursor:pointer}
+.stage .media-win video{position:static;inset:auto;width:100%;height:auto;max-height:46vh}
+.vstage .castcv{position:relative;z-index:1}.vstage .sclayer{z-index:0}
+.vlive{position:absolute;left:8px;top:8px;z-index:4;background:rgba(214,69,97,.92);color:#fff;border-radius:99px;padding:2px 10px;font-size:.72rem;font-weight:800;pointer-events:none}
+.vsnd{position:absolute;left:8px;bottom:8px;z-index:4;border:0;border-radius:99px;padding:6px 14px;background:rgba(10,20,40,.72);color:#fff;font-weight:700;cursor:pointer}
+.vlink{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:8px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;font-size:.9rem}.vlink.hide{display:none}
 .view-box:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh;background:#000}
 .spill{position:fixed;left:0;right:0;top:66px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;padding:0 10px}.spill>*{pointer-events:auto}
 .spill .pl{background:#142B4A;color:#fff;border-radius:999px;padding:8px 16px;font-weight:800;box-shadow:0 6px 20px rgba(20,43,74,.3);display:flex;gap:8px;align-items:center;font-size:1.05rem;border:0;font-family:inherit}
@@ -3820,7 +3825,7 @@ function supportAdmin(el) {
 const peerOpts = () => Object.assign({ debug: 0 }, CONFIG.peer || {});
 const Live = {
   active: false, code: null, peer: null, students: new Map(), locked: false, banned: new Map(), known: new Map(), state: { view: 'none', status: 'idle' },
-  stream: null, calls: new Map(), lastBoard: null, submissions: [], listeners: new Set(), onAnswer: null, starting: null,
+  stream: null, calls: new Map(), lastBoard: null, submissions: [], listeners: new Set(), onAnswer: null, starting: null, mode: 'auto',
   emit() { this.listeners.forEach(f => { try { f(); } catch (e) { console.error(e); } }); if (typeof refreshLiveChip === 'function') refreshLiveChip(); if (typeof DevGate !== 'undefined') DevGate.draw(); },
   sub(f) { this.listeners.add(f); return () => this.listeners.delete(f); },
   joinUrl(kind = 'join') {
@@ -3851,7 +3856,7 @@ const Live = {
         this.peer.on('call', c => { const ms = this.students.get(c.peer); if (!ms || ms.role !== 'mirror' || ms.gated) { try { c.close(); } catch (e) { } return; } try { c.answer(); } catch (e) { } c.on('stream', st => { if (typeof Mirror !== 'undefined') Mirror.add(c.peer, st, c); }); c.on('close', () => { if (typeof Mirror !== 'undefined') Mirror.remove(c.peer); }); c.on('error', () => { }); });
         this.peer.on('disconnected', () => { try { this.peer.reconnect(); } catch (e) { } });
         this.peer.on('error', e => { console.warn('peer error', e); });
-        this.emit(); keepAwake();
+        this.emit(); keepAwake(); this.syncView();
         return true;
       } catch (e) {
         console.error(e); toast(T('เปิดห้องสดไม่สำเร็จ: ', 'Cannot open live room: ') + (e.message || e.type || ''), 'err', 4500);
@@ -3863,7 +3868,7 @@ const Live = {
     this.broadcast({ t: 'closed' });
     this.stopStream(); if (typeof Mirror !== 'undefined') Mirror.clear(); if (typeof CoHost !== 'undefined') CoHost.clear();
     try { this.peer && this.peer.destroy(); } catch (e) { }
-    this.peer = null; this.active = false; this.students.clear(); this.locked = false; this.banned.clear(); this.known.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.emit();
+    this.peer = null; this.active = false; this.students.clear(); this.locked = false; this.banned.clear(); this.known.clear(); this.code = null; this.state = { view: 'none', status: 'idle' }; this.lastBoard = null; this.mode = 'auto'; this.emit();
   },
   _onConn(conn) {
     /* ด่านแรก: ห้องเต็ม / ถูกบล็อกชั่วคราว → ปฏิเสธทันที */
@@ -3951,10 +3956,23 @@ const Live = {
     if (!this.stream || !this.peer || s.gated || s.role === 'mirror' || s.role === 'co') return; if (s.role === 'remote' && !this.state.ovl) return;
     try { const c = this.peer.call(s.id, this.stream); this.calls.set(s.id, c); c.on('close', () => this.calls.delete(s.id)); } catch (e) { console.warn(e); }
   },
-  shareStream(stream, opts) { this.stopStream(true); this.stream = stream; this.setState({ view: 'screen', ovl: !!(opts && opts.ovl) }); this.students.forEach(s => this._call(s)); },
+  shareStream(stream, opts) { this.stopStream(true); this.stream = stream; this.mode = 'auto'; this.setState({ view: 'screen', ovl: !!(opts && opts.ovl), media: !!(opts && opts.media) }); this.students.forEach(s => this._call(s)); },
   stopStream(silent) {
     this.calls.forEach(c => { try { c.close(); } catch (e) { } }); this.calls.clear();
-    if (this.stream) { this.stream = null; if (!silent) { const patch = { view: this.state.view === 'screen' ? 'board' : this.state.view, ovl: false }; if (this.active) this.setState(patch); else this.state = Object.assign({}, this.state, patch); } }
+    if (this.stream) { this.stream = null; if (!silent) { const patch = { view: this.state.view === 'screen' ? 'board' : this.state.view, ovl: false, media: false }; if (this.active) this.setState(patch); else this.state = Object.assign({}, this.state, patch); } }
+  },
+  /* โหมดตามครู (ค่าเริ่มต้น): นักเรียนเห็นสิ่งที่ครูกำลังแสดงโดยไม่ต้องกดสลับเอง — แชร์จอ → หน้าจอ(+ลายเขียนทับ) · เปิดบทเรียนใน Studio → สไลด์/เอกสาร/ลายเขียนสด · ไม่มีอะไร → เฉพาะคำถาม */
+  syncView() {
+    if (!this.active || this.mode !== 'auto') return;
+    const v = this.stream ? 'screen' : ((typeof Cast !== 'undefined' && Cast.board) || this.lastBoard) ? 'board' : 'none';
+    if (v !== this.state.view) this.setState({ view: v, ovl: v === 'screen' ? this.state.ovl : false, media: v === 'screen' ? this.state.media : false });
+  },
+  setLink(l) { if (this.active && JSON.stringify(this.state.link || null) !== JSON.stringify(l || null)) this.setState({ link: l || null }); },
+  describe() {
+    const st = this.state, ss = this.list(), v = st.view;
+    const what = v === 'screen' ? (st.media ? T('วิดีโอ/เสียงที่ครูเปิด (มีเสียง)', 'Video / audio you are playing') : st.ovl ? T('หน้าจอที่แชร์ + ลายเขียนสด', 'Shared screen + live ink') : T('หน้าจอที่แชร์', 'Shared screen'))
+      : v === 'board' ? T('สไลด์ / เอกสาร / กระดาน — ลายเขียนตามครูทันที', 'Live slides / documents / ink') : T('เฉพาะคำถาม (ยังไม่ได้แสดงสไลด์)', 'Questions only');
+    return { what, n: ss.length, c: ss.filter(x => x.cast || (st.view === 'screen' && !st.ovl)).length, v };
   },
   list(role = 'student') { return [...this.students.values()].filter(s => s.role === role && !s.gated); }
 };
@@ -4448,6 +4466,7 @@ const Cast = {
     this.detach(); this.board = board; this.reset();
     const loop = () => { this.raf = requestAnimationFrame(loop); try { this.poll(); } catch (e) { console.warn('cast', e); } };
     this.raf = requestAnimationFrame(loop);
+    try { Live.syncView(); } catch (e) { }
   },
   detach() { cancelAnimationFrame(this.raf); this.raf = 0; this.board = null; this.frozen = false; },
   reset() { this.page = null; this.docSig = ''; this.ls = { id: null, n: 0 }; this.lh = ''; this.vw = ''; this.lzT = 0; this.lzOn = false; },
@@ -7114,7 +7133,7 @@ PAGES.studio = {
     }
     function updLive() {
       const c = $s('#lvChip'); if (!c) return;
-      if (Live.active) { c.classList.remove('hide'); c.innerHTML = `<span class="pulse"></span> ${Live.code} · ${Live.list().length}${Live.state.view === 'board' ? ' · ' + T('กำลังแสดงกระดาน', 'showing board') : ''}`; } else c.classList.add('hide');
+      if (Live.active) { c.classList.remove('hide'); c.innerHTML = `<span class="pulse"></span> ${Live.code} · ${Live.list().length}${Live.state.view === 'board' ? ' · ' + T('นักเรียนเห็นสไลด์สด', 'students see live slides') : Live.state.view === 'screen' ? ' · ' + (Live.state.media ? T('ส่งสื่อให้นักเรียน', 'sending media') : T('ส่งหน้าจอ', 'sending screen')) : ''}`; } else c.classList.add('hide');
       const lbl = $s('#shareLbl'); if (lbl) lbl.textContent = shareMode === 'off' ? ' ' + T('แชร์จอ', 'Share') : ' ' + T('กำลังแชร์', 'Sharing');
     }
     const unsubLive = Live.sub(updLive);
@@ -7305,7 +7324,7 @@ PAGES.studio = {
       });
     }
     function showMedia({ url, file }) {
-      const old = $s('#mw'); if (old) { old.remove(); }
+      const old = $s('#mw'); if (old) { endMediaShare(old); old.remove(); }
       const w = document.createElement('div'); w.className = 'media-win'; w.id = 'mw'; let inner = '', title = '';
       if (file) { const u = URL.createObjectURL(file); w._u = u; title = file.name; inner = file.type.startsWith('audio') ? `<audio controls src="${u}" autoplay></audio>` : `<video controls playsinline src="${u}" autoplay></video>`; }
       else {
@@ -7317,8 +7336,26 @@ PAGES.studio = {
         else if (/\.(mp3|wav|m4a|aac|oga)(\?|$)/i.test(url)) inner = `<audio controls src="${esc(url)}"></audio>`;
         else inner = `<iframe src="${esc(url)}" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"></iframe>`;
       }
-      w.innerHTML = `<div class="mh"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(title)}</span><span>${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="color:#9fc2f0;margin-right:10px">${T('เปิดในแท็บใหม่', 'open')}</a>` : ''}<button class="btn ghost icon sm" style="color:#fff;min-height:26px;width:26px" id="mx">${ic('x', 16)}</button></span></div>${inner}`;
-      $s('#stage').appendChild(w); $('#mx', w).onclick = () => { if (w._u) URL.revokeObjectURL(w._u); w.remove(); };
+      const canCap = !!file;       // ไฟล์จากเครื่องครู: ส่งเป็นสตรีมสด (ภาพ+เสียง) ให้นักเรียนได้ · ลิงก์: ส่งลิงก์ให้นักเรียนเปิดเอง
+      w.innerHTML = `<div class="mh"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin-right:6px">${esc(title)}</span><span style="display:flex;align-items:center;gap:6px;flex:none">${canCap ? `<button class="btn sm" id="msh" style="min-height:26px;padding:0 8px;font-size:.75rem">📡 ${T('ส่งให้นักเรียน', 'Send')}</button>` : ''}${url ? `<a href="${esc(url)}" target="_blank" rel="noopener" style="color:#9fc2f0;margin-right:4px">${T('เปิดในแท็บใหม่', 'open')}</a>` : ''}<button class="btn ghost icon sm" style="color:#fff;min-height:26px;width:26px" id="mx">${ic('x', 16)}</button></span></div>${inner}`;
+      $s('#stage').appendChild(w); $('#mx', w).onclick = () => { endMediaShare(w); if (w._u) URL.revokeObjectURL(w._u); w.remove(); };
+      if (canCap) { $('#msh', w).onclick = () => (w._ms && Live.stream === w._ms) ? endMediaShare(w) : startMediaShare(w); if (Live.active && shareMode === 'off') startMediaShare(w); }
+      else if (url && Live.active) { Live.setLink({ u: url, t: title.slice(0, 120) }); w._link = true; }
+    }
+    function endMediaShare(w) {
+      if (!w) return; if (w._ms && Live.stream === w._ms) { try { Live.stopStream(); } catch (e) { } } w._ms = null; if (w._link) { w._link = false; try { Live.setLink(null); } catch (e) { } }
+      const b = w.querySelector('#msh'); if (b) { b.classList.remove('on'); b.textContent = '📡 ' + T('ส่งให้นักเรียน', 'Send'); }
+    }
+    function startMediaShare(w) {
+      if (!Live.active) { toast(T('ยังไม่ได้เปิดห้องสด — กด “ห้องสด/QR” ก่อน', 'Open the live room first'), 'err', 3000); return; }
+      if (shareMode !== 'off') { toast(T('กำลังแชร์หน้าจออยู่ — หยุดแชร์จอก่อนจึงจะส่งสื่อให้นักเรียนได้', 'Stop screen sharing first'), 'err', 3600); return; }
+      const el = w.querySelector('video,audio'); if (!el) return; const cap = el.captureStream || el.mozCaptureStream;
+      if (!cap) { toast(T('เบราว์เซอร์นี้ส่งสื่อสดไม่ได้ — ใช้ “แชร์จอ” แทน', 'Use screen share instead'), 'err', 3600); return; }
+      const go = () => {
+        if (!w.isConnected || (w._ms && Live.stream === w._ms)) return true; const st = cap.call(el); if (!st.getTracks().length) return false;
+        w._ms = st; Live.shareStream(st, { ovl: false, media: true }); const b = w.querySelector('#msh'); if (b) { b.classList.add('on'); b.textContent = '📡 ' + T('กำลังส่ง ✓', 'Sending ✓'); b.title = T('กดเพื่อหยุดส่งให้นักเรียน', 'Tap to stop'); } return true;
+      };
+      if (!go()) { let n = 0; const iv = setInterval(() => { if (!w.isConnected || go() || ++n > 30) clearInterval(iv); }, 300); }
     }
     /* ---- export ---- */
     function exportMenu() {
@@ -7399,7 +7436,7 @@ PAGES.studio = {
       shareMode = 'off'; if (mine && Live.stream === mine) Live.stopStream(); updLive();
     }
     return () => {
-      alive = false; cancelAnimationFrame(vidRaf); clearInterval(fxIv); Win.onChange = null; Win.unmount(); Dock.unmount(); try { Pop.host && Pop.host.destroy(); } catch (e) { } Hub.unmount(); Cast.detach(); try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
+      alive = false; cancelAnimationFrame(vidRaf); clearInterval(fxIv); Win.onChange = null; Win.unmount(); Dock.unmount(); try { Pop.host && Pop.host.destroy(); } catch (e) { } Hub.unmount(); Cast.detach(); try { const mw = document.getElementById('mw'); if (mw) endMediaShare(mw); } catch (e) { } try { unCo(); unMir(); unPad(); } catch (e) { } clearTimeout(thumbT); clearTimeout(bcT); clearTimeout(saveT); stopShare(); unsubLive();
       if (keyH) document.removeEventListener('keydown', keyH); if (fsH) document.removeEventListener('fullscreenchange', fsH);
       if (document.fullscreenElement) document.exitFullscreen().catch(() => { });
       if (doc) { doc.updated = Date.now(); IDB.put('lessons', doc).catch(() => { }); const i = DB.lessons.findIndex(x => x.id === doc.id); if (i >= 0) { DB.lessons[i] = lessonMeta(doc); save(); } }
@@ -7683,8 +7720,8 @@ function roomPanel(el, opts = {}) {
         <div style="max-height:150px;overflow:auto;margin:8px 0;display:flex;gap:6px;flex-wrap:wrap">${studs.length ? studs.map(s => `<span class="chip ${s.hand ? 'pk' : ''}">${s.hand ? '✋ ' : ''}${esc(s.name)} <a data-kick="${s.id}" style="cursor:pointer;opacity:.5">✕</a></span>`).join('') : `<span class="muted small">${T('รอนักเรียนเข้าร่วม…', 'Waiting for students…')}</span>`}</div>
         ${hands.length ? `<div class="card flat" style="padding:10px;margin-bottom:8px"><b>✋ ${T('ลำดับยกมือ', 'Hand queue')}</b>${hands.map((s, i) => `<div class="row" style="margin-top:4px"><span class="chip pk">${i + 1}</span> ${esc(s.name)} <span class="sp"></span><button class="btn sm" data-lower="${s.id}">${T('เรียกแล้ว', 'Done')}</button></div>`).join('')}</div>` : ''}
         <label class="f" style="margin-top:6px">${T('สิ่งที่นักเรียน/จอแสดงผลเห็น', 'What viewers see')}</label>
-        <div class="tabs" id="vtabs">${[['none', T('เฉพาะคำถาม', 'Questions only')], ['board', T('สไลด์/กระดานสอน (สด)', 'Live slides / whiteboard')], ['screen', T('หน้าจอที่แชร์', 'Shared screen')]].map(v => `<button data-v="${v[0]}" class="${Live.state.view === v[0] ? 'on' : ''}">${v[1]}</button>`).join('')}</div>
-        <div class="tiny muted" style="margin-top:4px">${T('"กระดานสอน" ส่งภาพจาก Teaching Studio ที่เปิดอยู่ · "หน้าจอที่แชร์" ต้องกดแชร์จอใน Studio ก่อน', '')}</div>
+        <div class="tabs" id="vtabs">${[['auto', T('ตามครู (แนะนำ)', 'Follow me')], ['board', T('สไลด์สด', 'Slides')], ['screen', T('หน้าจอ', 'Screen')], ['none', T('ซ่อน', 'Hide')]].map(v => `<button data-v="${v[0]}" class="${Live.mode === v[0] ? 'on' : ''}">${v[1]}</button>`).join('')}</div>
+        ${(() => { const d = Live.describe(); return `<div class="card flat" style="padding:8px 10px;margin-top:6px"><div class="small">👁 ${T('นักเรียนเห็นอยู่ตอนนี้', 'Students see now')}: <b>${esc(d.what)}</b></div><div class="tiny muted" style="margin-top:2px">${T('ผู้ดูทั้งหมด', 'Viewers')} ${d.n} ${T('คน', '')}${d.v === 'board' ? ` · ${T('รับสไลด์สดแล้ว', 'live-slide ready')} ${d.c}/${d.n}` : ''} · ${Live.mode === 'auto' ? T('โหมดตามครู: เปิดสไลด์ใน Studio / แชร์จอ / เปิดวิดีโอ แล้วนักเรียนเห็นทันที', 'Auto: students follow what you show') : T('โหมดกำหนดเอง — กด “ตามครูอัตโนมัติ” เพื่อให้นักเรียนเห็นตามที่ครูแสดงเสมอ', 'Manual mode')}</div></div>`; })()}
         ${Live.submissions.length ? `<div style="margin-top:10px"><b>${T('งานที่ส่งมา', 'Submissions')}</b> <span class="chip">${Live.submissions.length}</span><div style="display:flex;gap:8px;overflow:auto;margin-top:6px">${Live.submissions.slice(0, 20).map(s => `<a data-sub="${s.id}" style="flex:none;cursor:pointer;text-align:center"><img src="${esc(s.file)}" style="height:64px;border-radius:8px;border:1px solid var(--line)"><div class="tiny">${esc(s.name)}</div></a>`).join('')}</div></div>` : ''}
         <div class="row" style="margin-top:12px"><button class="btn sm danger" id="lvStop">${ic('stop', 14)} ${T('ปิดห้อง', 'Close room')}</button></div>
       </div>
@@ -7695,7 +7732,7 @@ function roomPanel(el, opts = {}) {
     $('#cpD', el).onclick = async () => toast((await copyText(durl)) ? T('คัดลอกลิงก์จอแสดงผลแล้ว (เปิดบนทีวี/คอมอีกเครื่อง)', 'Display link copied') : 'copy failed');
     $$('[data-kick]', el).forEach(a => a.onclick = () => { const s = Live.students.get(a.dataset.kick); if (s) Live.kick(s); });
     $$('[data-lower]', el).forEach(b => b.onclick = () => { const s = Live.students.get(b.dataset.lower); if (s) { s.hand = false; Live.send(s.id, { t: 'hand', on: false }); Live.emit(); } });
-    $$('#vtabs [data-v]', el).forEach(b => b.onclick = () => { const v = b.dataset.v; if (v === 'screen' && !Live.stream) { toast(T('ยังไม่ได้แชร์หน้าจอ — ไปที่ Teaching Studio กด "แชร์จอ"', 'Start screen sharing in the Studio first'), 'err', 3500); return; } Live.setState({ view: v }); if (v === 'board' && opts.onBoard) opts.onBoard(); if (v === 'board' && !opts.fromStudio && !Live.lastBoard) toast(T('เปิด Teaching Studio เพื่อส่งภาพกระดาน', 'Open the Studio to send the whiteboard'), 'ok', 3200); });
+    $$('#vtabs [data-v]', el).forEach(b => b.onclick = () => { const v = b.dataset.v; if (v === 'screen' && !Live.stream) { toast(T('ยังไม่ได้แชร์หน้าจอ — ไปที่ Teaching Studio กด "แชร์จอ"', 'Start screen sharing in the Studio first'), 'err', 3500); return; } Live.mode = v; if (v === 'auto') { Live.syncView(); if (Live.state.view === 'board' && opts.onBoard) opts.onBoard(); } else Live.setState({ view: v, ovl: v === 'screen' ? Live.state.ovl : false, media: v === 'screen' ? Live.state.media : false }); if (v === 'board' && opts.onBoard) opts.onBoard(); if (v === 'board' && !opts.fromStudio && !Live.lastBoard) toast(T('เปิด Teaching Studio เพื่อส่งภาพกระดาน', 'Open the Studio to send the whiteboard'), 'ok', 3200); });
     $$('[data-sub]', el).forEach(a => a.onclick = () => { const s = Live.submissions.find(x => x.id === a.dataset.sub); modal({ title: s.name, body: `<img src="${esc(s.file)}" style="width:100%;border-radius:12px">`, actions: [{ label: T('ดาวน์โหลด', 'Download'), onClick: () => { const l = document.createElement('a'); l.href = s.file; l.download = `${s.name}-${Date.now()}.jpg`; l.click(); return false; } }, { label: T('ปิด', 'Close'), cls: 'pri' }] }); });
     $('#lvStop', el).onclick = async () => { if (await confirmBox(T('ปิดห้องสดและตัดการเชื่อมต่อทุกคน?', 'Close the room and disconnect everyone?'))) { Run.reset(); Live.stop(); } };
   };
@@ -7816,7 +7853,7 @@ function bootStudent(code, role, nameParam) {
       ${display ? '' : '<div class="spill" id="sPill"></div><div class="spop hide" id="sPop"></div>'}
       <header><div style="flex:1;min-width:0"><div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${display ? 'DISPLAY' : '🎒 ' + esc(S.name)}</div><div class="tiny" style="color:#b9cbe6">${T('ห้อง', 'Room')} ${esc(code)} · <span id="st">…</span></div></div>
         <span class="chip pk" id="tot" ${display ? 'hide' : ''} style="${display ? 'display:none' : ''}">⭐ 0</span><button class="btn sm" id="leave" style="min-height:32px">${T('ออก', 'Leave')}</button></header>
-      <div class="wrap" ${display ? 'style="max-width:1400px"' : ''}><div id="ck"></div><div class="view-box hide" id="vb"></div><div id="qa" style="margin-top:14px"></div>
+      <div class="wrap" ${display ? 'style="max-width:1400px"' : ''}><div id="ck"></div><div class="view-box hide" id="vb"></div><div class="vlink hide" id="vlk"></div><div id="qa" style="margin-top:14px"></div>
         ${display ? '' : `<div class="row" style="margin-top:16px;justify-content:center"><button class="btn" id="hand">${ic('hand', 18)} ${T('ยกมือ', 'Raise hand')}</button><button class="btn" id="sub">${ic('up', 18)} ${T('ส่งรูปงาน', 'Send photo')}</button><button class="btn" id="note">${ic('edit', 18)} ${T('โน้ต', 'Notes')}</button></div><input type="file" id="subF" accept="image/*" class="hide">`}</div></div>`;
     $('#leave').onclick = async () => { if (await confirmBox(T('ออกจากห้องเรียน?', 'Leave the room?'))) { LiveClient.leave(); const u = new URL(location.href); u.search = ''; location.href = u.toString(); } };
     if (!display) {
@@ -7855,15 +7892,26 @@ function bootStudent(code, role, nameParam) {
   }
   function updView() {
     const vb = $('#vb'); if (!vb) return; const v = S.state.view;
-    if (v === 'none') { vb.classList.add('hide'); vb.innerHTML = ''; return; }
+    const lk = $('#vlk'), L = S.state.link; if (lk) { const ok = L && typeof L.u === 'string' && /^https?:\/\//i.test(L.u); lk.classList.toggle('hide', !ok); if (ok) { const key = L.u + '|' + L.t; if (lk.dataset.k !== key) { lk.dataset.k = key; lk.textContent = ''; const sp = document.createElement('span'); sp.textContent = '🔗 ' + T('ครูเปิดสื่อ: ', 'Teacher opened: ') + String(L.t || L.u).slice(0, 80); const a = document.createElement('a'); a.href = L.u; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.className = 'btn sm pri'; a.textContent = '▶ ' + T('เปิดดู', 'Open'); lk.append(sp, a); } } }
+    if (v === 'none') { vb.classList.add('hide'); vb.innerHTML = ''; if (S.layer) S.layer.set(null, false); return; }
     vb.classList.remove('hide');
-    if (v === 'board') {
-      const cv = ensureCv(); if (!vb.contains(S.stage)) { vb.innerHTML = `<span id="vbw">${T('รอภาพกระดาน…', 'Waiting for board…')}</span><img alt="board" style="display:none">`; vb.appendChild(S.stage); setTimeout(() => cv.resize(), 30); }
+    if (v === 'board') { if (S.layer) S.layer.set(null, false);
+      const cv = ensureCv(); if (!vb.contains(S.stage) || !$('img', vb)) { vb.innerHTML = `<span id="vbw">${T('รอภาพกระดาน…', 'Waiting for board…')}</span><img alt="board" style="display:none">`; vb.appendChild(S.stage); setTimeout(() => cv.resize(), 30); }
       let im = $('img', vb); im.onload = () => { if (S.castGot) return; im.style.display = ''; const sp = $('#vbw', vb); sp && (sp.style.display = 'none'); };
       S.stage.style.display = S.castGot ? '' : 'none';
       if (S.castGot) { im.style.display = 'none'; const sp = $('#vbw', vb); sp && (sp.style.display = 'none'); } else if (S.board) im.src = S.board;
     }
-    else if (v === 'screen') { let vd = $('video', vb); if (!vd) { vb.innerHTML = `<span>${T('รอสัญญาณหน้าจอจากครู…', 'Waiting for screen…')}</span><video autoplay playsinline muted></video>`; vd = $('video', vb); } if (S.stream && vd.srcObject !== S.stream) { vd.srcObject = S.stream; vd.play().catch(() => { }); } }
+    else if (v === 'screen' && S.state.ovl && !S.state.media) {
+      /* ครูแชร์หน้าจอ + เขียนทับ → วิดีโอหน้าจอ + ลายเขียนสดซ้อนกัน (ตัววาดเดียวกับจอฉาย) */
+      const cv = ensureCv(); if (!vb.contains(S.stage)) { vb.innerHTML = `<span id="vbw">${T('รอสัญญาณหน้าจอจากครู…', 'Waiting for screen…')}</span>`; vb.appendChild(S.stage); setTimeout(() => cv.resize(), 30); }
+      if (!S.layer) S.layer = screenLayer(cv, S.stage, 'sOv'); S.stage.style.display = ''; const has = !!S.stream; S.layer.set(S.stream, has); const sp = $('#vbw', vb); sp && (sp.style.display = has ? 'none' : '');
+    }
+    else if (v === 'screen') {
+      if (S.layer) S.layer.set(null, false);
+      let vd = $('video:not(.sclayer)', vb); if (!vd || vb.contains(S.stage)) { vb.innerHTML = `<span>${T('รอสัญญาณจากครู…', 'Waiting for the teacher…')}</span><video autoplay playsinline muted></video>`; vd = $('video', vb); } if (S.stream && vd.srcObject !== S.stream) { vd.srcObject = S.stream; vd.play().catch(() => { }); }
+      let sb = $('.vsnd', vb); if (S.state.media) { if (!sb) { sb = document.createElement('button'); sb.className = 'vsnd'; sb.onclick = e => { e.stopPropagation(); S.snd = !S.snd; updView(); }; vb.appendChild(sb); } vd.muted = !S.snd; if (!S.snd) vd.play().catch(() => { }); sb.textContent = S.snd ? '🔊' : '🔇 ' + T('แตะเพื่อเปิดเสียง', 'Tap for sound'); sb.classList.toggle('pulse', !S.snd); } else { if (sb) sb.remove(); vd.muted = true; }
+    }
+    if (!display) { let lb = $('.vlive', vb); if (!lb) { lb = document.createElement('span'); lb.className = 'vlive'; vb.appendChild(lb); } lb.textContent = '🔴 ' + T('สด', 'LIVE') + ' · ' + (v === 'board' ? T('สไลด์ตามครู', 'slides') : S.state.media ? T('สื่อจากครู', 'media') : S.state.ovl ? T('หน้าจอ + ลายเขียน', 'screen + ink') : T('หน้าจอ', 'screen')); }
     if (display && !document.fullscreenElement) { /* user can tap vb to go fullscreen */ vb.onclick = () => { (vb.requestFullscreen || vb.webkitRequestFullscreen || (() => { })).call(vb); }; }
     if (!display && !$('.vfs', vb)) { const fb = document.createElement('button'); fb.className = 'vfs'; fb.setAttribute('aria-label', 'fullscreen'); fb.textContent = '⛶'; fb.onclick = e => { e.stopPropagation(); if (document.fullscreenElement) { document.exitFullscreen(); return; } const f = vb.requestFullscreen || vb.webkitRequestFullscreen; try { f && f.call(vb); } catch (x) { } }; vb.appendChild(fb); }
   }
